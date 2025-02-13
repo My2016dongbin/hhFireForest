@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.haohai.platform.fireforestplatform",
+  "variantName": "huaweiRelease",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "versionCode": 203,
+      "versionName": "2.0.3",
+      "outputFile": "haohai-2.0.3.apk"
+    }
+  ]
+}
