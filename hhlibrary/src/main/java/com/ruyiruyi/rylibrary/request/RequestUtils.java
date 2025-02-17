@@ -1,15 +1,13 @@
 package com.ruyiruyi.rylibrary.request;
 
-/**
- * Created by geyang on 2020/6/2.
- */
-
 public class RequestUtils {
-    public static String REQUEST__URL_HLJ = "http://123.138.59.82:10100/";//release
+    public static String REQUEST_URL_XIHAIAN= "http://117.132.5.139:6801/";//迁移前地址
+    public static String REQUEST_URL_NJ= "http://117.174.186.111:6801/";//迁移前地址
 
-    public static String REQUEST_UPLOAD = REQUEST__URL_HLJ + "oa/api/workReport/fileUploadAnByNotToken" ;
-    public static String REQUEST_URL = REQUEST__URL_HLJ ;
-    public static String LOGIN_URL = REQUEST__URL_HLJ  ;
+    public static String SAVE_IMAGE = REQUEST_URL_NJ + "oa/api/workReport/fileUploadAnByNotToken";
 
-    public static String REQUEST_QUANXIAN = REQUEST__URL_HLJ + "auth/";//release
+    public static String REQUEST_URL = REQUEST_URL_NJ ;
+    public static String LOGIN_URL = REQUEST_URL_NJ  ;
+
+    public static String REQUEST_QUANXIAN = REQUEST_URL_NJ + "auth/";
 }

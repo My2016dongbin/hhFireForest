@@ -2,7 +2,6 @@ package com.haohai.platform.mapmodel.multitype;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,31 +35,29 @@ public class WeixingModelViewBinder extends ItemViewProvider<WeixingModel, Weixi
 
     @Override
     protected void onBindViewHolder(@NonNull ViewHolder holder, @NonNull final WeixingModel weixingModel) {
-        if (weixingModel.getCity() != null) {
-            if (weixingModel.getCity().equals("[]")) {
-                holder.addressText.setText(weixingModel.getProvince() + " " + weixingModel.getCounty());
-            } else {
-                holder.addressText.setText(weixingModel.getProvince() + " " + weixingModel.getCity() + " " + weixingModel.getCounty());
-            }
+        if (weixingModel.getCity().equals("[]")){
+            holder.addressText.setText(weixingModel.getProvince() + " " + weixingModel.getCounty());
+        }else {
+            holder.addressText.setText(weixingModel.getProvince() + " " + weixingModel.getCity() + " " + weixingModel.getCounty());
         }
-        if (holder.addressText.getText().toString().equals(" ") || holder.addressText.getText().toString().equals("  ")) {
+        if (holder.addressText.getText().toString().equals(" ") || holder.addressText.getText().toString().equals("  ")){
             holder.addressText.setText("边境热源");
         }
 
-        if (weixingModel.getFireListType() == 1) {       //时间分类
-            holder.fireTimeText.setText(weixingModel.getObservationDatetime().replace("T", " ").substring(0, weixingModel.getObservationDatetime().indexOf(".")));
-        } else {         //编号分类
+        if (weixingModel.getFireListType() == 1){       //时间分类
+            holder.fireTimeText.setText(weixingModel.getObservationDatetime().replace("T"," ").substring(0,weixingModel.getObservationDatetime().indexOf(".")));
+        }else {         //编号分类
             holder.fireTimeText.setText(weixingModel.getFireNo());
         }
 
-        if (weixingModel.isShowTime) {
+        if (weixingModel.isShowTime){
             holder.fireTimeLayout.setVisibility(View.VISIBLE);
-        } else {
+        }else {
             holder.fireTimeLayout.setVisibility(View.GONE);
         }
-        if (weixingModel.isShowLine) {
+        if (weixingModel.isShowLine){
             holder.lineView.setVisibility(View.VISIBLE);
-        } else {
+        }else {
             holder.lineView.setVisibility(View.GONE);
         }
         RxViewAction.clickNoDouble(holder.fireLyout)
@@ -90,8 +87,7 @@ public class WeixingModelViewBinder extends ItemViewProvider<WeixingModel, Weixi
             fireLyout = ((LinearLayout) itemView.findViewById(R.id.fire_layout));
         }
     }
-
-    public interface OnWeixingInfoItemClick {
+    public interface OnWeixingInfoItemClick{
         void onWeixingInfoClick(WeixingModel weixingModel);
     }
 }

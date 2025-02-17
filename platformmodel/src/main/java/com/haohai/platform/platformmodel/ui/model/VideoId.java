@@ -6,12 +6,32 @@ package com.haohai.platform.platformmodel.ui.model;
 
 public class VideoId {
     private String monitorId;
+    private String serial;
     private String videoId;
     private String videoName;
+    private String sId;
     private int videoPlayer;
 
-    public VideoId(String monitorId, String videoId, String videoName, int videoPlayer) {
+    public VideoId(String monitorId,String serial,String videoId, String videoName, int videoPlayer,String sId) {
         this.monitorId = monitorId;
+        this.serial = serial;
+        this.videoId = videoId;
+        this.videoName = videoName;
+        this.videoPlayer = videoPlayer;
+        this.sId = sId;
+    }
+
+    public String getsId() {
+        return sId;
+    }
+
+    public void setsId(String sId) {
+        this.sId = sId;
+    }
+
+    public VideoId(String monitorId, String serial, String videoId, String videoName, int videoPlayer) {
+        this.monitorId = monitorId;
+        this.serial = serial;
         this.videoId = videoId;
         this.videoName = videoName;
         this.videoPlayer = videoPlayer;
@@ -22,11 +42,13 @@ public class VideoId {
         this.videoName = videoName;
         this.videoPlayer = videoPlayer;
     }
-    public VideoId(String videoId, String videoName, int videoPlayer,String chennelId) {
-        this.videoId = videoId;
-        this.videoName = videoName;
-        this.videoPlayer = videoPlayer;
-        this.monitorId = chennelId;
+
+    public String getSerial() {
+        return serial;
+    }
+
+    public void setSerial(String serial) {
+        this.serial = serial;
     }
 
     public String getMonitorId() {
@@ -59,5 +81,16 @@ public class VideoId {
 
     public void setVideoPlayer(int videoPlayer) {
         this.videoPlayer = videoPlayer;
+    }
+
+    @Override
+    public String toString() {
+        return "VideoId{" +
+                "monitorId='" + monitorId + '\'' +
+                ", serial='" + serial + '\'' +
+                ", videoId='" + videoId + '\'' +
+                ", videoName='" + videoName + '\'' +
+                ", videoPlayer=" + videoPlayer +
+                '}';
     }
 }

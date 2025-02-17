@@ -3,6 +3,7 @@
 
 <!--    <color name="theme_primary">#4A90E2</color>-->
     <color name="theme_primary">#283345</color>
+    <color name="theme_primary_alpha">#bb283345</color>
     <color name="theme_primary_top">#283345</color>
     <color name="theme_primary_list">#0E1720</color>
 
@@ -44,6 +45,7 @@
     <color name="blue">#6593cb</color>
     <color name="blue2">#00BFFF</color>
     <color name="bluedrak">#003399</color>
+    <color name="blue_send">#3170FF</color>
 
     <color name="grayLite">#ccc</color>
     <color name="grayDark">#888</color>
@@ -84,10 +86,12 @@
     <color name="c3">#cecece</color>
     <color name="c4">#C7CDD6</color>
     <color name="c5">#B3B3B3</color>
+    <color name="c5mid">#888888</color>
     <color name="c6">#646464</color>
     <color name="c6mid">#565656</color>
     <color name="c7">#383838</color>
     <color name="c71">#181818</color>
+    <color name="c7mid">#2A2A2A</color>
     <color name="c8">#181818</color>
     <color name="c9">#cc3333</color>
     <color name="c10">#e79e99</color>
@@ -117,7 +121,6 @@
     <color name="web_top">#F2F2F2</color>
     <color name="map">#4a90e2</color>
     <color name="line">#334056</color>
-    <color name="white_tr">#bbFFFFFF</color>
 
     <color name="divider">#ffd2d2d2</color>
     <!--透明色-->

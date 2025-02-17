@@ -1,20 +1,21 @@
 package com.ruyiruyi.rylibrary.utils;
 
-public class CommonData {
-    public static double lat ;
-    public static double lng ;
-    public static int offset = 0 ;
-    public static double lastLat = 0;
-    public static double lastLng = 0;
-    public static boolean hasSign = false;
-    public static boolean hasSensor = false;//是否有传感器
-    public static boolean hasMove = true;//是否有移动
-    public static double sensorValue = 0;//传感器参数
-    public static boolean hasGet = false;
-    public static int walkDistance = 0;
+import org.json.JSONObject;
 
-    public static boolean hasMainMap = true;
-    public static boolean hasMainVideo = true;
-    public static boolean hasMainApp = true;
-    public static boolean hasMainMy = true;
+public class CommonData {
+    public static double lat = 0;
+    public static double lng = 0;
+    public static String icNumber;
+
+    //大华乐橙
+    public static String SECRET = "2e4c74dd0786457eaee3d8d1f7a961";
+    public static String APPID = "lccb9f39c3fa3343a2";
+    public static String daHuaTokenStr = "";
+    public static String daHuaId = "";
+    public static JSONObject device;
+    public static String subAccount;
+    public static String subOpenid;
+    public static String subToken;
+    public static String subId;
+    public static JSONObject deviceSub;
 }

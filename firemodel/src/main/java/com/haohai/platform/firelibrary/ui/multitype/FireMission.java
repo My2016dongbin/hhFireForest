@@ -20,7 +20,7 @@ public class FireMission {
 
     private String userId;
     /**
-     * 任务的类型
+     * 任务的类型        //2  4  5   2：森林防火4：海域监控5：砂石盗采
      */
     private String taskType;
 

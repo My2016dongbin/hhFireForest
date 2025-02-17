@@ -20,54 +20,10 @@
 
     </FrameLayout>
 
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginBottom="15dp"
-        android:layout_marginTop="5dp"
-        android:visibility="gone"
-        android:layout_width="match_parent"
-        android:layout_height="32dp">
-        <TextView
-            android:id="@+id/tv_type"
-            android:text="资源类型"
-            android:gravity="center"
-            android:background="@drawable/resource_choosed"
-            android:textColor="@color/white_tr"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="32dp"/>
-        <TextView
-            android:id="@+id/tv_grid"
-            android:text="行政区域"
-            android:gravity="center"
-            android:background="@drawable/resource"
-            android:textColor="@color/c5"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="32dp"/>
-    </LinearLayout>
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/resource_listview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/theme_primary"/>
-
-    <ScrollView
-        android:id="@+id/sv_grid"
-        android:visibility="gone"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <LinearLayout
-            android:id="@+id/ll_grid"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-        </LinearLayout>
-    </ScrollView>
 
 </LinearLayout>

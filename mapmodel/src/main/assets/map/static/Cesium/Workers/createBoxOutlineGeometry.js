@@ -1,7 +1,7 @@
 /**
- * Cesium - https://github.com/AnalyticalGraphicsInc/cesium
+ * Cesium - https://github.com/CesiumGS/cesium
  *
- * Copyright 2011-2017 Cesium Contributors
+ * Copyright 2011-2020 Cesium Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
  * Columbus View (Pat. Pend.)
  *
  * Portions licensed separately.
- * See https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md for full licensing details.
+ * See https://github.com/CesiumGS/cesium/blob/master/LICENSE.md for full licensing details.
  */
-define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-52d9479f', './BoundingSphere-ab31357a', './RuntimeError-7c184ac0', './WebGLConstants-4c11ee5f', './ComponentDatatype-919a7463', './GeometryAttribute-ba19792d', './PrimitiveType-97893bc7', './FeatureDetection-bac17d71', './Transforms-794e44e6', './buildModuleUrl-02e5236f', './GeometryAttributes-1c7ce91d', './GeometryOffsetAttribute-c9accdb9'], function (when, Check, _Math, Cartesian2, BoundingSphere, RuntimeError, WebGLConstants, ComponentDatatype, GeometryAttribute, PrimitiveType, FeatureDetection, Transforms, buildModuleUrl, GeometryAttributes, GeometryOffsetAttribute) { 'use strict';
+define(['./when-8d13db60', './Check-70bec281', './Math-61ede240', './Cartographic-fe4be337', './Cartesian2-85064f09', './BoundingSphere-775c5788', './Cartesian4-5af5bb24', './RuntimeError-ba10bc3e', './WebGLConstants-4c11ee5f', './ComponentDatatype-5862616f', './GeometryAttribute-ed9d707f', './PrimitiveType-97893bc7', './FeatureDetection-7bd32c34', './Transforms-a1cf7267', './buildModuleUrl-e7952659', './GeometryAttributes-aacecde6', './arrayFill-9766fb2e', './GeometryOffsetAttribute-999fc023'], function (when, Check, _Math, Cartographic, Cartesian2, BoundingSphere, Cartesian4, RuntimeError, WebGLConstants, ComponentDatatype, GeometryAttribute, PrimitiveType, FeatureDetection, Transforms, buildModuleUrl, GeometryAttributes, arrayFill, GeometryOffsetAttribute) { 'use strict';
 
-    var diffScratch = new Cartesian2.Cartesian3();
+    var diffScratch = new Cartographic.Cartesian3();
 
         /**
          * A description of the outline of a cube centered at the origin.
@@ -59,8 +59,8 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
             }
             //>>includeEnd('debug');
 
-            this._min = Cartesian2.Cartesian3.clone(min);
-            this._max = Cartesian2.Cartesian3.clone(max);
+            this._min = Cartographic.Cartesian3.clone(min);
+            this._max = Cartographic.Cartesian3.clone(max);
             this._offsetAttribute = options.offsetAttribute;
             this._workerName = 'createBoxOutlineGeometry';
         }
@@ -94,10 +94,10 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
             Check.Check.typeOf.number.greaterThanOrEquals('dimensions.z', dimensions.z, 0);
             //>>includeEnd('debug');
 
-            var corner = Cartesian2.Cartesian3.multiplyByScalar(dimensions, 0.5, new Cartesian2.Cartesian3());
+            var corner = Cartographic.Cartesian3.multiplyByScalar(dimensions, 0.5, new Cartographic.Cartesian3());
 
             return new BoxOutlineGeometry({
-                minimum : Cartesian2.Cartesian3.negate(corner, new Cartesian2.Cartesian3()),
+                minimum : Cartographic.Cartesian3.negate(corner, new Cartographic.Cartesian3()),
                 maximum : corner,
                 offsetAttribute: options.offsetAttribute
             });
@@ -138,7 +138,7 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
          * The number of elements used to pack the object into an array.
          * @type {Number}
          */
-        BoxOutlineGeometry.packedLength = 2 * Cartesian2.Cartesian3.packedLength + 1;
+        BoxOutlineGeometry.packedLength = 2 * Cartographic.Cartesian3.packedLength + 1;
 
         /**
          * Stores the provided instance into the provided array.
@@ -157,15 +157,15 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
 
             startingIndex = when.defaultValue(startingIndex, 0);
 
-            Cartesian2.Cartesian3.pack(value._min, array, startingIndex);
-            Cartesian2.Cartesian3.pack(value._max, array, startingIndex + Cartesian2.Cartesian3.packedLength);
-            array[startingIndex + (Cartesian2.Cartesian3.packedLength * 2)] = when.defaultValue(value._offsetAttribute, -1);
+            Cartographic.Cartesian3.pack(value._min, array, startingIndex);
+            Cartographic.Cartesian3.pack(value._max, array, startingIndex + Cartographic.Cartesian3.packedLength);
+            array[startingIndex + (Cartographic.Cartesian3.packedLength * 2)] = when.defaultValue(value._offsetAttribute, -1);
 
             return array;
         };
 
-        var scratchMin = new Cartesian2.Cartesian3();
-        var scratchMax = new Cartesian2.Cartesian3();
+        var scratchMin = new Cartographic.Cartesian3();
+        var scratchMax = new Cartographic.Cartesian3();
         var scratchOptions = {
             minimum : scratchMin,
             maximum : scratchMax,
@@ -187,17 +187,17 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
 
             startingIndex = when.defaultValue(startingIndex, 0);
 
-            var min = Cartesian2.Cartesian3.unpack(array, startingIndex, scratchMin);
-            var max = Cartesian2.Cartesian3.unpack(array, startingIndex + Cartesian2.Cartesian3.packedLength, scratchMax);
-            var offsetAttribute = array[startingIndex + Cartesian2.Cartesian3.packedLength * 2];
+            var min = Cartographic.Cartesian3.unpack(array, startingIndex, scratchMin);
+            var max = Cartographic.Cartesian3.unpack(array, startingIndex + Cartographic.Cartesian3.packedLength, scratchMax);
+            var offsetAttribute = array[startingIndex + Cartographic.Cartesian3.packedLength * 2];
 
             if (!when.defined(result)) {
                 scratchOptions.offsetAttribute = offsetAttribute === -1 ? undefined : offsetAttribute;
                 return new BoxOutlineGeometry(scratchOptions);
             }
 
-            result._min = Cartesian2.Cartesian3.clone(min, result._min);
-            result._max = Cartesian2.Cartesian3.clone(max, result._max);
+            result._min = Cartographic.Cartesian3.clone(min, result._min);
+            result._max = Cartographic.Cartesian3.clone(max, result._max);
             result._offsetAttribute = offsetAttribute === -1 ? undefined : offsetAttribute;
 
             return result;
@@ -213,7 +213,7 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
             var min = boxGeometry._min;
             var max = boxGeometry._max;
 
-            if (Cartesian2.Cartesian3.equals(min, max)) {
+            if (Cartographic.Cartesian3.equals(min, max)) {
                 return;
             }
 
@@ -285,14 +285,14 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
             indices[22] = 3;
             indices[23] = 7;
 
-            var diff = Cartesian2.Cartesian3.subtract(max, min, diffScratch);
-            var radius = Cartesian2.Cartesian3.magnitude(diff) * 0.5;
+            var diff = Cartographic.Cartesian3.subtract(max, min, diffScratch);
+            var radius = Cartographic.Cartesian3.magnitude(diff) * 0.5;
 
             if (when.defined(boxGeometry._offsetAttribute)) {
                 var length = positions.length;
                 var applyOffset = new Uint8Array(length / 3);
                 var offsetValue = boxGeometry._offsetAttribute === GeometryOffsetAttribute.GeometryOffsetAttribute.NONE ? 0 : 1;
-                GeometryOffsetAttribute.arrayFill(applyOffset, offsetValue);
+                arrayFill.arrayFill(applyOffset, offsetValue);
                 attributes.applyOffset = new GeometryAttribute.GeometryAttribute({
                     componentDatatype : ComponentDatatype.ComponentDatatype.UNSIGNED_BYTE,
                     componentsPerAttribute : 1,
@@ -304,7 +304,7 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
                 attributes : attributes,
                 indices : indices,
                 primitiveType : PrimitiveType.PrimitiveType.LINES,
-                boundingSphere : new BoundingSphere.BoundingSphere(Cartesian2.Cartesian3.ZERO, radius),
+                boundingSphere : new BoundingSphere.BoundingSphere(Cartographic.Cartesian3.ZERO, radius),
                 offsetAttribute : boxGeometry._offsetAttribute
             });
         };

@@ -42,7 +42,7 @@ public class CustomManager extends GSYVideoBaseManager {
     }
 
     @Override
-    protected IPlayerManager getPlayManager() {
+    public IPlayerManager getPlayManager() {
         return new IjkPlayerManager();
     }
 

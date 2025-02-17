@@ -73,4 +73,15 @@ public class Area {
     public void setLevel(String level) {
         this.level = level;
     }
+
+    @Override
+    public String toString() {
+        return "Area{" +
+                "id='" + id + '\'' +
+                ", Name='" + Name + '\'' +
+                ", ParentId='" + ParentId + '\'' +
+                ", createTime='" + createTime + '\'' +
+                ", level='" + level + '\'' +
+                '}';
+    }
 }

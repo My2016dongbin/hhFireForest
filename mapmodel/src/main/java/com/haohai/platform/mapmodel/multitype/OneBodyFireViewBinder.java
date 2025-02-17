@@ -2,7 +2,6 @@ package com.haohai.platform.mapmodel.multitype;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +18,7 @@ import rx.functions.Action1;
 /**
  * Created by geyang on 2020/12/3.
  */
-public class OneBodyFireViewBinder extends ItemViewProvider<OneBodyFire.Dto, OneBodyFireViewBinder.ViewHolder> {
+public class OneBodyFireViewBinder extends ItemViewProvider<OneBodyFire, OneBodyFireViewBinder.ViewHolder> {
 
     public OnOneBodyItemClick listener;
 
@@ -35,22 +34,11 @@ public class OneBodyFireViewBinder extends ItemViewProvider<OneBodyFire.Dto, One
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull ViewHolder holder, @NonNull final OneBodyFire.Dto oneBodyFire) {
+    protected void onBindViewHolder(@NonNull ViewHolder holder, @NonNull final OneBodyFire oneBodyFire) {
         holder.textView1.setText("监控点名称 : " + oneBodyFire.getName());
-        String str = ("发现时间 : " + oneBodyFire.getAlarmDatetime());
-        try{
-            holder.textView2.setText(str.replace("T"," ").replace(".000+0800","")/*.substring(0,str.indexOf("."))*/);
-        }catch (Exception e){
-            holder.textView2.setText(str);
-        }
+        holder.textView2.setText("发现时间 : " + oneBodyFire.getAlarmDatetime().replace("T"," ").substring(0,oneBodyFire.getAlarmDatetime().indexOf(".")));
         holder.textView3.setText("经度、纬度 : " + oneBodyFire.getAlarmLongitude() +"、" + oneBodyFire.getAlarmLatitude());
-        if (oneBodyFire.getAddress()==null) {
-            holder.textView4.setVisibility(View.GONE);
-        }else {
-            holder.textView4.setVisibility(View.VISIBLE);
-            holder.textView4.setText("详细地址 : " +  oneBodyFire.getAddress() );
-        }
-
+        holder.textView4.setText("详细地址 : " + oneBodyFire.getAddress());
 
         RxViewAction.clickNoDouble(holder.oneBodyLayout)
                 .subscribe(new Action1<Void>() {
@@ -79,7 +67,7 @@ public class OneBodyFireViewBinder extends ItemViewProvider<OneBodyFire.Dto, One
         }
     }
     public interface OnOneBodyItemClick{
-        void onOneBodyItemClickListener(OneBodyFire.Dto oneBodyFire);
+        void onOneBodyItemClickListener(OneBodyFire oneBodyFire);
     }
 
 }

@@ -1,13 +1,7 @@
 <resources>
-<!--    <string name="app_name">阿坝州铁塔慧眼</string>
-    <string name="app_title">阿坝州铁塔慧眼</string>-->
+    <string name="app_name">内江森林防火预警平台</string>
+    <string name="app_title">内江森林防火预警平台</string>
 
-<!--    <string name="app_name">森林防火检查系统</string>
-    <string name="app_title">新乡森林防火检查系统</string>-->
-
-    <string name="app_name">西安市森林火情预警及救援系统</string>
-    <string name="app_title">西安市森林火情预警及救援系统</string>
-
-<!--    <string name="app_name">西安市森林火情预警及救援系统</string>-->
-<!--    <string name="app_title">西安市森林火情预警及救援系统</string>-->
+<!--    <string name="app_name">森林防灭火五位一体综合管理平台</string>&lt;!&ndash;//TODO 1214&ndash;&gt;-->
+<!--    <string name="app_title">森林防灭火五位一体综合管理平台</string>&lt;!&ndash;//TODO 1214&ndash;&gt;-->
 </resources>

@@ -1,0 +1,20 @@
+<component name="libraryTable">
+  <library name="Gradle: id.zelory:compressor:3.0.1@aar">
+    <CLASSES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/632c2de7c5bec093ac8fdef56a0b0db0/compressor-3.0.1/jars/classes.jar!/" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/632c2de7c5bec093ac8fdef56a0b0db0/compressor-3.0.1/res" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/632c2de7c5bec093ac8fdef56a0b0db0/compressor-3.0.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/632c2de7c5bec093ac8fdef56a0b0db0/compressor-3.0.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/632c2de7c5bec093ac8fdef56a0b0db0/compressor-3.0.1/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/632c2de7c5bec093ac8fdef56a0b0db0/compressor-3.0.1/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/modules-2/files-2.1/id.zelory/compressor/3.0.1/1d7771da47c43a57e2e8638d812e30a289d9cb20/compressor-3.0.1-javadoc.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/id.zelory/compressor/3.0.1/1d7771da47c43a57e2e8638d812e30a289d9cb20/compressor-3.0.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/modules-2/files-2.1/id.zelory/compressor/3.0.1/7c46be99e5abd2621b70a0d946e0bb2768dfd55d/compressor-3.0.1-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/id.zelory/compressor/3.0.1/7c46be99e5abd2621b70a0d946e0bb2768dfd55d/compressor-3.0.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

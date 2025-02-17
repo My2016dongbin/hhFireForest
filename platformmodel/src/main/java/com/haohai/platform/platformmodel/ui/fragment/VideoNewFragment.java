@@ -1,17 +1,16 @@
 package com.haohai.platform.platformmodel.ui.fragment;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Gravity;
@@ -22,35 +21,42 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.haohai.ledge.videolibrary.listener.GSYSampleCallBack;
+import com.haohai.ledge.videolibrary.listener.GSYVideoShotSaveListener;
 import com.haohai.ledge.videolibrary.utils.OrientationUtils;
 import com.haohai.ledge.videolibrary.video.MultiSampleVideo;
 import com.haohai.platform.platformmodel.R;
 import com.haohai.platform.platformmodel.ui.fragment.base.HhBaseFragment;
-import com.haohai.platform.platformmodel.ui.model.Organization;
+import com.haohai.platform.platformmodel.ui.model.GridCamera;
+import com.haohai.platform.platformmodel.ui.model.GridPointModel;
+import com.haohai.platform.platformmodel.ui.model.GridTrees;
 import com.haohai.platform.platformmodel.ui.model.VideoId;
-import com.haohai.platform.platformmodel.ui.model.VideoModel;
-import com.haohai.platform.platformmodel.ui.utils.tree.TreeAdapter;
-import com.haohai.platform.platformmodel.ui.utils.tree.TreePoint;
-import com.haohai.platform.platformmodel.ui.utils.tree.TreeUtils;
+import com.lechange.common.log.Logger;
+import com.lechange.opensdk.api.InitParams;
+import com.lechange.opensdk.api.LCOpenSDK_Api;
+import com.lechange.opensdk.device.LCOpenSDK_DeviceInit;
+import com.lechange.opensdk.listener.LCOpenSDK_EventListener;
+import com.lechange.opensdk.listener.LCOpenSDK_TalkerListener;
+import com.lechange.opensdk.media.LCOpenSDK_ParamReal;
+import com.lechange.opensdk.media.LCOpenSDK_ParamTalk;
+import com.lechange.opensdk.media.LCOpenSDK_PlayWindow;
+import com.lechange.opensdk.media.LCOpenSDK_Talk;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.db.User;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
-import com.ruyiruyi.rylibrary.utils.CommonUtils;
+import com.ruyiruyi.rylibrary.utils.CommonData;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,23 +65,23 @@ import org.xutils.common.Callback;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
-import javax.security.auth.login.LoginException;
 
 import rx.functions.Action1;
 
 import static com.haohai.ledge.videolibrary.video.base.GSYVideoView.CURRENT_STATE_PLAYING;
 
-/**
- * Created by geyang on 2020/7/1.
- */
-
-public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPlayerItemClick {
+public class VideoNewFragment extends HhBaseFragment {
     private static final String TAG = VideoNewFragment.class.getSimpleName();
     public int currentVideo = 1;
     private ImageView yiView;
@@ -104,16 +110,7 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
     private MultiSampleVideo video9Player;
     private Dialog videoListDialog;
     private View videoListInflater;
-    private ListView listView;
-    private List<TreePoint> pointList = new ArrayList<>();
-    private HashMap<String, TreePoint> pointMap = new HashMap<>();
-    private TreeAdapter adapter;
-    private String token;
-    private String aqishiToken;
-    private ProgressDialog progressDialog;
 
-    private List<Organization> organizationList;
-    private List<VideoModel> videoModelList;
     public int num = 0;
     private ImageView listButton;
     private FrameLayout video_click1_layout;
@@ -135,7 +132,6 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
     private int currentVideo7PlayerState = 0;
     private int currentVideo8PlayerState = 0;
     private int currentVideo9PlayerState = 0;
-    private LinearLayout yichuLayout;
     private Button yichuButton;
     private ImageView video1AddView;
     private ImageView video2AddView;
@@ -150,9 +146,18 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
     private LinearLayout videoListLayout;
     private ImageView listDialogImage;
     private OrientationUtils orientationUtils;
+    private ImageView addImageView;
+
+
+
+    private ScrollView sv_gridtrees;
+    private LinearLayout ll_sv;
     private String currentClickItemName;
     private String currentClickItemId;
-    private ImageView addImageView;
+    private String currentClickItemMonitorId;
+    private String currentSId;
+    private String currentClickItemSerial;
+
 
     private Dialog addDialog;
     private View addInflate;
@@ -172,43 +177,27 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
     private Button jujiaoButton;
     private Button layuanButton;
     private Button luxiangButton;
-    private ChangeTabReceiver changeTabReceiver;
     private User user;
     private List<VideoId> videoIdList;
 
     private int moveType = 0;//1：上，2：下，3：左，4：右，5：左上，6：左下，7：右上，8：右下
+    private int steptype = 0;
+    private String kktype = "";
     private boolean isStop = false; //true false
-    private LinearLayout fenleiLayout;
-    private TextView fenleiView;
-    public int isShipinList = 0;  //0是全部 1是森林防火  2砂石采盗 3是海域监控
-    private AlertDialog.Builder builder;
-    private int choose1 = 0;
-    private boolean fromMap = false;
-    private static final int GET_SHU = 99;
-    private int shuNum = 0;
-    private int downShuNum = 0;
+    private boolean isRecording = false; //录像
+    private boolean isTalking = false; //对讲
+    private File file;//录像图片文件夹
 
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case GET_SHU:
-                    downShuNum = downShuNum + 1;
-                    Log.e(TAG, "handleMessage: shuNum = " + shuNum );
-                    Log.e(TAG, "handleMessage: downShuNum = " + downShuNum );
-                    if (shuNum == downShuNum){
-                        progressDialog.dismiss();
-                        adapter.notifyDataSetChanged();
-                    }
-                    break;
+    private ChangeTabReceiver changeTabReceiver;
 
-            }
 
-        }
-    };
-    private LinearLayout fenleiShowLayout;
-    private boolean rootCtrlDirection = false;
-    private boolean rootCtrlFocus= false;
+    private FrameLayout frLiveWindowContent;
+    public LCOpenSDK_PlayWindow mPlayWin;
+    private PlayStatus playStatus = PlayStatus.ERROR;
+    private int bateMode;
+    private SoundStatus soundStatus = SoundStatus.PLAY;
+    private SpeakStatus speakStatus = SpeakStatus.STOP;
+    private AudioTalkerListener audioTalkerListener = new AudioTalkerListener();
 
     @Nullable
     @Override
@@ -216,111 +205,339 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         return inflater.inflate(R.layout.fragment_video_new, container, false);
     }
 
+    class ChangeTabReceiver extends BroadcastReceiver {
+
+        public void onReceive(Context context, Intent intent) {
+
+            String videoId = intent.getStringExtra("id");
+            String deviceId = intent.getStringExtra("deviceId");
+            String monitorId = intent.getStringExtra("monitorId");
+            String serial = intent.getStringExtra("serial");
+            String groupId = intent.getStringExtra("groupId");
+            //       Toast.makeText(context, "广播已经接收", Toast.LENGTH_SHORT).show();
+            Log.i("videoonReceive: ", videoId);
+            currentGroupId = parseGroupId(groupId);
+            postPlayerUrl(videoId);
+            currentClickItemName="监控点视频";
+            currentClickItemId = videoId;
+            currentClickItemMonitorId = deviceId==null?"":deviceId;
+            currentSId = monitorId==null?"":monitorId;
+            currentClickItemSerial = serial==null?"":serial;
+        }
+    }
+
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        progressDialog = new ProgressDialog(getContext());
-        organizationList = new ArrayList<>();
-        videoModelList = new ArrayList<>();
-        videoIdList = new ArrayList<>();
-        user = new DbConfig(getContext()).getUser();
 
-        if(CommonUtils.hasPermission(getActivity(),"app-video-btn-directionControl")){
-            rootCtrlDirection = true;
-        }
-        if(CommonUtils.hasPermission(getActivity(),"app-video-btn-zoomControl")){
-            rootCtrlFocus = true;
-        }
-
-        intiView();
-
-        token =  user.getToken();
-
-        getTokenFromService();
-        getDataFromService();
         changeTabReceiver=new ChangeTabReceiver();
         IntentFilter resourcefilter = new IntentFilter();
         resourcefilter.addAction("video_play");
         getActivity().registerReceiver(changeTabReceiver, resourcefilter);
-        bingView();
 
-        //    video1Player.setUpLazy("http://121.36.6.140:80/group1/M00/00/02/wKgAzF-ZLKKEL2wIAAAAADPd4yE796.mp4", false, null, null, "11");
+        videoIdList = new ArrayList<>();
+        user = new DbConfig(getContext()).getUser();
+
+        intiView();
+
+        getDataFromService();
+        bingView();
     }
 
     /**
-     * 获取本地视频树
+     * 获取视频树
      */
+    List<GridTrees> gridTreesList = new ArrayList<>();
+    List<GridTrees> gridTreesList2 = new ArrayList<>();
     private void getDataFromService() {
-        showDialogProgress(progressDialog,"数据加载中...");
-        JSONObject jsonObject = new JSONObject();
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +"resource/api/grid/getGridNew");
-        // RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/grid/listGridTreesByMonitorType");
-        if (isShipinList != 0) {
-            params.addParameter("monitorType",isShipinList);
-        }else {
-            params.addParameter("monitorType",1);
-        }
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +"resource/api/grid/listGridTreesNew");
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-
+        params.addHeader("NetworkType", "Internet");
 
         params.setConnectTimeout(10000);
-        Log.e(TAG, "getTreeFromAQiShi: ---" + params);
-        Log.e(TAG, "getTreeFromAQiShi: ---" + jsonObject.toString());
+        Log.e(TAG, "listGridNewTrees: ---" + params);
         x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: " + result );
+                Log.e(TAG, "onSuccess: bingo gridNew" + result );
+                ll_sv.removeAllViews();
                 try {
                     JSONObject jsonObject = new JSONObject(result);
                     if (jsonObject.getString("code").equals("200")) {
                         JSONArray data = jsonObject.getJSONArray("data");
-                        organizationList.clear();
-                        pointList.clear();
-                        shuNum = 0;
-                        downShuNum = 0;
                         for (int i = 0; i < data.length(); i++) {
-                            Organization organization = new Organization();
-                            JSONObject object = data.getJSONObject(i);
-                            organization.setId(object.getString("id"));
-                            organization.setName(object.getString("name"));
-                            organization.setDevice_type("0");
-                            Log.e(TAG, "onSuccess: " + user.getGridNo() );
-                            Log.e(TAG, "onSuccess: " + object.getString("gridNo") );
-                            if (user.getGridNo().equals(object.getString("gridNo"))){
-                                organization.setOrg_code("");
-                                Log.e(TAG, "onSuccess: setOrg_code");
-                            }else {
-                                organization.setOrg_code(object.getString("parentId"));
-                            }
-                           /* if (object.getString("parentId").equals("ROOT")) {
-                                organization.setOrg_code("");
-                            }else {
-                                organization.setOrg_code(object.getString("parentId"));
-                            }*/
-                            organizationList.add(organization);
-                            JSONArray resourceList = object.getJSONArray("resourceList");
-                            for (int j = 0; j < resourceList.length(); j++) {
-                                shuNum = shuNum + 1;
-                                JSONObject resourcObject = resourceList.getJSONObject(j);
-                                Organization resOrganization = new Organization();
-                                resOrganization.setId(resourcObject.getString("id"));
-                                resOrganization.setName(resourcObject.getString("name"));
-                                resOrganization.setDevice_type("0");
-                                resOrganization.setOrg_code(object.getString("id"));
-                                organizationList.add(resOrganization);
-                                getVideoByIdFromService(resourcObject.getString("id"));
-                            }
+                            gridTreesList.add(new Gson().fromJson(data.get(i).toString(),GridTrees.class));
+                            gridTreesList2.add(new Gson().fromJson(data.get(i).toString(),GridTrees.class));
                         }
-/*
-                        videoModelList.clear();
-                        Gson gson = new Gson();
-                        videoModelList = gson.fromJson(String.valueOf(data), new TypeToken<List<VideoModel>>() {
-                        }.getType());*/
-                        getData();
-                    }else {
-                        Toast.makeText(getContext(), "获取失败", Toast.LENGTH_SHORT).show();
+
+                        TextView title1 = new TextView(getActivity());
+                        title1.setText("视频监控点");
+                        title1.setTextSize(14);
+                        title1.setPadding(26,10,26,10);
+                        title1.setTextColor(getResources().getColor(R.color.c2));
+                        ll_sv.addView(title1);
+                        ll_sv.addView(buildGridTrees(gridTreesList,false));
+                        TextView title2 = new TextView(getActivity());
+                        title2.setText("卡口");
+                        title2.setTextSize(14);
+                        title2.setPadding(26,10,26,10);
+                        title2.setTextColor(getResources().getColor(R.color.c2));
+                        ll_sv.addView(title2);
+                        ll_sv.addView(buildGridTrees(gridTreesList2,true));
+
+
+                        TextView view = new TextView(getActivity());
+                        view.setHeight(180);
+                        //view.setBackgroundColor(getResources().getColor(R.color.theme_primary));
+                        ll_sv.addView(view);
+
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                Log.e(TAG, "onError: bingo gridNew error" + ex.toString() );
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+            }
+        });
+    }
+
+
+    /**
+     * 构建树框架
+     */
+    View buildGridTrees(List<GridTrees> treesList,boolean isKaKou){
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridtrees_out,null);
+        LinearLayout ll_big = view.findViewById(R.id.ll_big);
+        for (int i = 0; i < treesList.size(); i++) {
+            final GridTrees gridTrees = treesList.get(i);
+            View item = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridtrees,null);
+            LinearLayout ll_out = item.findViewById(R.id.ll_out);
+            final LinearLayout ll_in = item.findViewById(R.id.ll_in);//用于监控点-摄像头便于动态加载
+            final ImageView iv_status = item.findViewById(R.id.iv_status);
+            TextView tv_gridtrees = item.findViewById(R.id.tv_gridtrees);
+            tv_gridtrees.setText(gridTrees.getName());
+            //有Children子项(递归展示)
+            if(gridTrees.getChildren()!=null && gridTrees.getChildren().size()>0){
+                List<GridTrees> itemList = new ArrayList<>();
+                for (int m = 0; m < gridTrees.getChildren().size(); m++) {
+                    itemList.add(gridTrees.getChildren().get(m));
+                }
+                //递归
+                final View childTrees = buildGridTrees(itemList,isKaKou);
+                //初始化绑定
+                if(gridTrees.isStatus()){
+                    iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
+                    childTrees.setVisibility(View.VISIBLE);
+                }else{
+                    iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
+                    childTrees.setVisibility(View.GONE);
+                }
+                RxViewAction.clickNoDouble(ll_out).subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        if(gridTrees.isStatus()){
+                            gridTrees.setStatus(false);
+                            iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
+                            childTrees.setVisibility(View.GONE);
+                        }else{
+                            gridTrees.setStatus(true);
+                            iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
+                            childTrees.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
+
+                ll_out.addView(childTrees);
+            }else{
+                //无Children子项(点击加载监控点-摄像头)
+
+                if(gridTrees.isStatus()){
+                    iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
+                    //展示新View(暂无意义)
+                    ll_in.setVisibility(View.VISIBLE);
+                }else{
+                    iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
+                    //隐藏新View(暂无意义)
+                    ll_in.setVisibility(View.GONE);
+                }
+                RxViewAction.clickNoDouble(ll_out).subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        if(gridTrees.isStatus()){
+                            gridTrees.setStatus(false);
+                            iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
+                            //隐藏/移除新View
+                            ll_in.setVisibility(View.GONE);
+                            ll_in.removeAllViews();
+                        }else{
+                            gridTrees.setStatus(true);
+                            iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
+                            //展示/添加新View
+
+                            //加载监控点-摄像头数据
+                            getGridTreesChildren(gridTrees.getId(),isKaKou);
+
+                            BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+                                @Override
+                                public void onReceive(Context context, Intent intent) {
+                                    try {
+                                        List<GridPointModel> pointModelList = new ArrayList<>();
+                                        String result = intent.getStringExtra("result");
+                                        boolean isKaKou_Bro = intent.getBooleanExtra("isKaKou",false);
+                                        if(isKaKou != isKaKou_Bro){
+                                            return;
+                                        }
+                                        JSONObject jsonObject = new JSONObject(result);
+                                        JSONArray data = jsonObject.getJSONArray("data");
+                                        Gson gson = new Gson();
+                                        for (int x = 0; x < data.length(); x++) {
+                                            pointModelList.add(gson.fromJson(data.get(x).toString(),GridPointModel.class));
+                                        }
+
+                                        //monitor子View
+                                        View monitorView = buildMonitor(pointModelList,gridTrees.getGroupId());
+                                        ll_in.addView(monitorView);
+                                        ll_in.setVisibility(View.VISIBLE);
+                                        getActivity().unregisterReceiver(this);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            };
+                            IntentFilter intentFilter = new IntentFilter();
+                            intentFilter.addAction(gridTrees.getId());
+                            getActivity().registerReceiver(broadcastReceiver, intentFilter);
+                        }
+                    }
+                });
+            }
+
+
+            ll_big.addView(item);
+        }
+        return ll_big;
+    }
+
+
+    private String currentGroupId = "";
+    /**
+     * 构建监控点子View
+     */
+    View buildMonitor(List<GridPointModel> gridPointModelList,String groupId){
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridtrees_out,null);
+        LinearLayout ll_big = view.findViewById(R.id.ll_big);//取一个LinearLayout
+        for (int i = 0; i < gridPointModelList.size(); i++) {
+            final GridPointModel model = gridPointModelList.get(i);
+            View item = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridtrees,null);
+            LinearLayout ll_out = item.findViewById(R.id.ll_out);
+            final LinearLayout ll_in = item.findViewById(R.id.ll_in);
+            final ImageView iv_status = item.findViewById(R.id.iv_status);
+            TextView tv_gridtrees = item.findViewById(R.id.tv_gridtrees);
+            tv_gridtrees.setText(model.getMonitor().getName());
+            if(model.isStatus()){
+                iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
+            }else{
+                iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
+            }
+            RxViewAction.clickNoDouble(ll_out).subscribe(new Action1<Void>() {
+                @Override
+                public void call(Void aVoid) {
+                    if(model.isStatus()){
+                        model.setStatus(false);
+                        iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
+                        //隐藏/移除新View
+                        ll_in.setVisibility(View.GONE);
+                        ll_in.removeAllViews();
+                    }else{
+                        model.setStatus(true);
+                        iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
+                        //显示/添加新View
+                        for (int m = 0; m < model.getCameraList().size(); m++) {
+                            final GridCamera gridCamera = model.getCameraList().get(m);
+                            //构建摄像头
+                            View cameraView = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridcamera,null);
+                            LinearLayout ll_camera = cameraView.findViewById(R.id.ll_camera);
+                            ImageView iv_camera = cameraView.findViewById(R.id.iv_camera);//isOnLine 0 离线 1 在线
+                            TextView tv_camera = cameraView.findViewById(R.id.tv_camera);
+                            tv_camera.setText(gridCamera.getName());
+                            RxViewAction.clickNoDouble(ll_camera).subscribe(new Action1<Void>() {
+                                @Override
+                                public void call(Void unused) {
+                                    currentGroupId = parseGroupId(groupId);
+                                    postPlayerUrl(gridCamera.getId());
+
+                                    currentClickItemName = gridCamera.getName();
+                                    currentClickItemId = gridCamera.getId();
+                                    currentClickItemMonitorId = gridCamera.getDeviceId();
+                                    currentSId = gridCamera.getMonitorId();
+                                    currentClickItemSerial = gridCamera.getSerial();
+                                }
+                            });
+
+                            ll_in.addView(cameraView);
+                        }
+
+                        ll_in.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
+            ll_big.addView(item);
+        }
+
+        return ll_big;
+    }
+
+    private String parseGroupId(String groupId) {
+        String id = groupId;
+        /*if(groupId!=null && groupId.length()>9){
+            id = groupId.substring(0,9);
+        }*/
+        return id;
+    }
+
+    private void postPlayerUrl(String ids) {
+//        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/mediaKit/getStreamAndroidByOut");
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/mediaKit/getLiveUrl");//
+        params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
+        params.addHeader("NetworkType", "Internet");
+        params.addBodyParameter("cameraId",ids);
+        params.addBodyParameter("manufacturer","2");//
+        params.addBodyParameter("streamType","2");//
+        params.addBodyParameter("protocolType","rtmp");//
+        Log.e(TAG, "onSuccess: bingo postPlayerUrl params" + params );
+        x.http().get(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    Log.e(TAG, "onSuccess: bingo postPlayerUrl" + result );
+                    JSONObject jsonObject = new JSONObject(result);
+                    JSONArray data = jsonObject.getJSONArray("data");
+                    if(data.length()!=0){
+                        JSONObject obj = (JSONObject) data.get(0);
+                        String url = obj.getString("url");
+
+                        //跳转播放视频流
+                        videoListDialog.dismiss();
+                        if (isAddVideoViewClick) {//直接往点击的视频播放机中添加
+                            addVideoPlayer(url);
+                        } else {//往列表中排序添加
+                            getVideoPlayerState();
+                            setVideoPlayer(url);
+                        }
                     }
 
                 } catch (JSONException e) {
@@ -340,58 +557,213 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
 
             @Override
             public void onFinished() {
-                progressDialog.dismiss();
+
             }
         });
+
     }
 
     /**
-     * 根据id获取视频
+     * 往点击的视频播放器中添加视频
+     *
+     * @param playerUrl
      */
-    private void getVideoByIdFromService(final String id) {
-        JSONObject jsonObject = new JSONObject();
-
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +"resource/api/camera/list");
-        try {
-            jsonObject.put("monitorId",id);
-        } catch (JSONException e) {
-            e.printStackTrace();
+    private void addVideoPlayer(String playerUrl) {
+        if (currentChooseVideo == 1) {
+            video1AddView.setVisibility(View.GONE);
+            video1Player.setVisibility(View.VISIBLE);
+            video1Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+            video1Player.startButtonLogic();
+            videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,1,currentSId));
+        } else if (currentChooseVideo == 2) {
+            video2AddView.setVisibility(View.GONE);
+            video2Player.setVisibility(View.VISIBLE);
+            video2Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+            video2Player.startButtonLogic();
+            videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,2,currentSId));
+        } else if (currentChooseVideo == 3) {
+            video3AddView.setVisibility(View.GONE);
+            video3Player.setVisibility(View.VISIBLE);
+            video3Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+            video3Player.startButtonLogic();
+            videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,3,currentSId));
+        } else if (currentChooseVideo == 4) {
+            video4AddView.setVisibility(View.GONE);
+            video4Player.setVisibility(View.VISIBLE);
+            video4Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+            video4Player.startButtonLogic();
+            videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,4,currentSId));
+        } else if (currentChooseVideo == 5) {
+            video5AddView.setVisibility(View.GONE);
+            video5Player.setVisibility(View.VISIBLE);
+            video5Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+            video5Player.startButtonLogic();
+            videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,5,currentSId));
+        } else if (currentChooseVideo == 6) {
+            video6AddView.setVisibility(View.GONE);
+            video6Player.setVisibility(View.VISIBLE);
+            video6Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+            video6Player.startButtonLogic();
+            videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,6,currentSId));
+        } else if (currentChooseVideo == 7) {
+            video7AddView.setVisibility(View.GONE);
+            video7Player.setVisibility(View.VISIBLE);
+            video7Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+            video7Player.startButtonLogic();
+            videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,7,currentSId));
+        } else if (currentChooseVideo == 8) {
+            video8AddView.setVisibility(View.GONE);
+            video8Player.setVisibility(View.VISIBLE);
+            video8Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+            video8Player.startButtonLogic();
+            videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,8,currentSId));
+        } else if (currentChooseVideo == 9) {
+            video9AddView.setVisibility(View.GONE);
+            video9Player.setVisibility(View.VISIBLE);
+            video9Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+            video9Player.startButtonLogic();
+            videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,9,currentSId));
         }
+    }
 
+
+    /**
+     * 设置视频播放
+     *
+     * @param playerUrl
+     */
+    private void setVideoPlayer(String playerUrl) {
+        Log.e(TAG, "setVideoPlayer: " + currentClickItemName);
+        if (currentVideo == 1) {
+            if (currentVideo1PlayerState == 0) {
+                video1Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video1Player.startButtonLogic();
+                video1Player.setVisibility(View.VISIBLE);
+                video1AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,1,currentSId));
+            } else {
+                Toast.makeText(getContext(), "目前没有闲置播放器", Toast.LENGTH_SHORT).show();
+            }
+        } else if (currentVideo == 4) {
+            if (currentVideo1PlayerState == 0) {
+                video1Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video1Player.startButtonLogic();
+                video1Player.setVisibility(View.VISIBLE);
+                video1AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,1,currentSId));
+            } else if (currentVideo2PlayerState == 0) {
+                video2Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video2Player.startButtonLogic();
+                video2Player.setVisibility(View.VISIBLE);
+                video2AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,2,currentSId));
+            } else if (currentVideo4PlayerState == 0) {
+                video4Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video4Player.startButtonLogic();
+                video4Player.setVisibility(View.VISIBLE);
+                video4AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,4,currentSId));
+            } else if (currentVideo5PlayerState == 0) {
+                video5Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video5Player.startButtonLogic();
+                video5Player.setVisibility(View.VISIBLE);
+                video5AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,5,currentSId));
+            } else {
+                Toast.makeText(getContext(), "目前没有闲置播放器", Toast.LENGTH_SHORT).show();
+            }
+        } else if (currentVideo == 9) {
+            if (currentVideo1PlayerState == 0) {
+                video1Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video1Player.startButtonLogic();
+                video1Player.setVisibility(View.VISIBLE);
+                video1AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,1,currentSId));
+            } else if (currentVideo2PlayerState == 0) {
+                video2Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video2Player.startButtonLogic();
+                video2Player.setVisibility(View.VISIBLE);
+                video2AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,2,currentSId));
+            } else if (currentVideo3PlayerState == 0) {
+                video3Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video3Player.startButtonLogic();
+                video3Player.setVisibility(View.VISIBLE);
+                video3AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,3,currentSId));
+            } else if (currentVideo4PlayerState == 0) {
+                video4Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video4Player.startButtonLogic();
+                video4Player.setVisibility(View.VISIBLE);
+                video4AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,4,currentSId));
+            } else if (currentVideo5PlayerState == 0) {
+                video5Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video5Player.startButtonLogic();
+                video5Player.setVisibility(View.VISIBLE);
+                video5AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,5,currentSId));
+            } else if (currentVideo6PlayerState == 0) {
+                video6Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video6Player.startButtonLogic();
+                video6Player.setVisibility(View.VISIBLE);
+                video6AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,6,currentSId));
+            } else if (currentVideo7PlayerState == 0) {
+                video7Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video7Player.startButtonLogic();
+                video7Player.setVisibility(View.VISIBLE);
+                video7AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,7,currentSId));
+            } else if (currentVideo8PlayerState == 0) {
+                video8Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video8Player.startButtonLogic();
+                video8Player.setVisibility(View.VISIBLE);
+                video8AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,8,currentSId));
+            } else if (currentVideo9PlayerState == 0) {
+                video9Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
+                video9Player.startButtonLogic();
+                video9Player.setVisibility(View.VISIBLE);
+                video9AddView.setVisibility(View.GONE);
+                videoIdList.add(new VideoId(currentClickItemMonitorId,currentClickItemSerial,currentClickItemId,currentClickItemName,9,currentSId));
+            } else {
+                Toast.makeText(getContext(), "目前没有闲置播放器", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    //获取监控点-摄像头数据
+    void getGridTreesChildren(final String gridId,boolean isKaKou){
+        String url = "";
+        if(isKaKou){
+            url = "resource/api/monitor/getKakouMonitorDetaisByGrid";
+        }else{
+//            url = "resource/api/monitor/getMonitorDetaisByGridAndType";
+            url = "resource/api/monitor/getMonitorDetaisByGrid";
+        }
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + url);
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-
-        params.setBodyContent(jsonObject.toString());
+        params.addHeader("NetworkType", "Internet");
+        params.addBodyParameter("gridId",gridId);
+        //params.addBodyParameter("monitorType","1");
 
         params.setConnectTimeout(10000);
-        Log.e(TAG, "getTreeFromAQiShi: ---" + params);
-        Log.e(TAG, "getTreeFromAQiShi: ---" + jsonObject.toString());
-        x.http().post(params, new Callback.CommonCallback<String>() {
+        Log.e(TAG, "listGridNewTrees: --kk-" + params);
+        x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: " + result );
+                Log.e(TAG, "onSuccess: bingo gridNew --kk-" + result );
                 try {
                     JSONObject jsonObject = new JSONObject(result);
                     if (jsonObject.getString("code").equals("200")) {
-                        JSONArray data = jsonObject.getJSONArray("data");
-                        organizationList.clear();
-                        for (int i = 0; i < data.length(); i++) {
-                            Organization organization = new Organization();
-                            JSONObject object = data.getJSONObject(i);
-                            organization.setId(object.getString("id"));
-                            organization.setName(object.getString("name"));
-                            organization.setRtspUrl(object.getString("rtspUrl"));
-                            //   Log.e(TAG, "onSuccess: name＝＝" +object.getString("name") );
-                            organization.setDevice_type("1");
-                            organization.setOrg_code(id);
-                            organizationList.add(organization);
 
-                        }
-                        getData();
+                        Intent it = new Intent();
+                        it.setAction(gridId);
+                        it.putExtra("result",result);
+                        it.putExtra("isKaKou",isKaKou);
+                        getActivity().sendBroadcast(it);
 
-                        //     handler.sendEmptyMessage(GET_SHU);
-                    }else {
-                        //    Toast.makeText(getContext(), "获取失败", Toast.LENGTH_SHORT).show();
                     }
 
                 } catch (JSONException e) {
@@ -401,7 +773,7 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
-
+                Log.e(TAG, "onError: bingo gridNew error" + ex.toString() );
             }
 
             @Override
@@ -494,19 +866,11 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
          * 视频列表dialog
          */
         videoListDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyleLeft);
-        videoListInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_video_list, null);
+        videoListInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_video_list_new, null);
         videoListInflater.setMinimumWidth(100000);
-        listView = ((ListView) videoListInflater.findViewById(R.id.listView));
-        videoListLayout = ((LinearLayout) videoListInflater.findViewById(R.id.video_list_layout));
+        sv_gridtrees = ((ScrollView) videoListInflater.findViewById(R.id.sv_gridtrees));
+        ll_sv = ((LinearLayout) videoListInflater.findViewById(R.id.ll_sv));
         listDialogImage = ((ImageView) videoListInflater.findViewById(R.id.list_dialog_button));
-/*        fenleiLayout = ((LinearLayout) videoListInflater.findViewById(R.id.fenlei_layout));
-        fenleiView = ((TextView) videoListInflater.findViewById(R.id.fenlei_view));
-        fenleiShowLayout = ((LinearLayout) videoListInflater.findViewById(R.id.fenlei_show_layout));
-        if (user.getImToken().equals("0")) {
-            fenleiShowLayout.setVisibility(View.VISIBLE);
-        }else {
-            fenleiShowLayout.setVisibility(View.GONE);
-        }*/
         videoListDialog.setContentView(videoListInflater);
         Window videoListDialogWindow = videoListDialog.getWindow();
         videoListDialogWindow.setGravity(Gravity.LEFT);
@@ -520,11 +884,6 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         lpvideoList.height = height * 1;
         videoListDialogWindow.setAttributes(lpvideoList);
         videoListDialog.setCanceledOnTouchOutside(true);
-
-
-        adapter = new TreeAdapter(getContext(), pointList, pointMap);
-        adapter.setListener(this);
-        listView.setAdapter(adapter);
 
         /**
          * 火情dialog
@@ -553,6 +912,311 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         addListLp.y = 90;
         addWindow.setAttributes(addListLp);
         addDialog.setCanceledOnTouchOutside(true);
+
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //初始化LCOpenSDK_Api
+                String token = CommonData.daHuaTokenStr; //开发者自己去平台请求授权token
+                String host = "openapi.lechange.cn:443";// 国内平台地址：openapi.lechange.cn:443 海外平台地址：openapi.easy4ip.com:443
+                InitParams initParams = new InitParams(getActivity(), host, token);
+                try {
+                    int iRet = LCOpenSDK_Api.initOpenApi(initParams);
+                    LCOpenSDK_DeviceInit.getInstance();
+                } catch (Throwable throwable) {
+                    Log.e(TAG, "intiView: initOpenApi e" + throwable.getMessage() );
+                    throwable.printStackTrace();
+                }
+            }
+        },6000);
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(getView()==null){
+                    return;
+                }
+                mPlayWin = new LCOpenSDK_PlayWindow();
+                frLiveWindowContent = getView().findViewById(R.id.fr_live_window_content);
+                // 初始化播放窗口
+                mPlayWin.initPlayWindow(getActivity(), frLiveWindowContent, 0, false);
+                setWindowListener(mPlayWin);
+                mPlayWin.openTouchListener();//开启收拾监听
+            }
+        },8000);
+    }
+
+
+    /**
+     * 开始播放
+     */
+    public void play() {
+        stop();
+        bateMode = 0;
+        String playToken = null;
+        int channelId = -1;
+        try {
+            JSONArray channelList = CommonData.deviceSub.getJSONArray("channels");
+            Log.e(TAG, "play: channelList = " + channelList );
+            JSONObject channel = (JSONObject) channelList.get(0);
+            Log.e(TAG, "play: channel = " + channel );
+            channelId = Integer.parseInt(channel.getString("channelId"));
+        } catch (Exception e) {
+            Log.e(TAG, "play: e" + e.toString() );
+            e.printStackTrace();
+        }
+        Log.e(TAG, "playTalk: plays" +
+                        CommonData.subToken +","+
+                CommonData.subId +","+
+                channelId +","+//channelId
+                CommonData.subId +","+//psk
+                playToken +","+//playToken
+                bateMode +","+
+                true +","+true +","+(-1)//i
+                );
+        LCOpenSDK_ParamReal paramReal = new LCOpenSDK_ParamReal(
+                CommonData.subToken,
+                CommonData.subId,
+                channelId,//channelId
+                CommonData.subId,//psk
+                playToken,//playToken
+                bateMode,
+                true,true,-1//imageSize
+        );
+        mPlayWin.playRtspReal(paramReal);
+
+    }
+
+    /**
+     * 停止播放
+     */
+    public void stop() {
+        closeAudio();// 关闭音频
+        stopTalking();//关闭对讲
+        mPlayWin.stopRtspReal(true);// 关闭视频
+    }
+
+
+    /**
+     * 打开声音
+     */
+    public boolean openAudio() {
+        return mPlayWin.playAudio() == 0;
+    }
+    /**
+     * 关闭声音
+     */
+    public boolean closeAudio() {
+        return mPlayWin.stopAudio() == 0;
+    }
+
+    private void setWindowListener(LCOpenSDK_PlayWindow playWin) {
+        playWin.setWindowListener(new LCOpenSDK_EventListener() {
+            //手势缩放开始事件
+            @Override
+            public void onZoomBegin(int index) {
+                super.onZoomBegin(index);
+            }
+
+            //手势缩放中事件
+            @Override
+            public void onZooming(int index, float dScale) {
+                super.onZooming(index, dScale);
+                mPlayWin.doScale(dScale);
+            }
+
+            //缩放结束事件
+            @Override
+            public void onZoomEnd(int index, ZoomType zoomType) {
+                super.onZoomEnd(index, zoomType);
+            }
+
+            //窗口单击事件
+            @Override
+            public void onControlClick(int index, float dx, float dy) {
+                super.onControlClick(index, dx, dy);
+            }
+
+            //窗口双击事件
+            @Override
+            public void onWindowDBClick(int index, float dx, float dy) {
+                super.onWindowDBClick(index, dx, dy);
+            }
+
+            //滑动开始事件
+            @Override
+            public boolean onSlipBegin(int index, Direction direction, float dx, float dy) {
+                return super.onSlipBegin(index, direction, dx, dy);
+            }
+
+            //滑动中事件
+            @Override
+            public void onSlipping(int index, Direction direction, float prex, float prey, float dx, float dy) {
+                super.onSlipping(index, direction, prex, prey, dx, dy);
+                mPlayWin.doTranslate(dx,dy);
+            }
+
+            //滑动结束事件
+            @Override
+            public void onSlipEnd(int index, Direction direction, float dx, float dy) {
+                super.onSlipEnd(index, direction, dx, dy);
+                mPlayWin.doTranslateEnd();
+            }
+
+            //长按开始回调
+            @Override
+            public void onWindowLongPressBegin(int index, Direction direction, float dx, float dy) {
+                super.onWindowLongPressBegin(index, direction, dx, dy);
+            }
+
+            //长按事件结束
+            @Override
+            public void onWindowLongPressEnd(int index) {
+                super.onWindowLongPressEnd(index);
+            }
+
+            /**
+             * 播放事件回调
+             * resultSource:  0--RTSP  1--HLS  5--DHHTTP  99--OPENAPI
+             */
+            @Override
+            public void onPlayerResult(int index, String code, int resultSource) {
+                //mPlayWin.setSEnhanceMode(4);//设置降噪等级最大
+                super.onPlayerResult(index, code, resultSource);
+                Log.e(TAG, "onPlayerResult: index= " + index + " , code= " + code + " , resultSource= " + resultSource);
+                boolean failed = false;
+                if (resultSource == 99) {
+                    //code  -1000 HTTP交互出错或超时
+                    failed = true;
+                } else {
+                    if (resultSource == 5 && (!(code.equals("1000") || code.equals("0") || code.equals("4000")))) {
+                        // code 1000-开启播放成功  0-开始拉流
+                        failed = true;
+                        if (code.equals("1000005")) {
+                            //inputEncryptKey();
+                        }
+                    }
+
+                    else if (resultSource == 0 && (code.equals("0") || code.equals("1") || code.equals("3") || code.equals("7"))) {
+                        // code
+                        // 0-组帧失败，错误状态
+                        // 1-内部要求关闭,如连接断开等，错误状态
+                        // 3-RTSP鉴权失败，错误状态
+                        // 7-秘钥错误
+                        failed = true;
+                        if (code.equals("7")) {
+                            //inputEncryptKey();
+                        }
+                    }
+                }
+                if (failed) {
+                    //loadingStatus(LoadStatus.LOAD_ERROR, getResources().getString(R.string.lc_demo_device_video_play_error) + ":" + code + "." + resultSource, "");
+                    playStatus = PlayStatus.ERROR;
+                }
+            }
+
+            //分辨率改变事件
+            @Override
+            public void onResolutionChanged(int index, int width, int height) {
+                super.onResolutionChanged(index, width, height);
+            }
+
+            //播放开始回调
+            @Override
+            public void onPlayBegan(int index) {
+                super.onPlayBegan(index);
+                Log.e(TAG, "onPlayBegan: index= " + index);
+                //loadingStatus(LoadStatus.LOAD_SUCCESS, "", "");
+                playStatus = PlayStatus.PLAY;
+            }
+
+            //接收数据回调
+            @Override
+            public void onReceiveData(int index, int len) {
+                super.onReceiveData(index, len);
+                Log.e(TAG, "onReceiveData: index= " + index + " , len= " + len);
+            }
+
+            //接收帧流回调
+            @Override
+            public void onStreamCallback(int index, byte[] bytes, int len) {
+                super.onStreamCallback(index, bytes, len);
+                Log.e(TAG, "onStreamCallback: index= " + index + " , len= " + len);
+            }
+
+            //播放结束事件
+            @Override
+            public void onPlayFinished(int index) {
+                super.onPlayFinished(index);
+                Log.e(TAG, "onPlayFinished: index= " + index);
+            }
+
+            //播放时间信息回调
+            @Override
+            public void onPlayerTime(int index, long time) {
+                super.onPlayerTime(index, time);
+                Log.e(TAG, "onPlayerTime: index= " + index + " , time= " + time);
+            }
+
+
+            @Override
+            public void onIVSInfo(int index, final String ivsInfo, long type, long len, long realLen) {
+                super.onIVSInfo(index, ivsInfo, type, len, realLen);
+                Log.e(TAG, "onIVSInfo: index= " + index + " , ivsInfo= " + ivsInfo);
+
+                if (playStatus !=PlayStatus.PLAY) {
+                    return;
+                }
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (ivsInfo != null && ivsInfo.contains("PtzLimitStatus")) {
+                                final String source = ivsInfo.substring(ivsInfo.lastIndexOf("[") + 1, ivsInfo.lastIndexOf("]")).replace(" ", "");
+                                String[] target = source.split(",");
+                                if (target != null && target.length == 2) {
+                                    final String hor = target[0];
+                                    final String ver = target[1];
+                                    if (hor.equals("1") || hor.equals("-1") || ver.equals("1") || ver.equals("-1")) {
+                                        /*if(hor.equals("1")){
+                                            ivLimitLeft.setVisibility(View.VISIBLE);
+                                            ivLimitRight.setVisibility(View.GONE);
+                                            ivLimitDown.setVisibility(View.GONE);
+                                            ivLimitUp.setVisibility(View.GONE);
+                                        }else if(hor.equals("-1")){
+                                            ivLimitLeft.setVisibility(View.GONE);
+                                            ivLimitRight.setVisibility(View.VISIBLE);
+                                            ivLimitDown.setVisibility(View.GONE);
+                                            ivLimitUp.setVisibility(View.GONE);
+                                        }else if(ver.equals("1")){
+                                            ivLimitLeft.setVisibility(View.GONE);
+                                            ivLimitRight.setVisibility(View.GONE);
+                                            ivLimitDown.setVisibility(View.VISIBLE);
+                                            ivLimitUp.setVisibility(View.GONE);
+                                        }else if(ver.equals("-1")){
+                                            ivLimitLeft.setVisibility(View.GONE);
+                                            ivLimitRight.setVisibility(View.GONE);
+                                            ivLimitDown.setVisibility(View.GONE);
+                                            ivLimitUp.setVisibility(View.VISIBLE);
+                                        }*/
+                                    }
+                                }
+                            }else{
+                                /*ivLimitLeft.setVisibility(View.GONE);
+                                ivLimitRight.setVisibility(View.GONE);
+                                ivLimitDown.setVisibility(View.GONE);
+                                ivLimitUp.setVisibility(View.GONE);*/
+                            }
+                        } catch (NullPointerException e) {
+                            e.printStackTrace();
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
     }
 
     private void initVideoPlayer(final MultiSampleVideo videoPlayer, int position) {
@@ -623,56 +1287,8 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
 
     }
 
-    private void showShipinFenleiChangeDailog() {
-        //默认选中第一个 //0是全部 1是森林防火  2砂石采盗 3是海域监控
-        final String[] items = {"全部", "森林防火", "砂石采盗", "海域监控"};
-        isShipinList = 0;
-        builder = new AlertDialog.Builder(getContext()).setIcon(R.mipmap.ic_launcher).setTitle("视频分类")
-                .setSingleChoiceItems(items,choose1 , new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Log.e(TAG, "onClick: 类别choose---" + i);
-                        choose1 = i;
-                    }
-                }).setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Log.e(TAG, "onClick: choose1=" +choose1);
-                        if (choose1 == 0){
-                            isShipinList = 0;
-                            fenleiView.setText("全部");
-                            getDataFromService();
-                        }else if(choose1 == 1){
-                            isShipinList = 1;
-                            fenleiView.setText("森林防火");
-                            getDataFromService();
-                        }else if(choose1 == 2){
-                            isShipinList = 2;
-                            fenleiView.setText("砂石采盗");
-                            getDataFromService();
-                        }else if(choose1 == 3){
-                            isShipinList = 3;
-                            fenleiView.setText("海域监控");
-                            getDataFromService();
-                        }
-                        //initWeixingData();
-                    }
-                });
-        builder.create().show();
-    }
-
 
     private void bingView() {
-        /**
-         * 视频分类的点击
-         */
-//        RxViewAction.clickNoDouble(fenleiLayout)
-//                .subscribe(new Action1<Void>() {
-//                    @Override
-//                    public void call(Void aVoid) {
-//                        showShipinFenleiChangeDailog();
-//                    }
-//                });
         /**
          * 添加火情上报 跟隐患排查
          */
@@ -741,12 +1357,6 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
                         videoListDialog.show();
                     }
                 });
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter.onItemClick(position);
-            }
-        });
 
         RxViewAction.clickNoDouble(yiView)
                 .subscribe(new Action1<Void>() {
@@ -953,6 +1563,104 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
 
     }
 
+    //开始对讲
+    private void openTalking() {
+        String playToken = null;
+        int channelId = -1;//多通道通道号参数传入对应的通道号，单通道传-1
+        try {
+            JSONArray channelList = CommonData.deviceSub.getJSONArray("channels");
+            Log.e(TAG, "play: channelList = " + channelList );
+            JSONObject channel = (JSONObject) channelList.get(0);
+            Log.e(TAG, "play: channel = " + channel );
+            channelId = Integer.parseInt(channel.getString("channelId"));
+        } catch (Exception e) {
+            Log.e(TAG, "play: e" + e.toString() );
+            e.printStackTrace();
+        }
+        /*try {
+            playToken = CommonData.device.getString("playToken");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }*/
+        openAudio();
+        soundStatus = SoundStatus.STOP;
+        speakStatus = SpeakStatus.OPENING;
+        LCOpenSDK_Talk.setListener(audioTalkerListener);//对讲前先设备监听
+
+        Logger.d(TAG, "playTalk, channelId = " + channelId);
+
+        Log.e(TAG, "playTalk: talks" +
+                CommonData.subToken +","+
+                CommonData.subId +","+
+                (-1) +","+//channelId
+                CommonData.subId +","+//psk
+                playToken +","+//playToken
+                true +","+"talk"//i
+        );
+        LCOpenSDK_ParamTalk paramTalk = new LCOpenSDK_ParamTalk(
+                CommonData.subToken,
+                CommonData.subId,
+                -1,
+                CommonData.subId,//TextUtils.isEmpty(encryptKey) ? deviceListBean.deviceId : encryptKey,
+                playToken,//playToken
+                true,"talk"
+        );
+        LCOpenSDK_Talk.playTalk(paramTalk);
+    }
+
+    //释放对讲
+    private void stopTalking() {
+        LCOpenSDK_Talk.stopTalk();
+        LCOpenSDK_Talk.setListener(null);//停止对讲后对讲监听置为空
+    }
+
+    // 截屏
+    private void screenshot(View view) {
+        view.setDrawingCacheEnabled(true);
+        view.buildDrawingCache();
+        view.setBackgroundColor(getResources().getColor(R.color.white));
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+        view.setBackgroundColor(getResources().getColor(R.color.transparent));
+        saveImageToGallery(getActivity(),bitmap);
+    }
+    public static void saveImageToGallery(Context context, Bitmap bmp) {
+        // 首先保存图片 创建文件夹
+        File appDir = new File(Environment.getExternalStorageDirectory(), "hh_firePrevention");
+        if (!appDir.exists()) {
+            appDir.mkdir();
+        }
+        //图片文件名称
+        Date date = new Date(System.currentTimeMillis());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String timeS = sdf.format(date);
+        String fileName = "监控截图_"+timeS + ".jpg";
+        File file = new File(appDir, fileName);
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 其次把文件插入到系统图库
+        String path = file.getAbsolutePath();
+        try {
+            MediaStore.Images.Media.insertImage(context.getContentResolver(), path, fileName, null);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        // 最后通知图库更新
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri uri = Uri.fromFile(file);
+        intent.setData(uri);
+        context.sendBroadcast(intent);
+        Toast.makeText(context,"保存成功！",Toast.LENGTH_SHORT).show();
+    }
+
+
+
     private View.OnTouchListener buttonListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -965,204 +1673,166 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
                     yichuButton.setBackgroundResource(R.drawable.ic_button);
                     yichuVideo();
                 }
-            }else if (v.getId() == R.id.zuoshang_button){       //左上  5
+            } else if (v.getId() == R.id.zuoshang_button) {       //左上  5
                 if (action == MotionEvent.ACTION_DOWN) { // 按下
-                    zuoshangButton.setBackgroundResource(R.drawable.ic_button_hover);
                     moveType = 25;
                     isStop = false;
                     moveShexiangtou();
-                }else if (action == MotionEvent.ACTION_UP) { // 松开
-                    zuoshangButton.setBackgroundResource(R.drawable.ic_button);
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
                     moveType = 25;
                     isStop = true;
                     moveShexiangtou();
                 }
-            }else if (v.getId() == R.id.shang_button){      //上 1
+            } else if (v.getId() == R.id.shang_button) {      //上 1
                 if (action == MotionEvent.ACTION_DOWN) { // 按下
-                    shangButton.setBackgroundResource(R.drawable.ic_button_hover);
                     moveType = 21;
                     isStop = false;
                     moveShexiangtou();
-                }else if (action == MotionEvent.ACTION_UP) { // 松开
-                    shangButton.setBackgroundResource(R.drawable.ic_button);
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
                     moveType = 21;
                     isStop = true;
                     moveShexiangtou();
                 }
-            }else if (v.getId() == R.id.youshang_button){       //右上  7
+            } else if (v.getId() == R.id.youshang_button) {       //右上  7
                 if (action == MotionEvent.ACTION_DOWN) { // 按下
-                    youshangButton.setBackgroundResource(R.drawable.ic_button_hover);
                     moveType = 26;
                     isStop = false;
                     moveShexiangtou();
-                }else if (action == MotionEvent.ACTION_UP) { // 松开
-                    youshangButton.setBackgroundResource(R.drawable.ic_button);
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
                     moveType = 26;
                     isStop = true;
                     moveShexiangtou();
                 }
-            }else if (v.getId() == R.id.zuo_button){        //左  3
+            } else if (v.getId() == R.id.zuo_button) {        //左  3
                 if (action == MotionEvent.ACTION_DOWN) { // 按下
-                    zuoButton.setBackgroundResource(R.drawable.ic_button_hover);
                     moveType = 23;
                     isStop = false;
                     moveShexiangtou();
-                }else if (action == MotionEvent.ACTION_UP) { // 松开
-                    zuoButton.setBackgroundResource(R.drawable.ic_button);
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
                     moveType = 23;
                     isStop = true;
                     moveShexiangtou();
                 }
-            }else if (v.getId() == R.id.xunhang_button){
+            } else if (v.getId() == R.id.xunhang_button) {
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
 
-            }else if (v.getId() == R.id.you_button){        //右  4
+                }
+            } else if (v.getId() == R.id.you_button) {        //右  4
                 if (action == MotionEvent.ACTION_DOWN) { // 按下
-                    youButton.setBackgroundResource(R.drawable.ic_button_hover);
                     moveType = 24;
                     isStop = false;
                     moveShexiangtou();
-                }else if (action == MotionEvent.ACTION_UP) { // 松开
-                    youButton.setBackgroundResource(R.drawable.ic_button);
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
                     moveType = 24;
                     isStop = true;
                     moveShexiangtou();
                 }
-            }else if (v.getId() == R.id.zuoxia_button){    //左下  6
+            } else if (v.getId() == R.id.zuoxia_button) {    //左下  6
                 if (action == MotionEvent.ACTION_DOWN) { // 按下
-                    zuoxiaButton.setBackgroundResource(R.drawable.ic_button_hover);
                     moveType = 27;
                     isStop = false;
                     moveShexiangtou();
-                }else if (action == MotionEvent.ACTION_UP) { // 松开
-                    zuoxiaButton.setBackgroundResource(R.drawable.ic_button);
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
                     moveType = 27;
                     isStop = true;
                     moveShexiangtou();
                 }
-            }else if (v.getId() == R.id.xia_button){        //下 2
+            } else if (v.getId() == R.id.xia_button) {        //下 2
                 if (action == MotionEvent.ACTION_DOWN) { // 按下
-                    xiaButton.setBackgroundResource(R.drawable.ic_button_hover);
                     moveType = 22;
                     isStop = false;
                     moveShexiangtou();
-                }else if (action == MotionEvent.ACTION_UP) { // 松开
-                    xiaButton.setBackgroundResource(R.drawable.ic_button);
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
                     moveType = 22;
                     isStop = true;
                     moveShexiangtou();
                 }
-            }else if (v.getId() == R.id.youxia_button){        //右下  8
+            } else if (v.getId() == R.id.youxia_button) {        //右下  8
                 if (action == MotionEvent.ACTION_DOWN) { // 按下
-                    youxiaButton.setBackgroundResource(R.drawable.ic_button_hover);
                     moveType = 28;
                     isStop = false;
                     moveShexiangtou();
-                }else if (action == MotionEvent.ACTION_UP) { // 松开
-                    youxiaButton.setBackgroundResource(R.drawable.ic_button);
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
                     moveType = 28;
                     isStop = true;
                     moveShexiangtou();
                 }
-            }else if (v.getId() == R.id.lajin_button){      //拉近
-                if (action == MotionEvent.ACTION_DOWN) {
-                    lajinButton.setBackgroundResource(R.drawable.ic_button_hover);
-                    moveType = 11;
-                    isStop = false;
-                    moveShexiangtou();
-                }else if (action == MotionEvent.ACTION_UP) {
-                    lajinButton.setBackgroundResource(R.drawable.ic_button);
-                    moveType = 11;
-                    isStop = true;
-                    moveShexiangtou();
-                }
-            }else if (v.getId() == R.id.jieping_button){    //截屏
+            }  else if (v.getId() == R.id.jieping_button) {
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
 
-            }else if (v.getId() == R.id.jujiao_button){ //聚焦
-                if (action == MotionEvent.ACTION_DOWN) {
-                    jujiaoButton.setBackgroundResource(R.drawable.ic_button_hover);
-                    moveType = 101;
-                    moveShexiangtou();
-                }else if (action == MotionEvent.ACTION_UP) {
-                    jujiaoButton.setBackgroundResource(R.drawable.ic_button);
                 }
-            }else if (v.getId() == R.id.layuan_button){ //拉远
-                if (action == MotionEvent.ACTION_DOWN) {
-                    layuanButton.setBackgroundResource(R.drawable.ic_button_hover);
-                    moveType = 12;
-                    isStop = false;
-                    moveShexiangtou();
-                }else if (action == MotionEvent.ACTION_UP) {
-                    layuanButton.setBackgroundResource(R.drawable.ic_button);
-                    moveType = 12;
-                    isStop = true;
-                    moveShexiangtou();
-                }
-            }else if (v.getId() == R.id.luxiang_button){
+            } else if (v.getId() == R.id.jujiao_button) {
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
 
+                }
+            } else if (v.getId() == R.id.luxiang_button) {
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
+
+                }
             }
-
+            if (v.getId() == R.id.lajin_button) {
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    moveType = 11;
+                    isStop = false;
+                    moveShexiangtou();
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
+                    moveType = 11;
+                    isStop = true;
+                    moveShexiangtou();
+                }
+            } else if (v.getId() == R.id.layuan_button) {
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    moveType = 12;
+                    isStop = false;
+                    moveShexiangtou();
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
+                    moveType = 12;
+                    isStop = true;
+                    moveShexiangtou();
+                }
+            }
             return false;
         }
     };
-
     private void moveShexiangtou() {
-        if(moveType == 101 || moveType == 12){
-            if(!rootCtrlFocus){
-                Toast.makeText(getActivity(), "您的账号暂无缩放权限", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }else{
-            if(!rootCtrlDirection){
-                Toast.makeText(getActivity(), "您的账号暂无控制权限", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
         String id = "";
         String monitorId = "";
+        String serial = "";
         boolean isHasVideo = false;
+        String channelId = "";
         for (int i = 0; i < videoIdList.size(); i++) {
-            Log.e(TAG, String.valueOf(videoIdList.get(i).getVideoPlayer()));
-            Log.e(TAG, String.valueOf(currentChooseVideo));
             if (videoIdList.get(i).getVideoPlayer() == currentChooseVideo) {
+                Log.e(TAG, "moveShexiangtou: for" + videoIdList.get(i).toString() );
                 isHasVideo = true;
                 id = videoIdList.get(i).getVideoId();
-                Log.e(TAG, "moveShexiangtou: "+videoIdList.get(i) );
+                channelId = videoIdList.get(i).getsId();
                 monitorId = videoIdList.get(i).getMonitorId();
+                serial = videoIdList.get(i).getSerial();
+
+                String name = videoIdList.get(i).getVideoName();
             }
         }
         if (!isHasVideo){
-            Toast.makeText(getContext(), "当前控制器暂无摄像头，请点击视频后继续控制", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "当前控制器暂无摄像头", Toast.LENGTH_SHORT).show();
             return;
         }
 
-/*        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("groupId","001011");
-            jsonObject.put("monitorId",monitorId);
-            jsonObject.put("channelId",id);
-            jsonObject.put("controlType",moveType);
-            jsonObject.put("step",5);
-            jsonObject.put("stop",isStop);
-            jsonObject.put("speed",5);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }*/
-        //  RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/aqishi/ptzCmd"); //阿奇视平台控制
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/liveVideo/control");
-        params.addParameter("token",aqishiToken);
-        params.addParameter("groupId",user.getGroupId());
-        params.addParameter("monitorId",id);
-        params.addParameter("channelId",monitorId);
-        params.addParameter("controlType",moveType+"");
-        params.addParameter("step","5");
-        if (moveType!=101){
-            params.addParameter("stop",isStop?1:0);
-        }else {
-            params.addParameter("stop",0);
-        }
-        params.addParameter("speed",1);
-//        params.setBodyContent(jsonObject.toString());
-
+        params.addBodyParameter("monitorId",channelId);
+        params.addBodyParameter("channelId",id);
+        params.addBodyParameter("speed","5");
+        params.addBodyParameter("stop",isStop?"1":"0");
+        params.addBodyParameter("controlType",moveType+"");
+        //params.addBodyParameter("groupId",currentGroupId);
+        params.addBodyParameter("gridNo",new DbConfig(getActivity()).getUser().getGridNo());
         params.setConnectTimeout(10000);
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
         params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
@@ -1182,6 +1852,144 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
 
             @Override
             public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+            }
+        });
+        steptype=0;
+
+
+        //卡口控制
+        RequestParams paramskk = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/liveVideo/controlGB");
+        paramskk.addBodyParameter("deviceId",monitorId);
+        paramskk.addBodyParameter("serial",serial);
+        paramskk.addBodyParameter("speed", Objects.equals(kktype, "stop") ?"1":"5");
+        paramskk.addBodyParameter("controlType",kktype);
+        paramskk.setConnectTimeout(10000);
+        paramskk.addHeader("Authorization","Bearer " + new DbConfig(getContext()).getUser().getToken());
+        params.addHeader("NetworkType", "Internet");
+
+        Log.e(TAG, "moveKk: " + paramskk);
+        Log.e(TAG, "moveKk: " + new DbConfig(getContext()).getUser().getToken());
+        x.http().get(paramskk, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "moveKk: onSuccess" + result);
+
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                Log.e(TAG, "moveKk: onError" + ex.toString());
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+                Log.e(TAG, "moveKk: onCancelled" + cex.toString());
+
+            }
+
+            @Override
+            public void onFinished() {
+            }
+        });
+    }
+    private void moveShexiangtouOld() {
+        String id = "";
+        String monitorId = "";
+        String serial = "";
+        boolean isHasVideo = false;
+        for (int i = 0; i < videoIdList.size(); i++) {
+            if (videoIdList.get(i).getVideoPlayer() == currentChooseVideo) {
+                isHasVideo = true;
+                id = videoIdList.get(i).getVideoId();
+                monitorId = videoIdList.get(i).getMonitorId();
+                serial = videoIdList.get(i).getSerial();
+            }
+        }
+        if (!isHasVideo){
+            Toast.makeText(getContext(), "当前控制器暂无摄像头", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("id",id);
+            jsonObject.put("enumCode",11001);
+            jsonObject.put("stop",isStop);
+            if (steptype == 0){
+                jsonObject.put("direction",moveType);   //转动
+            }else {
+                jsonObject.put("step",steptype);        //拉进拉远
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/guide/yunTaiReverse");
+        params.setBodyContent(jsonObject.toString());
+        params.setConnectTimeout(10000);
+        params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
+        params.addHeader("NetworkType", "Internet");
+
+        Log.e(TAG, "moveShexiangtou: " + params);
+        Log.e(TAG, "moveShexiangtou: " + jsonObject.toString());
+        x.http().post(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "moveShexiangtou: onSuccess" + result);
+
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                Log.e(TAG, "moveShexiangtou: onError" + ex.toString());
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+                Log.e(TAG, "moveShexiangtou: onCancelled" + cex.toString());
+
+            }
+
+            @Override
+            public void onFinished() {
+            }
+        });
+        steptype=0;
+
+        //卡口控制
+        RequestParams paramskk = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/liveVideo/controlGB");
+        paramskk.addBodyParameter("deviceId",monitorId);
+        paramskk.addBodyParameter("serial",serial);
+        paramskk.addBodyParameter("speed", Objects.equals(kktype, "stop") ?"1":"5");
+        paramskk.addBodyParameter("controlType",kktype);
+        paramskk.setConnectTimeout(10000);
+        paramskk.addHeader("Authorization","Bearer " + new DbConfig(getContext()).getUser().getToken());
+        params.addHeader("NetworkType", "Internet");
+
+        Log.e(TAG, "moveKk: " + paramskk);
+        Log.e(TAG, "moveKk: " + new DbConfig(getContext()).getUser().getToken());
+        x.http().get(paramskk, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "moveKk: onSuccess" + result);
+
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                Log.e(TAG, "moveKk: onError" + ex.toString());
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+                Log.e(TAG, "moveKk: onCancelled" + cex.toString());
 
             }
 
@@ -1377,416 +2185,6 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
     }
 
     /**
-     * 从服务器获取阿启视的token
-     */
-    private void getTokenFromService() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/aqishi/authentication");
-        showDialogProgress(progressDialog, "数据加载中...");
-        params.setConnectTimeout(10000);
-        Log.e(TAG, "getTokenFromService: " + params);
-        params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        x.http().get(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "getTokenFromService: " + result);
-                try {
-                    JSONObject jsonObject = new JSONObject(result);
-                    aqishiToken = jsonObject.getJSONArray("data").getJSONObject(0).getString("data");
-
-                    //getTreeFromAQiShi();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-                progressDialog.dismiss();
-            }
-        });
-    }
-
-    /**
-     * 从阿启视接口获取树
-     */
-    private void getTreeFromAQiShi() {
-
-        RequestParams params = new RequestParams("http://111.41.48.160:9800/bserver/api/v1/organization/all");
-        params.addParameter("token", token);
-        params.addParameter("org_code", "");
-        params.addParameter("search_type", 0);
-        params.addParameter("unit_type", "0,1");
-        params.addParameter("category", 0);
-
-        params.setConnectTimeout(10000);
-        Log.e(TAG, "getTreeFromAQiShi: ---" + params);
-        x.http().get(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                try {
-                    JSONObject jsonObject = new JSONObject(result);
-                    JSONArray data = jsonObject.getJSONArray("data");
-                    organizationList.clear();
-                    Gson gson = new Gson();
-                    organizationList = gson.fromJson(String.valueOf(data), new TypeToken<List<Organization>>() {
-                    }.getType());
-                    getData();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-                progressDialog.dismiss();
-            }
-        });
-    }
-
-    private void getData() {
-
-        Log.e(TAG, "getData: size==" + organizationList.size());
-
-
-        for (int i = 0; i < organizationList.size(); i++) {
-            if (organizationList.get(i).getDevice_type().equals("0")) {  //文件夹
-                if (organizationList.get(i).getOrg_code().isEmpty()) {   //最顶层
-                    Log.e(TAG, "getData: 0");
-                    num = num + 1;
-                    pointList.add(new TreePoint(organizationList.get(i).getId(), organizationList.get(i).getName(), "0", "0", num, true,organizationList.get(i).getRtspUrl()));
-
-                } else {
-                    Log.e(TAG, "getData: 1");
-                    num = num + 1;
-
-                    pointList.add(new TreePoint(organizationList.get(i).getId(), organizationList.get(i).getName(), organizationList.get(i).getOrg_code(), "0", num,organizationList.get(i).getRtspUrl()));
-
-                }
-
-            }
-        }
-
-        for (int i = 0; i < organizationList.size(); i++) {
-            if (!organizationList.get(i).getDevice_type().equals("0")) {  //不是文件夹
-                Log.e(TAG, "getData: aa");
-                num = num + 1;
-                pointList.add(new TreePoint(organizationList.get(i).getId(), organizationList.get(i).getName(), organizationList.get(i).getOrg_code(), "1", num,organizationList.get(i).getRtspUrl()));
-            }
-        }
-
-
-        //打乱集合中的数据
-        Collections.shuffle(pointList);
-        //对集合中的数据重新排序
-
-        updateData();
-
-    }
-
-    private void updateData() {
-        Log.e(TAG, "updateData: bbb");
-        for (TreePoint treePoint : pointList) {
-            pointMap.put(treePoint.getID(), treePoint);
-        }
-        Collections.sort(pointList, new Comparator<TreePoint>() {
-            @Override
-            public int compare(TreePoint lhs, TreePoint rhs) {
-                int llevel = TreeUtils.getLevel(lhs, pointMap);
-                int rlevel = TreeUtils.getLevel(rhs, pointMap);
-                if (llevel == rlevel) {
-                    if (lhs.getPARENTID().equals(rhs.getPARENTID())) {  //左边小
-                        return lhs.getDISPLAY_ORDER() > rhs.getDISPLAY_ORDER() ? 1 : -1;
-                    } else {  //如果父辈id不相等
-                        //同一级别，不同父辈
-                        TreePoint ltreePoint = TreeUtils.getTreePoint(lhs.getPARENTID(), pointMap);
-                        TreePoint rtreePoint = TreeUtils.getTreePoint(rhs.getPARENTID(), pointMap);
-                        return compare(ltreePoint, rtreePoint);  //父辈
-                    }
-                } else {  //不同级别
-                    if (llevel > rlevel) {   //左边级别大       左边小
-                        if (lhs.getPARENTID().equals(rhs.getID())) {
-                            return 1;
-                        } else {
-                            TreePoint lreasonTreePoint = TreeUtils.getTreePoint(lhs.getPARENTID(), pointMap);
-                            return compare(lreasonTreePoint, rhs);
-                        }
-                    } else {   //右边级别大   右边小
-                        if (rhs.getPARENTID().equals(lhs.getID())) {
-                            return -1;
-                        }
-                        TreePoint rreasonTreePoint = TreeUtils.getTreePoint(rhs.getPARENTID(), pointMap);
-                        return compare(lhs, rreasonTreePoint);
-                    }
-                }
-            }
-        });
-
-        adapter.notifyDataSetChanged();
-    }
-
-
-    /**
-     * 视频列表的条目点击 加载视频
-     *
-     * @param id
-     */
-    @Override
-    public void onPlayerItemClickListener(String id,String parentid,String name,String respUrl) {
-        currentClickItemName = name;
-        currentClickItemId = parentid;
-        Log.e(TAG, "onPlayerItemClickListener: "+currentClickItemId );
-        //      getPlayUrlFromAQISHI(id);
-       /* if (isAddVideoViewClick) {       //直接往点击的视频播放机中添加
-            addVideoPlayer(respUrl,id);
-        } else {             //往列表中排序添加
-            getVideoPlayerState();
-            setVideoPlayer(respUrl,id);
-        }*/
-        fromMap = false;
-        getPlayUrlFromHaohai(id);
-
-
-    }
-
-    @Override
-    public void onPlayerItemClickListener(String id, String name) {
-
-    }
-
-    /**
-     * 从浩海获取视频流
-     * @param id
-     */
-    private void getPlayUrlFromHaohai(final String id) {
-        showDialogProgress(progressDialog, "视频加载中...");
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("cameraId",id);
-            jsonObject.put("protocol","RTMP");
-            jsonObject.put("streamType","0");
-            jsonObject.put("streamModel","2");
-            jsonObject.put("local","1");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        //   RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/liveVideo/getLiveVideo");
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/mediaKit/getStreamAndroid");
-        Log.e(TAG, "getPlayUrlFromHaohai:id= " + id );
-        for (int i = 0; i < videoIdList.size(); i++) {
-            Log.e(TAG, "getPlayUrlFromHaohai:getMonitorId= " + videoIdList.get(i).getMonitorId() );
-            Log.e(TAG, "getPlayUrlFromHaohai:getVideoId=   " + videoIdList.get(i).getVideoId() );
-            if (videoIdList.get(i).getMonitorId().equals(id)) {
-                Toast.makeText(getContext(), "当前视频已播放，请勿重复播放", Toast.LENGTH_SHORT).show();
-                progressDialog.dismiss();
-                return;
-            }
-        }
-        params.addParameter("cameraId",id);
-        params.addParameter("manufacturer",2);
-        params.addParameter("streamType",2);
-        params.addParameter("protocol","RTMP");
-        // params.setBodyContent(jsonObject.toString());
-        params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-
-        Log.e(TAG, "getTreeFromAQiShiUrl: ---" + params);
-        Log.e(TAG, "getTreeFromAQiShiUrl: ---" + jsonObject.toString());
-        x.http().get(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: " + result);
-                try {
-                    JSONObject jsonObject = new JSONObject(result);
-                    if (jsonObject.getString("code").equals("200")){
-                        //  String playerUrl = "rtsp://10.135.49.202/playBack/8e42ad38-3ca6-92b0-77be-d1ecb02f3d14-main/1616132097/1615944937.flv?streamType=1&manufacturer=1&startTime=1615944907&endTime=1615944937";
-                        String playerUrl = "";
-                        try {
-                            //  playerUrl = jsonObject.getJSONArray("data").getJSONObject(0).getJSONObject("LiveQing").getJSONObject("Body").getString("URL");
-                            playerUrl = jsonObject.getJSONArray("data").getJSONObject(0).getJSONObject("LiveQing").getJSONObject("Body").getString("URL");
-                            Log.e(TAG, "playerUrl: "+jsonObject.getJSONArray("data").getJSONObject(0));
-                        }catch (Exception e){
-                            playerUrl = jsonObject.getJSONArray("data").getJSONObject(0).getString("url").replace("192.168.1.152:1935","27.223.18.10:12041");
-
-                        }
-
-                        Log.e(TAG, "onSuccess: " +playerUrl);
-                        //  String playerUrl = jsonObject.getString("data");
-                        videoListDialog.dismiss();
-
-
-
-                        if (isAddVideoViewClick) {       //直接往点击的视频播放机中添加
-                            addVideoPlayer(playerUrl,id);
-                        } else {             //往列表中排序添加
-                            getVideoPlayerState();
-                            setVideoPlayer(playerUrl,id);
-                        }
-                    }else {
-                        Toast.makeText(getContext(), "当前设备不在线", Toast.LENGTH_SHORT).show();
-                    }
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Toast.makeText(getContext(), "暂无播放源", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-                progressDialog.dismiss();
-            }
-        });
-    }
-
-    /**
-     * 阿奇视获取视频流
-     * @param id
-     */
-    private void getPlayUrlFromAQISHI(final String id) {
-        showDialogProgress(progressDialog, "视频加载中...");
-        RequestParams params = new RequestParams("http://111.41.48.160:9800/bserver/api/v1/device/video/preview");
-        params.addParameter("token", token);
-        params.addParameter("camera_id", id);
-        params.addParameter("stream_type", 0);
-        params.addParameter("stream_mode", 2);
-        params.addParameter("is_local", 1);
-
-        params.setConnectTimeout(10000);
-        Log.e(TAG, "getTreeFromAQiShiUrl: ---" + params);
-        x.http().get(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: " + result);
-                try {
-                    JSONObject jsonObject = new JSONObject(result);
-                    String playerUrl = jsonObject.getString("data");
-                    videoListDialog.dismiss();
-                    if (isAddVideoViewClick) {       //直接往点击的视频播放机中添加
-                        addVideoPlayer(playerUrl,id);
-                    } else {             //往列表中排序添加
-                        getVideoPlayerState();
-                        setVideoPlayer(playerUrl,id);
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Toast.makeText(getContext(), "暂无播放源", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-                progressDialog.dismiss();
-            }
-        });
-    }
-
-    /**
-     * 往点击的视频播放器中添加视频
-     *
-     * @param playerUrl
-     */
-    private void addVideoPlayer(String playerUrl,String monitorId) {
-        if (currentChooseVideo == 1) {
-            video1AddView.setVisibility(View.GONE);
-            video1Player.setVisibility(View.VISIBLE);
-            video1Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-            video1Player.startButtonLogic();
-            videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,1));
-        } else if (currentChooseVideo == 2) {
-            video2AddView.setVisibility(View.GONE);
-            video2Player.setVisibility(View.VISIBLE);
-            video2Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-            video2Player.startButtonLogic();
-            videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,2));
-        } else if (currentChooseVideo == 3) {
-            video3AddView.setVisibility(View.GONE);
-            video3Player.setVisibility(View.VISIBLE);
-            video3Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-            video3Player.startButtonLogic();
-            videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,3));
-        } else if (currentChooseVideo == 4) {
-            video4AddView.setVisibility(View.GONE);
-            video4Player.setVisibility(View.VISIBLE);
-            video4Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-            video4Player.startButtonLogic();
-            videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,4));
-        } else if (currentChooseVideo == 5) {
-            video5AddView.setVisibility(View.GONE);
-            video5Player.setVisibility(View.VISIBLE);
-            video5Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-            video5Player.startButtonLogic();
-            videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,5));
-        } else if (currentChooseVideo == 6) {
-            video6AddView.setVisibility(View.GONE);
-            video6Player.setVisibility(View.VISIBLE);
-            video6Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-            video6Player.startButtonLogic();
-            videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,6));
-        } else if (currentChooseVideo == 7) {
-            video7AddView.setVisibility(View.GONE);
-            video7Player.setVisibility(View.VISIBLE);
-            video7Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-            video7Player.startButtonLogic();
-            videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,7));
-        } else if (currentChooseVideo == 8) {
-            video8AddView.setVisibility(View.GONE);
-            video8Player.setVisibility(View.VISIBLE);
-            video8Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-            video8Player.startButtonLogic();
-            videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,8));
-        } else if (currentChooseVideo == 9) {
-            video9AddView.setVisibility(View.GONE);
-            video9Player.setVisibility(View.VISIBLE);
-            video9Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-            video9Player.startButtonLogic();
-            videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,9));
-        }
-    }
-
-    /**
      * 获取视频状态
      */
     private void getVideoPlayerState() {
@@ -1799,112 +2197,6 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         currentVideo7PlayerState = video7Player.getCurrentState();
         currentVideo8PlayerState = video8Player.getCurrentState();
         currentVideo9PlayerState = video9Player.getCurrentState();
-    }
-
-    /**
-     * 设置视频播放
-     *
-     * @param playerUrl
-     */
-    private void setVideoPlayer(String playerUrl,String monitorId) {
-        Log.e(TAG, "setVideoPlayer: " + currentClickItemName);
-        if (currentVideo == 1) {
-            if (currentVideo1PlayerState == 0) {
-                video1Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video1Player.startButtonLogic();
-                video1Player.setVisibility(View.VISIBLE);
-                video1AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,1));
-            } else {
-                Toast.makeText(getContext(), "目前没有闲置播放器", Toast.LENGTH_SHORT).show();
-            }
-        } else if (currentVideo == 4) {
-            if (currentVideo1PlayerState == 0) {
-                video1Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video1Player.startButtonLogic();
-                video1Player.setVisibility(View.VISIBLE);
-                video1AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,1));
-            } else if (currentVideo2PlayerState == 0) {
-                video2Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video2Player.startButtonLogic();
-                video2Player.setVisibility(View.VISIBLE);
-                video2AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,2));
-            } else if (currentVideo4PlayerState == 0) {
-                video4Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video4Player.startButtonLogic();
-                video4Player.setVisibility(View.VISIBLE);
-                video4AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,4));
-            } else if (currentVideo5PlayerState == 0) {
-                video5Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video5Player.startButtonLogic();
-                video5Player.setVisibility(View.VISIBLE);
-                video5AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,5));
-            } else {
-                Toast.makeText(getContext(), "目前没有闲置播放器", Toast.LENGTH_SHORT).show();
-            }
-        } else if (currentVideo == 9) {
-            if (currentVideo1PlayerState == 0) {
-                video1Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video1Player.startButtonLogic();
-                video1Player.setVisibility(View.VISIBLE);
-                video1AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,1));
-            } else if (currentVideo2PlayerState == 0) {
-                video2Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video2Player.startButtonLogic();
-                video2Player.setVisibility(View.VISIBLE);
-                video2AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,2));
-            } else if (currentVideo3PlayerState == 0) {
-                video3Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video3Player.startButtonLogic();
-                video3Player.setVisibility(View.VISIBLE);
-                video3AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,3));
-            } else if (currentVideo4PlayerState == 0) {
-                video4Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video4Player.startButtonLogic();
-                video4Player.setVisibility(View.VISIBLE);
-                video4AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,4));
-            } else if (currentVideo5PlayerState == 0) {
-                video5Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video5Player.startButtonLogic();
-                video5Player.setVisibility(View.VISIBLE);
-                video5AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,5));
-            } else if (currentVideo6PlayerState == 0) {
-                video6Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video6Player.startButtonLogic();
-                video6Player.setVisibility(View.VISIBLE);
-                video6AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,6));
-            } else if (currentVideo7PlayerState == 0) {
-                video7Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video7Player.startButtonLogic();
-                video7Player.setVisibility(View.VISIBLE);
-                video7AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,7));
-            } else if (currentVideo8PlayerState == 0) {
-                video8Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video8Player.startButtonLogic();
-                video8Player.setVisibility(View.VISIBLE);
-                video8AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,8));
-            } else if (currentVideo9PlayerState == 0) {
-                video9Player.setUpLazy(playerUrl, false, null, null, currentClickItemName);
-                video9Player.startButtonLogic();
-                video9Player.setVisibility(View.VISIBLE);
-                video9AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(monitorId,currentClickItemId,currentClickItemName,9));
-            } else {
-                Toast.makeText(getContext(), "目前没有闲置播放器", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     @Override
@@ -2007,25 +2299,77 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         }
     }
 
-
-
-    class ChangeTabReceiver extends BroadcastReceiver {
-        public void onReceive(Context context, Intent intent) {
-            fromMap = true;
-            String videoId = intent.getStringExtra("id");
-            String monitorId = intent.getStringExtra("monitorId");
-            currentClickItemId = monitorId;
-            //       Toast.makeText(context, "广播已经接收", Toast.LENGTH_SHORT).show();
-            Log.i("videoonReceive: ", videoId);
-            getPlayUrlFromHaohai(videoId);
-            currentClickItemName="监控点视频";
-        }
-    }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
-
         getActivity().unregisterReceiver(changeTabReceiver);
+    }
+
+
+    public enum PlayStatus {
+        PLAY, PAUSE, ERROR
+    }
+    public enum SoundStatus {
+        PLAY, STOP, NO_SUPPORT
+    }
+
+    public enum SpeakStatus {
+        PLAY, STOP, NO_SUPPORT,OPENING
+    }
+
+    class AudioTalkerListener extends LCOpenSDK_TalkerListener {
+        public AudioTalkerListener() {
+            super();
+        }
+
+        @Override
+        public void onTalkResult(String error, int type) {
+            super.onTalkResult(error, type);
+            Log.e(TAG, "onTalkResult: " + error + "," + type );
+            Log.e(TAG, "onTalkResult: params" + CommonData.subAccount + "," + CommonData.subOpenid + "," + CommonData.subToken );
+            boolean talkResult = false;
+            if (type == 99 || error.equals("-1000") || error.equals("0") || error.equals("1") || error.equals("3")) {
+                talkResult = false;
+            } else if (error.equals("4")) {
+                talkResult = true;
+            }
+            final boolean finalTalkResult = talkResult;
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (!finalTalkResult) {
+                        stopTalking();
+                        // 提示对讲打开失败
+                        Toast.makeText(getActivity(), "开启对讲失败", Toast.LENGTH_SHORT).show();
+                        speakStatus = SpeakStatus.STOP;
+                    } else {
+                        // 提示对讲打开成功
+                        Toast.makeText(getActivity(), "开启对讲成功", Toast.LENGTH_SHORT).show();
+                        speakStatus = SpeakStatus.PLAY;
+
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void onTalkPlayReady() {
+            super.onTalkPlayReady();
+        }
+
+        @Override
+        public void onAudioRecord(byte[] bytes, int i, int i1, int i2, int i3) {
+            super.onAudioRecord(bytes, i, i1, i2, i3);
+        }
+
+        @Override
+        public void onAudioReceive(byte[] bytes, int i, int i1, int i2, int i3) {
+            super.onAudioReceive(bytes, i, i1, i2, i3);
+        }
+
+        @Override
+        public void onDataLength(int i) {
+            super.onDataLength(i);
+        }
     }
 }

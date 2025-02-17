@@ -78,14 +78,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content">
 
-
-                            <ImageView
-                                android:id="@+id/one_image"
-                                android:layout_width="100dp"
-                                android:layout_height="100dp"
-                                android:scaleType="center"
-                                android:src="@drawable/ic_add_photo" />
-
                             <ImageView
                                 android:id="@+id/one_image_delete"
                                 android:layout_width="20dp"
@@ -93,6 +85,13 @@
                                 android:layout_marginLeft="80dp"
                                 android:src="@drawable/ic_delete"
                                 android:visibility="gone" />
+
+                            <ImageView
+                                android:id="@+id/one_image"
+                                android:layout_width="100dp"
+                                android:layout_height="100dp"
+                                android:scaleType="center"
+                                android:src="@drawable/ic_add_photo" />
                         </FrameLayout>
 
                         <FrameLayout
@@ -471,7 +470,7 @@
                             android:layout_height="wrap_content"
                             android:background="@drawable/edit_bg_select_noline"
                             android:hint="面积(公顷)"
-                            android:inputType="text"
+                            android:inputType="number"
                             android:paddingBottom="5dp"
                             android:paddingLeft="5dp"
                             android:paddingRight="5dp"
@@ -479,8 +478,7 @@
                             android:textColor="@color/c5"
                             android:textColorHint="@color/c4"
                             android:textCursorDrawable="@drawable/edit_reg_cursor_color"
-                            android:textSize="15sp"
-                            android:digits="1234567890"/>
+                            android:textSize="15sp" />
                     </FrameLayout>
 
                     <View
@@ -490,6 +488,7 @@
                         android:background="@color/c1" />
 
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -526,6 +525,7 @@
                         android:background="@color/c1" />
 
                 </LinearLayout>
+
             </LinearLayout>
         </com.ruyiruyi.rylibrary.cell.GradationScrollView>
     </FrameLayout>

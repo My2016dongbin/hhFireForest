@@ -10,14 +10,13 @@
         android:supportsRtl="true">
         <activity
             android:name=".ui.activity.FireAddActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
             android:windowSoftInputMode="adjustPan" />
         <activity android:name=".ui.activity.FireMapActivity" />
         <activity
             android:name=".ui.activity.HiddenDangerActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
             android:windowSoftInputMode="adjustPan" />
         <activity android:name=".ui.activity.FireListActivity" />
+        <activity android:name=".ui.activity.FireUploadActivity" />
         <activity
             android:name=".ui.activity.FireMissionListActivity"
             android:launchMode="singleTask" />
@@ -32,9 +31,10 @@
         <activity android:name=".ui.activity.WeiXingSettingActivity" />
         <activity android:name=".ui.activity.FireMissionInfoActivity" />
         <activity android:name=".ui.activity.GPSNaviActivity" />
-        <activity android:name=".ui.activity.FireSceneActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"/>
-
+        <activity android:name=".ui.activity.FireSceneActivity" />
+        <activity android:name=".ui.activity.FireStatisticsActivity" />
+        <activity android:name=".ui.activity.Pic1Activity"></activity>
+        <activity android:name=".ui.activity.PlayerActivity"/>
     </application>
 
 </manifest>

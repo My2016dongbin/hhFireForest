@@ -1,11 +1,7 @@
 package com.ruyiruyi.rylibrary.db;
 
-import com.ruyiruyi.rylibrary.utils.CommonData;
-
 import org.xutils.db.annotation.Column;
 import org.xutils.db.annotation.Table;
-
-import java.util.Objects;
 
 /**
  * Created by geyang on 2020/6/3.
@@ -40,15 +36,29 @@ public class User {
     @Column(name = "fullname")
     private String fullName;
     /**
+     * 经度
+     */
+    @Column(name = "longitude")
+    private double longitude;
+    /**
+     * 纬度
+     */
+    @Column(name = "latitude")
+    private double latitude;
+    /**
      * 邮箱
      */
-    @Column(name = "email")
     private String email;
     /**
      * 电话
      */
     @Column(name = "phone")
     private String phone;
+    /**
+     * 北斗卡号
+     */
+    @Column(name = "icnumber")
+    private String icNumber;
     /**
      * 性别
      */
@@ -64,6 +74,7 @@ public class User {
      */
     @Column(name = "birthday")
     private String birthday;
+
     /**
      * 类型
      */
@@ -79,22 +90,6 @@ public class User {
      */
     @Column(name = "comment")
     private String comment;
-    /**
-     * 按钮权限
-     */
-    @Column(name = "permission")
-    private String permission;
-    /**
-     * 主页主模块权限
-     */
-    @Column(name = "hasmainmap")
-    private boolean hasMainMap;
-    @Column(name = "hasmainvideo")
-    private boolean hasMainVideo;
-    @Column(name = "hasmainapp")
-    private boolean hasMainApp;
-    @Column(name = "hasmainmy")
-    private boolean hasMainMy;
     /**
      * 组织id
      */
@@ -154,6 +149,9 @@ public class User {
     @Column(name = "isyuyin")
     private int isyunyin; //0不播放  1播放
 
+    @Column(name = "imtoken")
+    private String imToken; //0是总账号 1是林业  2是海洋  3 是国土
+
 
     public User() {
     }
@@ -182,7 +180,7 @@ public class User {
         this.token = token;
     }
 
-    public User(String id, String userCode, String userName, String userPasswd, String fullName, String email, String phone, String sex, String entryTime, String birthday, String type, String isSuperAdmin, String comment, String groupId, String gridNo, String bkchar2, String money, String lockMoney, String groupName, String state, int isLogin, String token,String headUrl) {
+    public User(String id, String userCode, String userName, String userPasswd, String fullName, String email, String phone, String sex, String entryTime, String birthday, String type, String isSuperAdmin, String comment, String groupId, String gridNo, String bkchar2, String money, String lockMoney, String groupName, String state, int isLogin, String token,String headUrl,String imToken) {
         this.id = id;
         this.userCode = userCode;
         this.userName = userName;
@@ -206,53 +204,31 @@ public class User {
         this.isLogin = isLogin;
         this.token = token;
         this.headUrl = headUrl;
+        this.imToken = imToken;
     }
 
-    public boolean isHasMainMap() {
-        return hasMainMap;
+    public double getLongitude() {
+        return longitude;
     }
 
-    public void setHasMainMap(boolean hasMainMap) {
-        this.hasMainMap = hasMainMap;
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
-    public boolean isHasMainVideo() {
-        return hasMainVideo;
+    public double getLatitude() {
+        return latitude;
     }
 
-    public void setHasMainVideo(boolean hasMainVideo) {
-        this.hasMainVideo = hasMainVideo;
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 
-    public boolean isHasMainApp() {
-        return hasMainApp;
+    public String getImToken() {
+        return imToken;
     }
 
-    public void setHasMainApp(boolean hasMainApp) {
-        this.hasMainApp = hasMainApp;
-    }
-
-    public boolean isHasMainMy() {
-        return hasMainMy;
-    }
-
-    public void setHasMainMy(boolean hasMainMy) {
-        this.hasMainMy = hasMainMy;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
-    public void addPermission(String permission) {
-        if(Objects.equals(this.permission, "")){
-            this.permission = this.permission + permission;
-        }else{
-            this.permission = this.permission + "," + permission;
-        }
+    public void setImToken(String imToken) {
+        this.imToken = imToken;
     }
 
     public int getIsyunyin() {
@@ -295,6 +271,14 @@ public class User {
         this.id = id;
     }
 
+
+    public String getIcNumber() {
+        return icNumber;
+    }
+
+    public void setIcNumber(String icNumber) {
+        this.icNumber = icNumber;
+    }
     public String getUserCode() {
         return userCode;
     }

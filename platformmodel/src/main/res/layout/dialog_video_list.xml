@@ -35,6 +35,51 @@
             android:padding="10dp"
             android:src="@drawable/ic_list_button" />
     </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/fenlei_show_layout"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:background="@color/theme_primary_list"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+
+        <LinearLayout
+            android:id="@+id/fenlei_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="20dp"
+                android:text="分类:"
+                android:textColor="#568ED1"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/fenlei_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:text="全部"
+                android:textColor="@color/c12"
+                android:textSize="15sp" />
+
+            <ImageView
+                android:layout_width="13dp"
+                android:layout_height="13dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="5dp"
+                android:src="@drawable/ic_down_c12" />
+        </LinearLayout>
+
+    </LinearLayout>
+
     <ListView
         android:id="@+id/listView"
         style="@style/videolistviewstyle"

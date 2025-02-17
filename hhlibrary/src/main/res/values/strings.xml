@@ -1,6 +1,10 @@
 <resources>
-    <string name="app_name">智慧管廊</string>
-    <string name="web_title">智慧管廊</string>
+    <string name="app_name">.</string>
+    <string name="web_title">.</string>
+
+
+    <string name="hh_name">西海岸森林防火</string>
+
 
     <string name="progressActivityErrorButton">重新加载</string>
     <string name="progressActivityEmptyTitlePlaceholder">未加载到任何内容!</string>

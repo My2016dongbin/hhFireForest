@@ -4,14 +4,20 @@ public class GridCamera {
     String name;
     String monitorId;
     String deviceId;
+    String serial;
     String id;
     String rtspUrl;
     String subRtspUrl;
     String state;
-    String collectionState;
     int cameraType;
 
-    boolean status = false;
+    public String getSerial() {
+        return serial;
+    }
+
+    public void setSerial(String serial) {
+        this.serial = serial;
+    }
 
     public String getDeviceId() {
         return deviceId;
@@ -19,22 +25,6 @@ public class GridCamera {
 
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
-    }
-
-    public boolean isStatus() {
-        return status;
-    }
-
-    public String getCollectionState() {
-        return collectionState;
-    }
-
-    public void setCollectionState(String collectionState) {
-        this.collectionState = collectionState;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
     }
 
     public String getName() {

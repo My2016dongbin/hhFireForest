@@ -1,7 +1,7 @@
 /**
- * Cesium - https://github.com/AnalyticalGraphicsInc/cesium
+ * Cesium - https://github.com/CesiumGS/cesium
  *
- * Copyright 2011-2017 Cesium Contributors
+ * Copyright 2011-2020 Cesium Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
  * Columbus View (Pat. Pend.)
  *
  * Portions licensed separately.
- * See https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md for full licensing details.
+ * See https://github.com/CesiumGS/cesium/blob/master/LICENSE.md for full licensing details.
  */
-define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-52d9479f', './BoundingSphere-ab31357a', './RuntimeError-7c184ac0', './WebGLConstants-4c11ee5f', './ComponentDatatype-919a7463', './GeometryAttribute-ba19792d', './PrimitiveType-97893bc7', './FeatureDetection-bac17d71', './Transforms-794e44e6', './buildModuleUrl-02e5236f', './GeometryAttributes-1c7ce91d', './AttributeCompression-4a5b893f', './GeometryPipeline-5d611954', './EncodedCartesian3-daa1cb04', './IndexDatatype-18a8cae6', './IntersectionTests-afd4a13d', './Plane-68b37818', './GeometryOffsetAttribute-c9accdb9', './GeometryInstance-2015f767', './arrayRemoveDuplicates-aafa59fd', './EllipsoidTangentPlane-7eb9b50e', './ArcType-66bc286a', './EllipsoidRhumbLine-c9b776a6', './earcut-2.2.1-b404d9e6', './PolygonPipeline-0532ac9c', './PolygonGeometryLibrary-adc41ee0'], function (when, Check, _Math, Cartesian2, BoundingSphere, RuntimeError, WebGLConstants, ComponentDatatype, GeometryAttribute, PrimitiveType, FeatureDetection, Transforms, buildModuleUrl, GeometryAttributes, AttributeCompression, GeometryPipeline, EncodedCartesian3, IndexDatatype, IntersectionTests, Plane, GeometryOffsetAttribute, GeometryInstance, arrayRemoveDuplicates, EllipsoidTangentPlane, ArcType, EllipsoidRhumbLine, earcut2_2_1, PolygonPipeline, PolygonGeometryLibrary) { 'use strict';
+define(['./when-8d13db60', './Check-70bec281', './Math-61ede240', './Cartographic-fe4be337', './Cartesian2-85064f09', './BoundingSphere-775c5788', './Cartesian4-5af5bb24', './RuntimeError-ba10bc3e', './WebGLConstants-4c11ee5f', './ComponentDatatype-5862616f', './GeometryAttribute-ed9d707f', './PrimitiveType-97893bc7', './FeatureDetection-7bd32c34', './Transforms-a1cf7267', './buildModuleUrl-e7952659', './GeometryAttributes-aacecde6', './AttributeCompression-84a90a13', './GeometryPipeline-245a05d7', './EncodedCartesian3-a569cba8', './IndexDatatype-9435b55f', './IntersectionTests-397d9494', './Plane-8390418f', './arrayFill-9766fb2e', './GeometryOffsetAttribute-999fc023', './GeometryInstance-93a01b5d', './arrayRemoveDuplicates-f0b089b1', './EllipsoidTangentPlane-e324bfa4', './ArcType-66bc286a', './EllipsoidRhumbLine-f161e674', './earcut-2.2.1-b404d9e6', './PolygonPipeline-fd46002b', './PolygonGeometryLibrary-9cc18cc2'], function (when, Check, _Math, Cartographic, Cartesian2, BoundingSphere, Cartesian4, RuntimeError, WebGLConstants, ComponentDatatype, GeometryAttribute, PrimitiveType, FeatureDetection, Transforms, buildModuleUrl, GeometryAttributes, AttributeCompression, GeometryPipeline, EncodedCartesian3, IndexDatatype, IntersectionTests, Plane, arrayFill, GeometryOffsetAttribute, GeometryInstance, arrayRemoveDuplicates, EllipsoidTangentPlane, ArcType, EllipsoidRhumbLine, earcut2_2_1, PolygonPipeline, PolygonGeometryLibrary) { 'use strict';
 
     var createGeometryFromPositionsPositions = [];
         var createGeometryFromPositionsSubdivided = [];
@@ -507,10 +507,10 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
                         var size = geometryInstance.geometry.attributes.position.values.length / 3;
                         var offsetAttribute = new Uint8Array(size);
                         if (polygonGeometry._offsetAttribute === GeometryOffsetAttribute.GeometryOffsetAttribute.TOP) {
-                            offsetAttribute = GeometryOffsetAttribute.arrayFill(offsetAttribute, 1, 0, size / 2);
+                            offsetAttribute = arrayFill.arrayFill(offsetAttribute, 1, 0, size / 2);
                         } else {
                             offsetValue = polygonGeometry._offsetAttribute === GeometryOffsetAttribute.GeometryOffsetAttribute.NONE ? 0 : 1;
-                            offsetAttribute = GeometryOffsetAttribute.arrayFill(offsetAttribute, offsetValue);
+                            offsetAttribute = arrayFill.arrayFill(offsetAttribute, offsetValue);
                         }
 
                         geometryInstance.geometry.attributes.applyOffset = new GeometryAttribute.GeometryAttribute({
@@ -530,7 +530,7 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
                         var length = geometryInstance.geometry.attributes.position.values.length;
                         var applyOffset = new Uint8Array(length / 3);
                         offsetValue = polygonGeometry._offsetAttribute === GeometryOffsetAttribute.GeometryOffsetAttribute.NONE ? 0 : 1;
-                        GeometryOffsetAttribute.arrayFill(applyOffset, offsetValue);
+                        arrayFill.arrayFill(applyOffset, offsetValue);
                         geometryInstance.geometry.attributes.applyOffset = new GeometryAttribute.GeometryAttribute({
                             componentDatatype : ComponentDatatype.ComponentDatatype.UNSIGNED_BYTE,
                             componentsPerAttribute : 1,
