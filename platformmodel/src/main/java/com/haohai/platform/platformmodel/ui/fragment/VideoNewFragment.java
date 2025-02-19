@@ -9,9 +9,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Gravity;
@@ -50,7 +55,6 @@ import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.db.User;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
-import com.ruyiruyi.rylibrary.utils.CommonUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,9 +63,16 @@ import org.xutils.common.Callback;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -207,8 +218,6 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         }
     };
     private LinearLayout fenleiShowLayout;
-    private boolean rootCtrlDirection = false;
-    private boolean rootCtrlFocus= false;
 
     @Nullable
     @Override
@@ -225,13 +234,6 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         videoModelList = new ArrayList<>();
         videoIdList = new ArrayList<>();
         user = new DbConfig(getContext()).getUser();
-
-        if(CommonUtils.hasPermission(getActivity(),"app-video-btn-directionControl")){
-            rootCtrlDirection = true;
-        }
-        if(CommonUtils.hasPermission(getActivity(),"app-video-btn-zoomControl")){
-            rootCtrlFocus = true;
-        }
 
         intiView();
 
@@ -255,14 +257,13 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         showDialogProgress(progressDialog,"数据加载中...");
         JSONObject jsonObject = new JSONObject();
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +"resource/api/grid/getGridNew");
-        // RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/grid/listGridTreesByMonitorType");
+       // RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/grid/listGridTreesByMonitorType");
         if (isShipinList != 0) {
             params.addParameter("monitorType",isShipinList);
         }else {
-            params.addParameter("monitorType",1);
+            params.addParameter("monitorType","");
         }
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
 
         params.setConnectTimeout(10000);
@@ -359,7 +360,6 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         }
 
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         params.setBodyContent(jsonObject.toString());
 
@@ -381,7 +381,7 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
                             organization.setId(object.getString("id"));
                             organization.setName(object.getString("name"));
                             organization.setRtspUrl(object.getString("rtspUrl"));
-                            //   Log.e(TAG, "onSuccess: name＝＝" +object.getString("name") );
+                         //   Log.e(TAG, "onSuccess: name＝＝" +object.getString("name") );
                             organization.setDevice_type("1");
                             organization.setOrg_code(id);
                             organizationList.add(organization);
@@ -389,9 +389,9 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
                         }
                         getData();
 
-                        //     handler.sendEmptyMessage(GET_SHU);
+                   //     handler.sendEmptyMessage(GET_SHU);
                     }else {
-                        //    Toast.makeText(getContext(), "获取失败", Toast.LENGTH_SHORT).show();
+                    //    Toast.makeText(getContext(), "获取失败", Toast.LENGTH_SHORT).show();
                     }
 
                 } catch (JSONException e) {
@@ -499,14 +499,14 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         listView = ((ListView) videoListInflater.findViewById(R.id.listView));
         videoListLayout = ((LinearLayout) videoListInflater.findViewById(R.id.video_list_layout));
         listDialogImage = ((ImageView) videoListInflater.findViewById(R.id.list_dialog_button));
-/*        fenleiLayout = ((LinearLayout) videoListInflater.findViewById(R.id.fenlei_layout));
+        fenleiLayout = ((LinearLayout) videoListInflater.findViewById(R.id.fenlei_layout));
         fenleiView = ((TextView) videoListInflater.findViewById(R.id.fenlei_view));
         fenleiShowLayout = ((LinearLayout) videoListInflater.findViewById(R.id.fenlei_show_layout));
         if (user.getImToken().equals("0")) {
             fenleiShowLayout.setVisibility(View.VISIBLE);
         }else {
             fenleiShowLayout.setVisibility(View.GONE);
-        }*/
+        }
         videoListDialog.setContentView(videoListInflater);
         Window videoListDialogWindow = videoListDialog.getWindow();
         videoListDialogWindow.setGravity(Gravity.LEFT);
@@ -666,13 +666,13 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         /**
          * 视频分类的点击
          */
-//        RxViewAction.clickNoDouble(fenleiLayout)
-//                .subscribe(new Action1<Void>() {
-//                    @Override
-//                    public void call(Void aVoid) {
-//                        showShipinFenleiChangeDailog();
-//                    }
-//                });
+        RxViewAction.clickNoDouble(fenleiLayout)
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        showShipinFenleiChangeDailog();
+                    }
+                });
         /**
          * 添加火情上报 跟隐患排查
          */
@@ -1076,7 +1076,9 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
                     moveShexiangtou();
                 }
             }else if (v.getId() == R.id.jieping_button){    //截屏
-
+                /*if (action == MotionEvent.ACTION_DOWN) {
+                    screenshot(yiLayout);
+                }*/
             }else if (v.getId() == R.id.jujiao_button){ //聚焦
                 if (action == MotionEvent.ACTION_DOWN) {
                     jujiaoButton.setBackgroundResource(R.drawable.ic_button_hover);
@@ -1104,19 +1106,71 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
             return false;
         }
     };
+    // 截屏
+    private byte[] screenshotView(View view) {
+        view.setDrawingCacheEnabled(true);
+        view.buildDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+        byte[] drawByte = getBitmapByte(bitmap);
+        return drawByte;
+    }
+    // 位图转 Byte
+    private byte[] getBitmapByte(Bitmap bitmap){
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        // 参数1转换类型，参数2压缩质量，参数3字节流资源
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+        try {
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return out.toByteArray();
+    }
+    // 截屏
+    private void screenshot(View view) {
+        view.setDrawingCacheEnabled(true);
+        view.buildDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+        saveImageToGallery(getActivity(),bitmap);
+    }
+    public static void saveImageToGallery(Context context, Bitmap bmp) {
+        // 首先保存图片 创建文件夹
+        File appDir = new File(Environment.getExternalStorageDirectory(), "hh_firePrevention");
+        if (!appDir.exists()) {
+            appDir.mkdir();
+        }
+        //图片文件名称
+        Date date = new Date(System.currentTimeMillis());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String timeS = sdf.format(date);
+        String fileName = "监控截图_"+timeS + ".jpg";
+        File file = new File(appDir, fileName);
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 其次把文件插入到系统图库
+        String path = file.getAbsolutePath();
+        try {
+            MediaStore.Images.Media.insertImage(context.getContentResolver(), path, fileName, null);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        // 最后通知图库更新
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri uri = Uri.fromFile(file);
+        intent.setData(uri);
+        context.sendBroadcast(intent);
+        Toast.makeText(context,"保存成功！",Toast.LENGTH_SHORT).show();
+    }
 
     private void moveShexiangtou() {
-        if(moveType == 101 || moveType == 12){
-            if(!rootCtrlFocus){
-                Toast.makeText(getActivity(), "您的账号暂无缩放权限", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }else{
-            if(!rootCtrlDirection){
-                Toast.makeText(getActivity(), "您的账号暂无控制权限", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
         String id = "";
         String monitorId = "";
         boolean isHasVideo = false;
@@ -1147,16 +1201,16 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         } catch (JSONException e) {
             e.printStackTrace();
         }*/
-        //  RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/aqishi/ptzCmd"); //阿奇视平台控制
+      //  RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/aqishi/ptzCmd"); //阿奇视平台控制
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/liveVideo/control");
         params.addParameter("token",aqishiToken);
-        params.addParameter("groupId",user.getGroupId());
+        params.addParameter("groupId","001011");
         params.addParameter("monitorId",id);
         params.addParameter("channelId",monitorId);
         params.addParameter("controlType",moveType+"");
         params.addParameter("step","5");
         if (moveType!=101){
-            params.addParameter("stop",isStop?1:0);
+            params.addParameter("stop",isStop?0:1);
         }else {
             params.addParameter("stop",0);
         }
@@ -1165,7 +1219,6 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
 
         params.setConnectTimeout(10000);
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         Log.e(TAG, "moveShexiangtou: " + params);
         x.http().get(params, new Callback.CommonCallback<String>() {
@@ -1385,7 +1438,6 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         params.setConnectTimeout(10000);
         Log.e(TAG, "getTokenFromService: " + params);
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -1563,14 +1615,9 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
             getVideoPlayerState();
             setVideoPlayer(respUrl,id);
         }*/
-        fromMap = false;
-        getPlayUrlFromHaohai(id);
+       fromMap = false;
+       getPlayUrlFromHaohai(id);
 
-
-    }
-
-    @Override
-    public void onPlayerItemClickListener(String id, String name) {
 
     }
 
@@ -1590,7 +1637,7 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //   RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/liveVideo/getLiveVideo");
+     //   RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/liveVideo/getLiveVideo");
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/mediaKit/getStreamAndroid");
         Log.e(TAG, "getPlayUrlFromHaohai:id= " + id );
         for (int i = 0; i < videoIdList.size(); i++) {
@@ -1599,16 +1646,15 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
             if (videoIdList.get(i).getMonitorId().equals(id)) {
                 Toast.makeText(getContext(), "当前视频已播放，请勿重复播放", Toast.LENGTH_SHORT).show();
                 progressDialog.dismiss();
-                return;
+               return;
             }
         }
         params.addParameter("cameraId",id);
         params.addParameter("manufacturer",2);
         params.addParameter("streamType",2);
         params.addParameter("protocol","RTMP");
-        // params.setBodyContent(jsonObject.toString());
+       // params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         Log.e(TAG, "getTreeFromAQiShiUrl: ---" + params);
         Log.e(TAG, "getTreeFromAQiShiUrl: ---" + jsonObject.toString());
@@ -1619,15 +1665,14 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
                 try {
                     JSONObject jsonObject = new JSONObject(result);
                     if (jsonObject.getString("code").equals("200")){
-                        //  String playerUrl = "rtsp://10.135.49.202/playBack/8e42ad38-3ca6-92b0-77be-d1ecb02f3d14-main/1616132097/1615944937.flv?streamType=1&manufacturer=1&startTime=1615944907&endTime=1615944937";
+                      //  String playerUrl = "rtsp://10.135.49.202/playBack/8e42ad38-3ca6-92b0-77be-d1ecb02f3d14-main/1616132097/1615944937.flv?streamType=1&manufacturer=1&startTime=1615944907&endTime=1615944937";
                         String playerUrl = "";
                         try {
-                            //  playerUrl = jsonObject.getJSONArray("data").getJSONObject(0).getJSONObject("LiveQing").getJSONObject("Body").getString("URL");
+                          //  playerUrl = jsonObject.getJSONArray("data").getJSONObject(0).getJSONObject("LiveQing").getJSONObject("Body").getString("URL");
                             playerUrl = jsonObject.getJSONArray("data").getJSONObject(0).getJSONObject("LiveQing").getJSONObject("Body").getString("URL");
                             Log.e(TAG, "playerUrl: "+jsonObject.getJSONArray("data").getJSONObject(0));
                         }catch (Exception e){
-                            playerUrl = jsonObject.getJSONArray("data").getJSONObject(0).getString("url").replace("192.168.1.152:1935","27.223.18.10:12041");
-
+                            playerUrl = jsonObject.getJSONArray("data").getJSONObject(0).getString("url");
                         }
 
                         Log.e(TAG, "onSuccess: " +playerUrl);
@@ -2006,8 +2051,6 @@ public class VideoNewFragment extends HhBaseFragment implements TreeAdapter.OnPl
             video9Player.onVideoPause();
         }
     }
-
-
 
     class ChangeTabReceiver extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {

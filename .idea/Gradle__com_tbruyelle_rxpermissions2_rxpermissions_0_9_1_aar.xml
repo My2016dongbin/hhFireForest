@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="Gradle: com.tbruyelle.rxpermissions2:rxpermissions:0.9.1@aar">
+    <CLASSES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/731a74fa4e7b18cfb81711ede4a5c1ed/rxpermissions-0.9.1/jars/classes.jar!/" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/731a74fa4e7b18cfb81711ede4a5c1ed/rxpermissions-0.9.1/res" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/AndroidManifest.xml" />
+      <root url="file:///Applications//Contents/gradle/gradle-6.7.1/caches/////AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/modules-2/files-2.1/com.tbruyelle.rxpermissions2/rxpermissions/0.9.1/c74a5dff1571b07ed805a8d29f1c1bb44ebd77f1/rxpermissions-0.9.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/modules-2/files-2.1/com.tbruyelle.rxpermissions2/rxpermissions/0.9.1/79a2a8f7f5a3e57a1a885902b6e038317bf9063a/rxpermissions-0.9.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

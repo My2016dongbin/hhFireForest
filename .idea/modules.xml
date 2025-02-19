@@ -2,16 +2,16 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/FireForestPlatform.iml" filepath="$PROJECT_DIR$/.idea/modules/FireForestPlatform.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/FireForestPlatform.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/FireForestPlatform.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/appnaturalresource/FireForestPlatform.appnaturalresource.iml" filepath="$PROJECT_DIR$/.idea/modules/appnaturalresource/FireForestPlatform.appnaturalresource.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/chatimmodel/FireForestPlatform.chatimmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/chatimmodel/FireForestPlatform.chatimmodel.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dsbridge/FireForestPlatform.dsbridge.iml" filepath="$PROJECT_DIR$/.idea/modules/dsbridge/FireForestPlatform.dsbridge.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/firemodel/FireForestPlatform.firemodel.iml" filepath="$PROJECT_DIR$/.idea/modules/firemodel/FireForestPlatform.firemodel.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hhlibrary/FireForestPlatform.hhlibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/hhlibrary/FireForestPlatform.hhlibrary.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mapmodel/FireForestPlatform.mapmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/mapmodel/FireForestPlatform.mapmodel.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/platformmodel/FireForestPlatform.platformmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/platformmodel/FireForestPlatform.platformmodel.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/videolibrary/FireForestPlatform.videolibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/videolibrary/FireForestPlatform.videolibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FireForestPlatform.iml" filepath="$PROJECT_DIR$/FireForestPlatform.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/appnaturalresource/appnaturalresource.iml" filepath="$PROJECT_DIR$/appnaturalresource/appnaturalresource.iml" />
+      <module fileurl="file://$PROJECT_DIR$/chatimmodel/chatimmodel.iml" filepath="$PROJECT_DIR$/chatimmodel/chatimmodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/dsbridge/dsbridge.iml" filepath="$PROJECT_DIR$/dsbridge/dsbridge.iml" />
+      <module fileurl="file://$PROJECT_DIR$/firemodel/firemodel.iml" filepath="$PROJECT_DIR$/firemodel/firemodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hhlibrary/hhlibrary.iml" filepath="$PROJECT_DIR$/hhlibrary/hhlibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mapmodel/mapmodel.iml" filepath="$PROJECT_DIR$/mapmodel/mapmodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/platformmodel/platformmodel.iml" filepath="$PROJECT_DIR$/platformmodel/platformmodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/videolibrary/videolibrary.iml" filepath="$PROJECT_DIR$/videolibrary/videolibrary.iml" />
     </modules>
   </component>
 </project>

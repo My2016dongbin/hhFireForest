@@ -1,5 +1,7 @@
 package com.haohai.platform.fireforestplatform;
 
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,9 +15,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
-import android.net.VpnService;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
@@ -23,15 +23,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.Trace;
-import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -41,23 +38,27 @@ import android.widget.Toast;
 
 import com.haohai.platform.fireforestplatform.ui.LocationService;
 import com.haohai.platform.fireforestplatform.ui.acticity.LauncherActivity;
+import com.haohai.platform.fireforestplatform.ui.acticity.LoginActivity;
 import com.haohai.platform.fireforestplatform.ui.service.AlarmPointService;
-//import com.haohai.platform.fireforestplatform.ui.utils.AuthTypeUtil;
+import com.haohai.platform.fireforestplatform.ui.service.VpnService;
+import com.haohai.platform.fireforestplatform.ui.utils.AuthTypeUtil;
 import com.haohai.platform.fireforestplatform.ui.utils.TraceServiceImpl;
 import com.haohai.platform.fireforestplatform.ui.utils.whitelistUtil;
 import com.haohai.platform.firelibrary.ui.activity.FireMissionListActivity;
 import com.haohai.platform.firelibrary.ui.service.MQTTService;
+import com.haohai.platform.mapmodel.fragment.MapFragment;
 import com.haohai.platform.mapmodel.fragment.MapNewFragment;
 import com.haohai.platform.platformmodel.ui.service.ForegroundService;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
+import com.ruyiruyi.rylibrary.bus.MessagePush;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.db.User;
 import com.haohai.platform.platformmodel.ui.fragment.AppsFragment;
 import com.haohai.platform.platformmodel.ui.fragment.MyFragment;
-import com.haohai.platform.platformmodel.ui.fragment.VideoIOSFragment;
+import com.haohai.platform.platformmodel.ui.fragment.VideoNewFragment;
 import com.haohai.platform.platformmodel.ui.service.DataService;
 import com.haohai.platform.platformmodel.ui.service.TrackService;
 import com.ruyiruyi.rylibrary.base.BaseFragmentActivity;
@@ -68,19 +69,25 @@ import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.ui.adapter.FragmentViewPagerAdapter;
 import com.ruyiruyi.rylibrary.utils.AndroidUtilities;
 import com.ruyiruyi.rylibrary.utils.CommonData;
+import com.ruyiruyi.rylibrary.utils.CommonUtil;
 import com.ruyiruyi.rylibrary.utils.LayoutHelper;
 import com.tencent.android.tpns.mqtt.util.Debug;
+import com.tencent.android.tpush.XGIOperateCallback;
+import com.tencent.android.tpush.XGPushConfig;
 import com.tencent.android.tpush.XGPushManager;
-//import com.vsg.trustaccess.sdks.VSGService;
-//import com.vsg.trustaccess.sdks.logic.AuthStateManager;
-//import com.vsg.trustaccess.sdks.logic.CharonVpnService;
-//import com.vsg.trustaccess.sdks.logic.TunnelStateManager;
+import com.vsg.trustaccess.sdks.VSGService;
+import com.vsg.trustaccess.sdks.logic.AuthService;
+import com.vsg.trustaccess.sdks.logic.AuthStateManager;
+import com.vsg.trustaccess.sdks.logic.CharonVpnService;
+import com.vsg.trustaccess.sdks.logic.TunnelStateManager;
 import com.xdandroid.hellodaemon.DaemonEnv;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.xutils.common.Callback;
-import org.xutils.common.util.LogUtil;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
@@ -92,13 +99,16 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static android.app.Notification.FLAG_NO_CLEAR;
 import static android.support.v4.app.NotificationCompat.FLAG_ONGOING_EVENT;
+import static com.vsg.trustaccess.sdks.logic.TunnelStateManager.TunnelState.CONNECTED;
 
 /*@Route(path = RouteUtils.LoginToMain)*/
-public class MainActivity extends BaseFragmentActivity {
+public class MainActivity extends BaseFragmentActivity implements TunnelStateManager.TunnelTotalStateListener{
 
 /*    @Autowired
     int state;*/
@@ -135,29 +145,137 @@ public class MainActivity extends BaseFragmentActivity {
     private FireWeixingReceiver fireWeixingReceiver;
     private Intent mForegroundService;
     private ChangeTabReceiver changeTabReceiver;
+    private TunnelStateManager mTunnelStateManager = null;
+    private Intent serviceIntent;
 
+    private boolean hasTuisong = false;
+    private AuthStateManager mStateManager;
 
+    private  final int PREPARE_VPN_SERVICE = 0;
+    private String tuisongId;
+    private String tuisongTime;
+    private String tuisongType;
+    private boolean fromLogin;
+    private Intent trackService;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //检测VPN状态
+        if(!CommonData.vpnState){
+            new CommonUtil().activeDown(this);
+            return;
+        }
+        //保证service运行
+        try{
+            ActivityManager myManager=(ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
+            ArrayList<RunningServiceInfo> runningService = (ArrayList<RunningServiceInfo>) myManager.getRunningServices(30);
+            boolean active = false;
+            for(int i = 0 ; i<runningService.size();i++) {
+                Log.e(TAG, "onResume: serviceName = " + runningService.get(i).service.getClassName().toString() );
+                if(runningService.get(i).service.getClassName().toString().contains("TrackService")) {
+                    active =  true;
+                }
+            }
+            if(!active){
+                //开启轨迹服务
+                startService(new Intent(getApplicationContext(), TrackService.class));
+            }
+        }catch (Exception e){
+
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        serviceIntent = new Intent();
+        serviceIntent.setClass(this,VpnService.class);
+        EventBus.getDefault().register(this);
+        //开启VPN服务
+        startService(serviceIntent);
+
+
+        Intent intent = getIntent();
+        fromLogin = intent.getBooleanExtra("fromLogin",false);
+        hasTuisong = intent.getBooleanExtra("isTuisong",false);
+        if (hasTuisong){
+            tuisongId = intent.getStringExtra("tuisongId");
+            tuisongTime = intent.getStringExtra("tuisongTime");
+            tuisongType = intent.getStringExtra("tuisongType");
+            if (tuisongType.equals("1")||tuisongType.equals("2")||tuisongType.equals("3")||tuisongType.equals("4")||tuisongType.equals("5")){
+                startActivity(new Intent(getApplicationContext(), FireMissionListActivity.class));
+            }
+
+        }
+        if (fromLogin){
+            User user = new DbConfig(this).getUser();
+            Set<String> tagSet = new LinkedHashSet<String>();
+            tagSet.add(user.getGridNo());
+            tagSet.add(user.getId());
+            tagSet.add(user.getGroupId());
+            XGPushManager.setTags(getApplicationContext(),"setTag",tagSet);
+            //开启华为推送
+            XGPushConfig.enableOtherPush(getApplicationContext(), true);
+            XGPushManager.registerPush(getApplicationContext(), new XGIOperateCallback() {
+                @Override
+                public void onSuccess(Object data, int flag) {
+                    //token在设备卸载重装的时候有可能会变
+                    Log.d("TPush", "注册成功，设备token为：" + data);
+                }
+
+                @Override
+                public void onFail(Object data, int errCode, String msg) {
+                    Log.d("TPush", "注册失败，错误码：" + errCode + ",错误信息：" + msg);
+                }
+            });
+        }
+
+
+
+
 
         android.os.Debug.startMethodTracing();
         setContentView(R.layout.activity_main);
-        User user = new DbConfig(this).getUser();
-        String permission = user.getPermission();
-        String[] strings = permission.split(",");
-        for (int i = 0; i < strings.length; i++) {
-            LogUtil.e("permission = " + strings[i] );
-        }
+       // permissionRequest(mExternalStoragePermissions);
 
+        Trace.beginSection("zhazha");
+
+/*
+        if (!whitelistUtil.isIgnoringBatteryOptimizations(this)){
+            whitelistUtil.requestIgnoreBatteryOptimizations(this);
+        }
+*/
+
+
+
+
+        //后台保活
+    //    TraceServiceImpl.sShouldStopService=false;
+   //     DaemonEnv.startServiceMayBind(TraceServiceImpl.class);
+      //  ARouter.getInstance().inject(this);
+        //开启MQTT服务
+        startService(new Intent(getApplicationContext(), MQTTService.class));
         //开启轨迹服务
-        startService(new Intent(getApplicationContext(), TrackService.class));
+        trackService = new Intent(getApplicationContext(), TrackService.class);
+        startService(trackService);
         //获取人员组织数据
         startService(new Intent(getApplicationContext(), DataService.class));
         //开启百度定位服务
-        startService(new Intent(getApplicationContext(), LocationService.class));
-
+      //  startService(new Intent(getApplicationContext(), LocationService.class));
+        //启动前台服务
+       /* if (!ForegroundService.serviceIsLive) {
+            // Android 8.0使用startForegroundService在前台启动新服务
+            mForegroundService = new Intent(this, ForegroundService.class);
+            mForegroundService.putExtra("Foreground", "This is a foreground service.");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(mForegroundService);
+            } else {
+                startService(mForegroundService);
+            }
+        } else {
+            Toast.makeText(this, "前台服务正在运行中...", Toast.LENGTH_SHORT).show();
+        }*/
         //保持屏幕常亮
         //getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
        // getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);  清除屏幕常亮
@@ -183,7 +301,7 @@ public class MainActivity extends BaseFragmentActivity {
         pagerAdapter = new HomePagerAdapeter(getSupportFragmentManager(), initPagerTitle(), initFragment());
         viewPager.setAdapter(pagerAdapter);
 
-
+        viewPager.setOffscreenPageLimit(4);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -213,8 +331,8 @@ public class MainActivity extends BaseFragmentActivity {
         tabsCell.setSelected(0);
 
 
-        this.user = new DbConfig(this).getUser();
-        if (this.user.getIsLogin() == 1) {
+        user = new DbConfig(this).getUser();
+        if (user.getIsLogin() == 1) {
             //版本更新
             getVersion();
         }
@@ -237,57 +355,71 @@ public class MainActivity extends BaseFragmentActivity {
         initImageLoader();
         Trace.endSection();
         android.os.Debug.stopMethodTracing();
-        NotificationManagerCompat notification = NotificationManagerCompat.from(this);
-        boolean isEnabled = notification.areNotificationsEnabled();
-        if (!isEnabled) {
-            //未打开通知
-            AlertDialog alertDialog = new AlertDialog.Builder(this)
-                    .setTitle("提示")
-                    .setMessage("请在“通知”中打开通知权限")
-                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.cancel();
-                        }
-                    })
-                    .setPositiveButton("去设置", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.cancel();
-                            Intent intent = new Intent();
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
-                                intent.putExtra("android.provider.extra.APP_PACKAGE", MainActivity.this.getPackageName());
-                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {  //5.0
-                                intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
-                                intent.putExtra("app_package", MainActivity.this.getPackageName());
-                                intent.putExtra("app_uid", MainActivity.this.getApplicationInfo().uid);
-                                startActivity(intent);
-                            } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {  //4.4
-                                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                intent.addCategory(Intent.CATEGORY_DEFAULT);
-                                intent.setData(Uri.parse("package:" + MainActivity.this.getPackageName()));
-                            } else if (Build.VERSION.SDK_INT >= 15) {
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.setAction("android.settings.APPLICATION_DETAILS_SETTINGS");
-                                intent.setData(Uri.fromParts("package", MainActivity.this.getPackageName(), null));
-                            }
-                            startActivity(intent);
+    }
 
-                        }
-                    })
-                    .create();
-            alertDialog.show();
-            alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(Color.BLACK);
-            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.BLACK);
+    @Override
+    public void tunnelTotalStateChanged() {
+        TunnelStateManager.TunnelState state = mTunnelStateManager.getTunnelState();
+        TunnelStateManager.TunnelErrorState errorState = mTunnelStateManager.getTunnelErrorState();
+        Log.i(TAG, "tunnelstate:"+state+",error:"+errorState);
+        if(reportErrorTunnelState(errorState)){
+            return;
+        }
+
+        switch (state){
+            case DISABLED:
+                CommonData.vpnState = false;
+//                Toast.makeText(getApplicationContext(), "未连接", Toast.LENGTH_SHORT).show();
+                break;
+            case CONNECTING:
+//                Toast.makeText(getApplicationContext(), "连接中", Toast.LENGTH_SHORT).show();
+                break;
+            case CONNECTED:
+               /* if (hasTuisong){
+                    hasTuisong = false;
+                    if (tuisongType.equals("4")){
+                        viewPager.setCurrentItem(0);
+                        tabsCell.setSelected(0);
+                    }else {
+                        startActivity(new Intent(getApplicationContext(), FireMissionListActivity.class));
+                    }
+                }*/
+                CommonData.vpnState = true;
+//                Toast.makeText(getApplicationContext(), "已连接", Toast.LENGTH_SHORT).show();
+                break;
+            case DISCONNECTING:
+                CommonData.vpnState = false;
+//                Toast.makeText(getApplicationContext(), "断开连接中", Toast.LENGTH_SHORT).show();
+                break;
         }
     }
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(changeTabReceiver);
-        unregisterReceiver(fireWeixingReceiver);
+
+    private boolean reportErrorTunnelState(TunnelStateManager.TunnelErrorState error){
+        if (error == TunnelStateManager.TunnelErrorState.NO_ERROR)
+        {
+            return false;
+        }
+
+        switch (error)
+        {
+            case PEER_AUTH_FAILED:
+                Toast.makeText(this, "用户认证失败！", Toast.LENGTH_SHORT).show();
+                break;
+            case LOOKUP_FAILED:
+                Toast.makeText(this,"lookup_failed", Toast.LENGTH_SHORT).show();
+                break;
+            case UNREACHABLE:
+                Toast.makeText(this, "网关不可达", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                Toast.makeText(this, "其他错误："+error, Toast.LENGTH_SHORT).show();
+                break;
+        }
+
+        return true;
     }
+
+
     class HomePagerAdapeter extends FragmentViewPagerAdapter {
 
         private final List<String> mPageTitle = new ArrayList<>();
@@ -305,18 +437,10 @@ public class MainActivity extends BaseFragmentActivity {
     }
 
     private void initTitle() {
-        if(CommonData.hasMainMap) {
-            tabsCell.addView(R.drawable.ic_mode_map, R.drawable.ic_mode_map_selected, "地图");
-        }
-        if(CommonData.hasMainVideo) {
-            tabsCell.addView(R.drawable.ic_jiankong, R.drawable.ic_jiankong_selected, "视频监控");
-        }
-        if(CommonData.hasMainApp) {
-            tabsCell.addView(R.drawable.ic_yingyong, R.drawable.ic_yingyong_selected, "应用");
-        }
-        if(CommonData.hasMainMy) {
-            tabsCell.addView(R.drawable.ic_xiaoxi, R.drawable.ic_xiaoxi_selected, "我的");
-        }
+        tabsCell.addView(R.drawable.ic_mode_map, R.drawable.ic_mode_map_selected, "地图");
+        tabsCell.addView(R.drawable.ic_jiankong, R.drawable.ic_jiankong_selected, "视频监控");
+        tabsCell.addView(R.drawable.ic_yingyong, R.drawable.ic_yingyong_selected, "应用");
+        tabsCell.addView(R.drawable.ic_xiaoxi, R.drawable.ic_xiaoxi_selected, "我的");
       //  tabsCell.addView(R.drawable.ic_mine, R.drawable.ic_mine_selected, "我的 ");
 
     }
@@ -324,36 +448,34 @@ public class MainActivity extends BaseFragmentActivity {
     private List<Fragment> initFragment() {
         List<Fragment> fragments = new ArrayList<>();
 
-        if(CommonData.hasMainMap){
-            fragments.add(new MapNewFragment());
+        //fragments.add(new MapHomeFragment());
+        MapNewFragment mapNewFragment = new MapNewFragment();
+        Bundle bundle = new Bundle();
+        if (hasTuisong){
+            bundle.putBoolean("hasTuisong",true);
+            bundle.putString("tuisongId",tuisongId);
+            bundle.putString("tuisongTime",tuisongTime);
+            bundle.putString("tuisongType",tuisongType);
+            mapNewFragment.setArguments(bundle);
+        }else {
+            bundle.putBoolean("hasTuisong",false);
+            mapNewFragment.setArguments(bundle);
         }
-        if(CommonData.hasMainVideo) {
-            fragments.add(new VideoIOSFragment());
-        }
-        if(CommonData.hasMainApp) {
-            fragments.add(new AppsFragment());
-        }
-        if(CommonData.hasMainMy) {
-            fragments.add(new MyFragment());
-        }
+        fragments.add(mapNewFragment);
+        fragments.add(new VideoNewFragment());
+        //fragments.add(new VideoFragment());
+        fragments.add(new AppsFragment());
+        fragments.add(new MyFragment() );
 
         return fragments;
     }
 
     protected List<String> initPagerTitle() {
         titles = new ArrayList<>();
-        if(CommonData.hasMainMap){
-            titles.add("地图");
-        }
-        if(CommonData.hasMainVideo){
-            titles.add("视频监控");
-        }
-        if(CommonData.hasMainApp){
-            titles.add("应用");
-        }
-        if(CommonData.hasMainMy){
-            titles.add("我的");
-        }
+        titles.add("首页");
+        titles.add("地图");
+        titles.add("数据统计");
+        titles.add("我的");
         return titles;
     }
     @Override
@@ -371,15 +493,42 @@ public class MainActivity extends BaseFragmentActivity {
             // 利用handler延迟发送更改状态信息
             mHandler.sendEmptyMessageDelayed(EXIT, 2000);
         } else {
-            //VSGService. getInstance().logout (MainActivity.this, null);
 
             Intent intent = new Intent("haohai.haohai.baseActivity");       //关闭程序
             intent.putExtra("closeAll", 1);
             sendBroadcast(intent);//发送广播
 
+            stopService(serviceIntent);
+
+     /*       Intent autoIntent = new Intent();
+            autoIntent.setClass(this,AuthService.class);
+            stopService(autoIntent);*/
+
+          /*  Intent charonIntent = new Intent();
+            charonIntent.setClass(this,CharonVpnService.class);
+            stopService(charonIntent);*/
+
             this.finish();
             //  System.exit(0);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.e(TAG, "onDestroy: mainActivity");
+        EventBus.getDefault().unregister(this);
+
+        unregisterReceiver(fireWeixingReceiver);
+        unregisterReceiver(changeTabReceiver);
+        try{
+            boolean stop = stopService(trackService);
+            Log.e(TAG, "onDestroy: stop = " + stop );
+        }catch (Exception e){
+
+        }
+
+
     }
 
 
@@ -391,6 +540,16 @@ public class MainActivity extends BaseFragmentActivity {
             finish();
 
         }
+    }
+
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGetMessage(MessagePush message) {
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        intent.putExtra("downMessage",message.getMessage());
+        startActivity(intent);
+        finish();
     }
 
 
@@ -407,7 +566,6 @@ public class MainActivity extends BaseFragmentActivity {
         RequestParams params = new RequestParams(RequestUtils.REQUEST_QUANXIAN +"api/androidUpgrade/getCurrent");
         Log.e(TAG, "version: " + params);
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         //   params.addBodyParameter("reqJson", jsonObject.toString());
         x.http().get(params, new Callback.CommonCallback<String>() {
 
@@ -519,6 +677,7 @@ public class MainActivity extends BaseFragmentActivity {
                             // downFile(URLData.DOWNLOAD_URL);
                             final DownloadTask downloadTask = new DownloadTask(
                                     MainActivity.this);
+                            Log.e(TAG, "doInBackground: url " + downloadUrl);
                             downloadTask.execute(downloadUrl);
                             mBar.setOnCancelListener(new DialogInterface.OnCancelListener() {
                                 @Override
@@ -533,6 +692,7 @@ public class MainActivity extends BaseFragmentActivity {
         }
     }
 
+    private static final int READ_SIZE = 163840;
     /**
      * 下载应用
      *
@@ -556,6 +716,7 @@ public class MainActivity extends BaseFragmentActivity {
             try {
                 URL url = new URL(sUrl[0]);
                 connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestProperty("Accept-Encoding", "identity");
                 connection.connect();
                 // expect HTTP 200 OK, so we don't mistakenly save error
                 // report
@@ -567,11 +728,13 @@ public class MainActivity extends BaseFragmentActivity {
                 }
                 // this will be useful to display download percentage
                 // might be -1: server did not report the length
-                int fileLength = connection.getContentLength();
+                long fileLength = connection.getContentLengthLong();
+
                 if (Environment.getExternalStorageState().equals(
                         Environment.MEDIA_MOUNTED)) {
                     file = new File(MainActivity.this.getObbDir().getAbsolutePath(),
                             DOWNLOAD_NAME + versionService + ".apk");
+
 
                     if (!file.exists()) {
                         // 判断父文件夹是否存在
@@ -586,21 +749,51 @@ public class MainActivity extends BaseFragmentActivity {
                 }
                 input = connection.getInputStream();
                 output = new FileOutputStream(file);
-                byte data[] = new byte[4096];
-                long total = 0;
-                int count;
-                while ((count = input.read(data)) != -1) {
-                    // allow canceling with back button
-                    if (isCancelled()) {
-                        input.close();
-                        return null;
-                    }
-                    total += count;
-                    // publishing the progress....
-                    if (fileLength > 0) // only if total length is known
-                        publishProgress((int) (total * 100 / fileLength));
-                    output.write(data, 0, count);
 
+                if(-1 == fileLength){
+                    Log.e(TAG, "doInBackground: getContentEncoding = " + connection.getContentEncoding() );
+                    byte[] buf = new byte[READ_SIZE];
+                    int bufferLeft = buf.length;
+                    int offset = 0;
+                    int result = 0;
+                    outer:do {
+                        while(bufferLeft > 0 ){
+                            result = input.read(buf,offset,bufferLeft);
+                            Log.e(TAG, "doInBackground: result = " + result );
+                            if(result < 0){
+                                break outer;
+                            }
+                            offset += result;
+                            bufferLeft -= result;
+                        }
+                        bufferLeft = READ_SIZE;
+                        int newSize = buf.length + READ_SIZE;
+                        byte[] newBuf = new byte[newSize];
+                        System.arraycopy(buf,0,newBuf,0,buf.length);
+                        buf = newBuf;
+                    }while (true);
+                    byte[] imageBuf = new byte[offset];
+                    System.arraycopy(buf,0,imageBuf,0,offset);
+
+                    output.write(imageBuf, 0, offset);
+                }else{
+                    byte data[] = new byte[4096];
+                    long total = 0;
+                    int count;
+                    while ((count = input.read(data)) != -1) {
+                        // allow canceling with back button
+                        if (isCancelled()) {
+                            input.close();
+                            return null;
+                        }
+                        total += count;
+                        Log.e(TAG, "doInBackground: 6.5 " + fileLength);
+                        // publishing the progress....
+                        if (fileLength > 0) // only if total length is known
+                            publishProgress((int) (total * 100 / fileLength));
+                        output.write(data, 0, count);
+
+                    }
                 }
             } catch (Exception e) {
                 System.out.println(e.toString());
@@ -722,7 +915,7 @@ public class MainActivity extends BaseFragmentActivity {
         startActivity(intent);*/
         if (Build.VERSION.SDK_INT >= 24) {
             File file = new File(fileName);
-            tempUri = FileProvider.getUriForFile(MainActivity.this, "com.haohai.platform.fireforestplatform.fileProvider", file);
+            tempUri = FileProvider.getUriForFile(MainActivity.this, "com.haohai.platform.fireforestplatform", file);
             Intent install = new Intent(Intent.ACTION_VIEW);
             install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);//添加这一句表示对目标应用临时授权该Uri所代表的文件
@@ -744,14 +937,31 @@ public class MainActivity extends BaseFragmentActivity {
     class FireWeixingReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
-            String type = intent.getStringExtra("type");
-            if (type.equals("4")){
+
+            //type 2一体机林业 3一体机国土    4是卫星
+            tuisongType = intent.getStringExtra("type");
+            if (tuisongType.equals("11")||tuisongType.equals("12")||tuisongType.equals("13")||tuisongType.equals("14")||tuisongType.equals("15")){
                 viewPager.setCurrentItem(0);
                 tabsCell.setSelected(0);
-
-            }else {
+            } else {
                 startActivity(new Intent(getApplicationContext(), FireMissionListActivity.class));
             }
+          /*  if (mTunnelStateManager.getTunnelState() ==CONNECTED) {
+
+                //type 2一体机林业 3一体机国土    4是卫星
+                tuisongType = intent.getStringExtra("type");
+                if (tuisongType.equals("11")||tuisongType.equals("12")||tuisongType.equals("13")||tuisongType.equals("14")||tuisongType.equals("15")){
+                    viewPager.setCurrentItem(0);
+                    tabsCell.setSelected(0);
+                } else {
+                    startActivity(new Intent(getApplicationContext(), FireMissionListActivity.class));
+                }
+            }else {
+                hasTuisong = true;
+                Log.e(TAG, "onReceive: tuisong  VPN未连接，重新连接");
+
+            }*/
+
         }
     }
 
@@ -778,4 +988,8 @@ public class MainActivity extends BaseFragmentActivity {
             tabsCell.setSelected(1);
         }
     }
+
+
+
+
 }

@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Gradle: com.netease.yunxin:nertc-base:4.6.20@aar">
+    <CLASSES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/66d1da70c1ed18e3080135c4d4d9484e/nertc-base-4.6.20/jars/classes.jar!/" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/66d1da70c1ed18e3080135c4d4d9484e/nertc-base-4.6.20/res" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/AndroidManifest.xml" />
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/66d1da70c1ed18e3080135c4d4d9484e/nertc-base-4.6.20/jars/libs/nertc-sdk-part-4.6.20.jar!/" />
+      <root url="file:///Applications//Contents/gradle/gradle-6.7.1/caches///66d1da70c1ed18e3080135c4d4d9484e/nertc-base-4.6.20/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

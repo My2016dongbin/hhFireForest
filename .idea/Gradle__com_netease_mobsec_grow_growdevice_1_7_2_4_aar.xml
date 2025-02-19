@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: com.netease.mobsec.grow:growdevice:1.7.2.4@aar">
+    <CLASSES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/c1f363d09b8d0e91eb76f6095b918fde/growdevice-1.7.2.4/jars/classes.jar!/" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/c1f363d09b8d0e91eb76f6095b918fde/growdevice-1.7.2.4/res" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/growdevice-1.7.2.4/AndroidManifest.xml" />
+      <root url="file:///Applications//Contents/gradle/gradle-6.7.1/caches/////AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

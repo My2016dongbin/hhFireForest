@@ -42,6 +42,10 @@
           color: white;
           display: none;
         }
+        .cesium-viewer-navigationContainer {
+            top: 5px;
+            left: 5px;
+        }
   </style>
 </head>
 
@@ -55,7 +59,7 @@
 <div class="scene-mode-item"  @click="modeChange('3d')">3D</div>
 <div style="background-image: url(img/home.png);display: block;position: absolute;top: 0;right: 13px;width: 32px;height: 33px;"  onclick="gohome();"></div>
 <div id="parkdetail">
-  <img id="parkimg"
+  <img id="parkimg"‘
   width="40%"
   style="float:left; margin: 10px;height: 88%"
   src="./ic_park.png"/>

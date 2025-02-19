@@ -37,7 +37,8 @@ public class FireMissionViewBinder extends ItemViewProvider<FireMission, FireMis
     protected void onBindViewHolder(@NonNull ViewHolder holder, @NonNull FireMission fireMission) {
         holder.textView1.setText("任务内容: " + fireMission.getTaskContent() );
         holder.textView2.setText("开始时间: " + fireMission.getTaskStartTime() );
-        holder.textView3.setText("截止时间: " + fireMission.getTaskEndTime() );
+        String endTime = fireMission.getTaskEndTime()==null ? "" : fireMission.getTaskEndTime();
+        holder.textView3.setText("截止时间: " + endTime);
      //  0 holder.textView4.setText("执行人: " + fireMission.getOperatorName() );
         //任务状态，0未开始，1执行中，2已结束
         if (fireMission.getStatus() == 0) {

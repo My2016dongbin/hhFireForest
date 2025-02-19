@@ -210,7 +210,6 @@ public class WorkReportWeekAddActivity extends HhBaseActivity implements WeekCho
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "postData:-- params--" + params);
         Log.e(TAG, "postData:-- jsonObject.toString()--" + jsonObject.toString());
         Log.e(TAG, "postData:-- jsonObject.toString()--" +"bearer " + new DbConfig(this).getUser().getToken());
@@ -303,7 +302,7 @@ public class WorkReportWeekAddActivity extends HhBaseActivity implements WeekCho
                                     .countable(true)
                                     .capture(true)
                                     .captureStrategy(
-                                            new CaptureStrategy(true,"com.haohai.platform.fireforestplatform.fileProvider")
+                                            new CaptureStrategy(true,"com.haohai.platform.fireforestplatform")
                                     )
                                     .maxSelectable(size)
                                     .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))

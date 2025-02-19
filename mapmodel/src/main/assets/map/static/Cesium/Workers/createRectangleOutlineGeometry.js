@@ -1,7 +1,7 @@
 /**
- * Cesium - https://github.com/AnalyticalGraphicsInc/cesium
+ * Cesium - https://github.com/CesiumGS/cesium
  *
- * Copyright 2011-2017 Cesium Contributors
+ * Copyright 2011-2020 Cesium Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@
  * Columbus View (Pat. Pend.)
  *
  * Portions licensed separately.
- * See https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md for full licensing details.
+ * See https://github.com/CesiumGS/cesium/blob/master/LICENSE.md for full licensing details.
  */
-define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-52d9479f', './BoundingSphere-ab31357a', './RuntimeError-7c184ac0', './WebGLConstants-4c11ee5f', './ComponentDatatype-919a7463', './GeometryAttribute-ba19792d', './PrimitiveType-97893bc7', './FeatureDetection-bac17d71', './Transforms-794e44e6', './buildModuleUrl-02e5236f', './GeometryAttributes-1c7ce91d', './IndexDatatype-18a8cae6', './GeometryOffsetAttribute-c9accdb9', './EllipsoidRhumbLine-c9b776a6', './earcut-2.2.1-b404d9e6', './PolygonPipeline-0532ac9c', './RectangleGeometryLibrary-67917413'], function (when, Check, _Math, Cartesian2, BoundingSphere, RuntimeError, WebGLConstants, ComponentDatatype, GeometryAttribute, PrimitiveType, FeatureDetection, Transforms, buildModuleUrl, GeometryAttributes, IndexDatatype, GeometryOffsetAttribute, EllipsoidRhumbLine, earcut2_2_1, PolygonPipeline, RectangleGeometryLibrary) { 'use strict';
+define(['./when-8d13db60', './Check-70bec281', './Math-61ede240', './Cartographic-fe4be337', './Cartesian2-85064f09', './BoundingSphere-775c5788', './Cartesian4-5af5bb24', './RuntimeError-ba10bc3e', './WebGLConstants-4c11ee5f', './ComponentDatatype-5862616f', './GeometryAttribute-ed9d707f', './PrimitiveType-97893bc7', './FeatureDetection-7bd32c34', './Transforms-a1cf7267', './buildModuleUrl-e7952659', './GeometryAttributes-aacecde6', './IndexDatatype-9435b55f', './arrayFill-9766fb2e', './GeometryOffsetAttribute-999fc023', './EllipsoidRhumbLine-f161e674', './earcut-2.2.1-b404d9e6', './PolygonPipeline-fd46002b', './RectangleGeometryLibrary-e7665732'], function (when, Check, _Math, Cartographic, Cartesian2, BoundingSphere, Cartesian4, RuntimeError, WebGLConstants, ComponentDatatype, GeometryAttribute, PrimitiveType, FeatureDetection, Transforms, buildModuleUrl, GeometryAttributes, IndexDatatype, arrayFill, GeometryOffsetAttribute, EllipsoidRhumbLine, earcut2_2_1, PolygonPipeline, RectangleGeometryLibrary) { 'use strict';
 
     var bottomBoundingSphere = new BoundingSphere.BoundingSphere();
         var topBoundingSphere = new BoundingSphere.BoundingSphere();
-        var positionScratch = new Cartesian2.Cartesian3();
+        var positionScratch = new Cartographic.Cartesian3();
         var rectangleScratch = new Cartesian2.Rectangle();
 
         function constructRectangle(geometry, computedOptions) {
@@ -360,7 +360,7 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
             return result;
         };
 
-        var nwScratch = new Cartesian2.Cartographic();
+        var nwScratch = new Cartographic.Cartographic();
         /**
          * Computes the geometric representation of an outline of a rectangle, including its vertices, indices, and a bounding sphere.
          *
@@ -392,10 +392,10 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
                     var size = geometry.attributes.position.values.length / 3;
                     var offsetAttribute = new Uint8Array(size);
                     if (rectangleGeometry._offsetAttribute === GeometryOffsetAttribute.GeometryOffsetAttribute.TOP) {
-                        offsetAttribute = GeometryOffsetAttribute.arrayFill(offsetAttribute, 1, 0, size / 2);
+                        offsetAttribute = arrayFill.arrayFill(offsetAttribute, 1, 0, size / 2);
                     } else {
                         offsetValue = rectangleGeometry._offsetAttribute === GeometryOffsetAttribute.GeometryOffsetAttribute.NONE ? 0 : 1;
-                        offsetAttribute = GeometryOffsetAttribute.arrayFill(offsetAttribute, offsetValue);
+                        offsetAttribute = arrayFill.arrayFill(offsetAttribute, offsetValue);
                     }
 
                     geometry.attributes.applyOffset = new GeometryAttribute.GeometryAttribute({
@@ -415,7 +415,7 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
                     var length = geometry.attributes.position.values.length;
                     var applyOffset = new Uint8Array(length / 3);
                     offsetValue = rectangleGeometry._offsetAttribute === GeometryOffsetAttribute.GeometryOffsetAttribute.NONE ? 0 : 1;
-                    GeometryOffsetAttribute.arrayFill(applyOffset, offsetValue);
+                    arrayFill.arrayFill(applyOffset, offsetValue);
                     geometry.attributes.applyOffset = new GeometryAttribute.GeometryAttribute({
                         componentDatatype : ComponentDatatype.ComponentDatatype.UNSIGNED_BYTE,
                         componentsPerAttribute : 1,

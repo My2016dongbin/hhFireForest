@@ -25,7 +25,7 @@ public class DbConfig {
                 .setAllowTransaction(true)
                 .setDbDir(context.getFilesDir())
                 //.setDbDir(Environment.getExternalStorageDirectory())
-                .setDbVersion(8);
+                .setDbVersion(6);
 
         return daoConfig;
     }
@@ -105,26 +105,6 @@ public class DbConfig {
         } catch (DbException e) {
         }
         return null;
-    }
-
-    public String getPermissions(){
-        DbManager.DaoConfig daoConfig = getDaoConfig();
-        DbManager db = x.getDb(daoConfig);
-        try {
-            List<User> users = db.selector(User.class)
-                    .findAll();
-            if (users != null){
-                for (int i = 0; i < users.size(); i++) {
-                    User user = users.get(i);
-                    if (user.getIsLogin() == 1){
-                        return user.getPermission();
-                    }
-                }
-            }
-
-        } catch (DbException e) {
-        }
-        return "";
     }
 
     public User getUserOut(){

@@ -1,6 +1,5 @@
 package com.ruyiruyi.rylibrary.service;
 
-import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -20,7 +19,6 @@ import com.ruyiruyi.rylibrary.db.User;
 public class BackgroundMp3Service extends Service {
     private static final String TAG = BackgroundMp3Service.class.getSimpleName();
     private String messageWeb;
-    @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -33,7 +31,7 @@ public class BackgroundMp3Service extends Service {
         }
     };
     private String type;
-    private int soundCount=0;
+
 
     @Override
     public void onCreate() {
@@ -86,24 +84,17 @@ public class BackgroundMp3Service extends Service {
 
             if (isyunyin == 1 && current1!=0  && current2!=0){
 
-                Log.e(TAG, "service  bofangle "  );
-
-                    final MediaPlayer mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.find_order);
+                Log.e(TAG, "service  bofangle bingo type = " + type );
+                //2一体机林业 3一体机国土    4是卫星
+                if (type.equals("11") ||type.equals("12") || type.equals("13") || type.equals("14")|| type.equals("15")){
+                    MediaPlayer mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.find_fire);
                     mediaPlayer.start();
-                    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        @Override
-                        public void onCompletion(MediaPlayer mp) {
-                            Log.e(TAG, "onCompletion: wancheng" );
-                            if(0==soundCount||1==soundCount)
-                            {
-                                mediaPlayer.start();
-                                soundCount++;
-                            }else {
-                                mHandler.sendEmptyMessageDelayed(1, 7000);
-                            }
-                        }
-                    });
-
+                    mHandler.sendEmptyMessageDelayed(1, 7000);
+                }else {
+                    MediaPlayer mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.find_order);
+                    mediaPlayer.start();
+                    mHandler.sendEmptyMessageDelayed(1, 7000);
+                }
 
             }
 

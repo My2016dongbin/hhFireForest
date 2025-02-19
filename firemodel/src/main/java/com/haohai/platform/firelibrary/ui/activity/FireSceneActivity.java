@@ -2,6 +2,7 @@ package com.haohai.platform.firelibrary.ui.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -15,7 +16,10 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -32,6 +36,7 @@ import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.cell.ActionBar;
 import com.ruyiruyi.rylibrary.cell.MessagePicturesLayout;
 import com.ruyiruyi.rylibrary.db.DbConfig;
+import com.ruyiruyi.rylibrary.db.User;
 import com.ruyiruyi.rylibrary.image.ImageUtils;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.utils.GifSizeFilter;
@@ -65,12 +70,16 @@ import static me.drakeet.multitype.MultiTypeAsserts.assertHasTheSameAdapter;
 
 public class FireSceneActivity extends HhBaseActivity implements ChooseImageViewBinder.OnChooseImageClickListener ,MessagePicturesLayout.Callback{
     private static final String TAG = FireSceneActivity.class.getSimpleName();
+    public static final int MAP_REUEST_CODE = 2;
     private ActionBar actionBar;
     private RecyclerView listView;
     private List<Object> items = new ArrayList<>();
     private MultiTypeAdapter adapter;
     private ChooseImageViewBinder chooseImageViewBinder;
     private TextView shipinView;
+    private TextView tv_location;
+    private TextView tv_lalo;
+    private ImageView btn_location;
     private LinearLayout photoLayout;
     public List<Uri> uriChooseList;
     private static final int REQUEST_CODE_CHOOSE = 23;
@@ -81,7 +90,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
     private ProgressDialog progressDialog;
     private List<String> imgStrList;
     private String videostr="";
-    private String id;
+    private String id = "";
     private EditText xcqkedit;
     private EditText qtqkedit;
     private ProgressDialog addFireDialog;
@@ -103,6 +112,18 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
     }
 
     private void bindView() {
+        RxViewAction.clickNoDouble(btn_location).subscribe(new Action1<Void>() {
+            @Override
+            public void call(Void aVoid) {
+                Intent intent = new Intent(getApplicationContext(), FireMapActivity.class);
+                User user = new DbConfig(getApplicationContext()).getUser();
+                Log.e(TAG, "call: currentLongitude" +user.getLongitude());
+                Log.e(TAG, "call: currentLatitude" +user.getLatitude());
+                intent.putExtra("longitude_double", user.getLongitude());
+                intent.putExtra("latitude_double", user.getLatitude());
+                startActivityForResult(intent, MAP_REUEST_CODE);
+            }
+        });
         RxViewAction.clickNoDouble(addFireSceneButton)
                 .subscribe(new Action1<Void>() {
                     @Override
@@ -112,12 +133,8 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
                         if (list.size()>0) {
                             postPicToService();
                         }else {
-                            if (isChooseShipin){
-                                postVideoToServiceRx();
-                            }else {
-                                addFireDialog.dismiss();
-                                Toast.makeText(getApplicationContext(), "图片和视频至少上传一项", Toast.LENGTH_SHORT).show();
-                            }
+                            addFireDialog.dismiss();
+                            Toast.makeText(getApplicationContext(), "请至少上传一张图片", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -127,18 +144,64 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
                     @Override
                     public void call(Void aVoid) {
                         if (shipinView.getText().equals("视频选择")|| shipinView.getText().equals("重新选择视频")){
-                            Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
-                            startActivityForResult(i, 66);
+//                            Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+//                            startActivityForResult(i, 66);
+                            showBottomDialog();
                         }
                     }
                 });
+    }
+
+    private void showBottomDialog() {
+        //1、使用Dialog、设置style
+        final Dialog dialog = new Dialog(this, R.style.DialogTheme);
+        //2、设置布局
+        View view = View.inflate(this, R.layout.dialog, null);
+        dialog.setContentView(view);
+
+        Window window = dialog.getWindow();
+        //设置弹出位置
+        window.setGravity(Gravity.BOTTOM);
+        //设置弹出动画
+        window.setWindowAnimations(R.style.main_menu_animStyle);
+        //设置对话框大小
+        window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.show();
+
+        dialog.findViewById(R.id.tv_take_photo).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+                Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY,0);
+                intent.putExtra(MediaStore.EXTRA_SIZE_LIMIT,1);
+                startActivityForResult(intent,77);
+            }
+        });
+
+        dialog.findViewById(R.id.tv_take_pic).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+                Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(i, 66);
+            }
+        });
+
+        dialog.findViewById(R.id.tv_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+
     }
 
     /**
      * 上传图片到服务器
      */
     private void postPicToService() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        RequestParams params = new RequestParams(RequestUtils.SAVE_IMAGE);
         params.setAsJsonContent(true);
         params.setMultipart(true);    //以表单得形式上传  文件上传必须要
 
@@ -148,13 +211,15 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
 
                 Log.e(TAG, "postPicToService: " + i);
                 Uri uri = list.get(i).getUri();
-                int degree = ImageUtils.readPictureDegree(uri.toString());
+                String pathStr = ImageUtils.getRealPathFromURI(FireSceneActivity.this,uri);
+                int degree = ImageUtils.readPictureDegree(pathStr);
                 Bitmap photo = ImageUtils.getBitmapFormUri(getApplicationContext(), uri);
 
                 Bitmap picOne = rotaingImageView(degree, photo);
                 String picStr = ImageUtils.savePhoto(picOne, this.getObbDir().getAbsolutePath(), "fileName" + i);
                 //  fileData[i] = new  File(picStr);
                 params.addBodyParameter("file", new File(picStr),null,picStr);
+                Log.e(TAG, "postPicToService: picStr = " + picStr );
             } catch (IOException e) {
             }
         }
@@ -165,8 +230,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
         Log.e(TAG, "postPicToService: " + params );
         Log.e(TAG, "postPicToService: " + new DbConfig(this).getUser().getToken() );
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        params.setConnectTimeout(1000000);
+
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -189,7 +253,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
                         }
                     }else {
                         Toast.makeText(FireSceneActivity.this, "提交失败", Toast.LENGTH_SHORT).show();
-                        progressDialog.dismiss();
+                        addFireDialog.dismiss();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -199,6 +263,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 Log.e(TAG, "onError: 请求失败" +ex.toString());
+                addFireDialog.dismiss();
             }
 
             @Override
@@ -233,6 +298,9 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
         xcqkedit = (EditText) findViewById(R.id.fire_xcqk_view);
         qtqkedit = (EditText) findViewById(R.id.fire_qtqk_view);
         shipinView = (TextView) findViewById(R.id.shipin_view);
+        tv_location = (TextView) findViewById(R.id.tv_location);
+        tv_lalo = (TextView) findViewById(R.id.tv_lalo);
+        btn_location = (ImageView) findViewById(R.id.btn_location);
 
         listView = (RecyclerView) findViewById(R.id.phote_recycle);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
@@ -267,13 +335,13 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
 
                         @Override
                         public void onNext(Boolean aBoolean) {
-                            int size = 2 - list.size();
+                            int size = 5 - list.size();
                             Matisse.from(FireSceneActivity.this)
                                     .choose(MimeType.allOf())
                                     .countable(true)
                                     .capture(true)
                                     .captureStrategy(
-                                            new CaptureStrategy(true,"com.haohai.platform.fireforestplatform.fileProvider")
+                                            new CaptureStrategy(true,"com.haohai.platform.fireforestplatform")
                                     )
                                     .maxSelectable(size)
                                     .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
@@ -332,7 +400,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
             chooseImage.setAdd(true);
             items.add(chooseImage);
         }else {
-            if (list.size()<2){
+            if (list.size()<5){
                 for (int i = 0; i < list.size(); i++) {
                     items.add(list.get(i));
                 }
@@ -351,10 +419,25 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
     }
 
 
+    private String longitude;
+    private String latitude;
+    private String cityAddress = "";
+    private String currentCity = "";
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
+        if (requestCode == MAP_REUEST_CODE && resultCode == RESULT_OK) {
+            Log.e(TAG, "onActivityResult: data = " + data );
+            longitude = data.getStringExtra("longitude");
+            latitude = data.getStringExtra("latitude");
+            cityAddress = data.getStringExtra("cityAddress");
+            currentCity = data.getStringExtra("city");
+            Log.e(TAG, "onActivityResult: " + longitude + " " + latitude );
+            if(longitude!=null && latitude!=null){
+                tv_lalo.setText("   "+longitude+" , "+latitude);
+            }
+        }
+        else if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
 
 
 
@@ -381,9 +464,9 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
 
 
             // 判断只能添加五张图片
-            if ( (uriList.size() + list.size()) > 2){
-                Toast.makeText(this, "最多只能添加2张", Toast.LENGTH_SHORT).show();
-                int size =  2 - list.size();
+            if ( (uriList.size() + list.size()) > 5){
+                Toast.makeText(this, "最多只能添加5张", Toast.LENGTH_SHORT).show();
+                int size =  5 - list.size();
                 for (int i = 0; i < size; i++) {
                     ChooseImage chooseImage = new ChooseImage();
                     chooseImage.setUri(uriList.get(i));
@@ -422,6 +505,20 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
             cursor.close();
             Log.e(TAG, "onActivityResult: " + videoPath);
             shipinView.setText("重新选择视频");
+        }else if (requestCode == 77 && resultCode == RESULT_OK && null != data){
+            isChooseShipin = true;
+            Uri selectedVideo = data.getData();
+            String[] filePathColumn = {MediaStore.Video.Media.DATA};
+
+            Cursor cursor = getContentResolver().query(selectedVideo,
+                    filePathColumn, null, null, null);
+            cursor.moveToFirst();
+
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            videoPath = cursor.getString(columnIndex);
+            cursor.close();
+            Log.e(TAG, "onActivityResult: " + videoPath);
+            shipinView.setText("重新选择视频");
         }
         if (resultCode != Activity.RESULT_OK) {
             return;
@@ -431,14 +528,13 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
 
 
     private void postVideoToServiceRx() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        RequestParams params = new RequestParams(RequestUtils.SAVE_IMAGE);
         params.addBodyParameter("file", new File(videoPath),null,videoPath);
         params.setAsJsonContent(true);
         params.setMultipart(true);
         params.setConnectTimeout(1000000);
         //params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "resource: --"  + params);
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
@@ -454,6 +550,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
                         for (int i = 0; i<imgStrArray.length(); i++){
                             videostr= (String) imgStrArray.get(i);
                         }
+
                         postFireToService();
                     }else {
                         Toast.makeText(FireSceneActivity.this, "提交失败", Toast.LENGTH_SHORT).show();
@@ -496,6 +593,10 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
             jsonObject.put("taskId",id);
             jsonObject.put("videoUrl",videostr);
             jsonObject.put("imgUrl",imgstr);
+            if(latitude!=null && longitude!=null){
+                jsonObject.put("latitude",Double.parseDouble(latitude));
+                jsonObject.put("longitude",Double.parseDouble(longitude));
+            }
         } catch (JSONException e) {
         }
         Log.e(TAG, "postFireToService: "+jsonObject);
@@ -505,7 +606,6 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
         params.setBodyContent(jsonObject.toString());
         params.setConnectTimeout(10000);
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -515,10 +615,15 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
                     String code = jsonObject1.getString("code");
                     String message = jsonObject1.getString("message");
                     if (code.equals("200")){
+                        hideDialogProgress(addFireDialog);
                         Toast.makeText(FireSceneActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
+                        Intent data = new Intent();
+                        data.putExtra("status","ok");
+                        setResult(RESULT_OK, data);
                         finish();
                     }else {
                         Toast.makeText(FireSceneActivity.this, message, Toast.LENGTH_SHORT).show();
+                        hideDialogProgress(addFireDialog);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -528,6 +633,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 Log.e(TAG, "onError: 请求失败" );
+                hideDialogProgress(addFireDialog);
                 Toast.makeText(FireSceneActivity.this, "请连接内网上传", Toast.LENGTH_SHORT).show();
             }
 

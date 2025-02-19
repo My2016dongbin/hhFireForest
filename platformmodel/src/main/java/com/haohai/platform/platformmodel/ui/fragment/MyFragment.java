@@ -1,6 +1,6 @@
 package com.haohai.platform.platformmodel.ui.fragment;
 
-import android.content.pm.PackageInfo;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
@@ -18,14 +17,17 @@ import android.widget.Toast;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.bumptech.glide.Glide;
 import com.haohai.platform.platformmodel.R;
+import com.haohai.platform.platformmodel.ui.acticity.ChangePassActivity;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.db.User;
 import com.haohai.platform.platformmodel.ui.fragment.base.HhBaseFragment;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.cell.ImageTextView;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
-import com.ruyiruyi.rylibrary.utils.CommonUtils;
+import com.ruyiruyi.rylibrary.utils.CommonData;
 import com.ruyiruyi.rylibrary.utils.glide.GlideCircleTransform;
+import com.tencent.android.tpush.XGPushManager;
+import com.vsg.trustaccess.sdks.VSGService;
 //import com.tencent.android.tpush.XGPushManager;
 
 import org.xutils.DbManager;
@@ -44,13 +46,15 @@ public class MyFragment extends HhBaseFragment {
     private ImageTextView touxiangView;
     private User user;
     private TextView nameView;
+    private TextView tv_version;
     private Switch weizhiSwitch;
-    private Boolean isShangchuan = true;;
+    private LinearLayout change_password_layout;
+    private Switch baojingSwich;
+    private Boolean isShangchuan = true;
+    private int isyunyin = 1;
     private LinearLayout gengxinLayout;
     private LinearLayout guanyuLayout;
-    private FrameLayout sswzLayout;
-    private TextView versionCode;
-    private String appversionNum;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -71,17 +75,24 @@ public class MyFragment extends HhBaseFragment {
 
 
     private void initView() {
+        tv_version = ((TextView) getView().findViewById(R.id.tv_version));
+        try {
+            String version = getContext().getPackageManager().getPackageInfo(getContext().getPackageName(), 0).versionName;
+            tv_version.setText("当前版本V" + version);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
         gengxinLayout = ((LinearLayout) getView().findViewById(R.id.gengxin_layout));
         guanyuLayout = ((LinearLayout) getView().findViewById(R.id.guanyu_layout));
+        change_password_layout = ((LinearLayout) getView().findViewById(R.id.change_password_layout));
 
 
         weizhiSwitch = ((Switch) getView().findViewById(R.id.weizhi_switch));
         outButtonView = ((TextView) getView().findViewById(R.id.out_login_button));
-
+        baojingSwich = ((Switch) getView().findViewById(R.id.baojing_switch));
         touxiangImage = ((ImageView) getView().findViewById(R.id.touxiang_image));
         touxiangView = ((ImageTextView) getView().findViewById(R.id.touxiang_view));
         nameView = ((TextView) getView().findViewById(R.id.name_view));
-        versionCode = ((TextView) getView().findViewById(R.id.version_code));
         if (user.getHeadUrl().equals("null")) {
             touxiangImage.setVisibility(View.GONE);
             touxiangView.setVisibility(View.VISIBLE);
@@ -94,14 +105,6 @@ public class MyFragment extends HhBaseFragment {
         }
         nameView.setText(user.getFullName());
 
-        PackageManager pm = getContext().getPackageManager();
-        try {
-            PackageInfo pi = pm.getPackageInfo(getContext().getPackageName(), 0);
-            appversionNum = pi.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        versionCode.setText("版本信息："+appversionNum);
 
         RxViewAction.clickNoDouble(gengxinLayout)
                 .subscribe(new Action1<Void>() {
@@ -117,15 +120,43 @@ public class MyFragment extends HhBaseFragment {
                         Toast.makeText(getContext(), "青岛浩海网络科技股份有限公司技术支持", Toast.LENGTH_SHORT).show();
                    }
                 });
-        sswzLayout= ((FrameLayout) getView().findViewById(R.id.sswz_layout));
-        if(!CommonUtils.hasPermission(getActivity(),"app-setting-btn-position")){
-            sswzLayout.setVisibility(View.GONE);
-        }
 
     }
 
     private void bindView() {
+        RxViewAction.clickNoDouble(change_password_layout).subscribe(new Action1<Void>() {
+            @Override
+            public void call(Void aVoid) {
+                startActivity(new Intent(getActivity(),ChangePassActivity.class));
+            }
+        });
         weizhiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    isyunyin = 1;
+                    user.setIsyunyin(1);
+                    DbConfig dbConfig = new DbConfig(getContext());
+                    DbManager db = dbConfig.getDbManager();
+                    try {
+                        db.saveOrUpdate(user);
+                    } catch (DbException e) {
+                        e.printStackTrace();
+                    }
+                }else {
+                    isyunyin = 0;
+                    user.setIsyunyin(0);
+                    DbConfig dbConfig = new DbConfig(getContext());
+                    DbManager db = dbConfig.getDbManager();
+                    try {
+                        db.saveOrUpdate(user);
+                    } catch (DbException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        baojingSwich.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
@@ -157,7 +188,9 @@ public class MyFragment extends HhBaseFragment {
                 .subscribe(new Action1<Void>() {
                     @Override
                     public void call(Void aVoid) {
-//                        XGPushManager.unregisterPush(getContext());
+                        XGPushManager.unregisterPush(getContext());
+                        VSGService.getInstance().logout(getContext(), null);
+                        CommonData.vpnState = false;
 
                         DbConfig dbConfig = new DbConfig(getContext());
                         User user = dbConfig.getUser();
@@ -171,7 +204,6 @@ public class MyFragment extends HhBaseFragment {
                         ARouter.getInstance().build(RouteUtils.OutLogin)
                                 .navigation();
                         getActivity().finish();
-                       // startActivity(new Intent(getContext(), LoginActivity.class));
                     }
                 });
     }

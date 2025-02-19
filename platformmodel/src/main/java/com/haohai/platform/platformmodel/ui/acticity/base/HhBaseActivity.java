@@ -77,7 +77,7 @@ public class HhBaseActivity extends BaseActivity {
       /*  //解绑信鸽手机号
         XGPushManager.delAccount(getApplicationContext(),new DbConfig(getApplicationContext()).getPhone() );
         //反注册
-        XGPushManager.unregisterPush(this);*/
+*/
         builder = new AlertDialog.Builder(this).setIcon(R.drawable.ic_launcher).setTitle("智慧管廊")
                 .setMessage(error).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override

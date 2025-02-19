@@ -1,11 +1,17 @@
 package com.haohai.platform.fireforestplatform.ui.acticity;
 
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.net.VpnService;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,7 +19,9 @@ import android.widget.Toast;
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.haohai.platform.fireforestplatform.MainActivity;
 import com.haohai.platform.fireforestplatform.R;
+import com.haohai.platform.fireforestplatform.ui.utils.AuthTypeUtil;
 import com.haohai.platform.fireforestplatform.ui.utils.TraceServiceImpl;
+import com.haohai.platform.mapmodel.Utils.MNCTransparentDialog;
 import com.haohai.platform.platformmodel.ui.acticity.base.HhBaseActivity;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.db.User;
@@ -24,6 +32,9 @@ import com.ruyiruyi.rylibrary.utils.CommonData;
 import com.tencent.android.tpush.XGIOperateCallback;
 import com.tencent.android.tpush.XGPushConfig;
 import com.tencent.android.tpush.XGPushManager;
+import com.vsg.trustaccess.sdks.VSGService;
+import com.vsg.trustaccess.sdks.logic.AuthStateManager;
+import com.vsg.trustaccess.sdks.logic.TunnelStateManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,13 +46,12 @@ import org.xutils.http.RequestParams;
 import org.xutils.x;
 
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import rx.functions.Action1;
 
 @Route(path = RouteUtils.OutLogin)
-public class LoginActivity extends HhBaseActivity {
+public class LoginActivity extends HhBaseActivity implements AuthStateManager.AuthStateListener,TunnelStateManager.TunnelTotalStateListener,VSGService.KeyCertStateListener{
     private static final String TAG = LoginActivity.class.getSimpleName();
     private EditText userNameEdit;
     private EditText passwordEdit;
@@ -65,11 +75,27 @@ public class LoginActivity extends HhBaseActivity {
     private String access_token;
     private User user;
 
+
+    protected AuthStateManager mStateManager;
+    private  final int PREPARE_VPN_SERVICE = 0;
+    private TunnelStateManager mTunnelStateManager = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        Intent intent = getIntent();
+        String downMessage = intent.getStringExtra("downMessage");
+        if(downMessage != null){
+            showTipsDialog(downMessage);
+        }
+
         loginDialog = new ProgressDialog(this);
+
+
+        mStateManager = AuthStateManager.getStateManager();
+        mTunnelStateManager = TunnelStateManager.getStateManager();
+        mTunnelStateManager.registerTotalStateListener(this);
 
         initView();
     }
@@ -87,7 +113,12 @@ public class LoginActivity extends HhBaseActivity {
                     @Override
                     public void call(Void aVoid) {
 
-                        loginToService();
+                        showDialogProgress(loginDialog,"登陆中...              ");
+                        if(!CommonData.vpnState){
+                            AuthTypeUtil.checkNetworkConnectivity(LoginActivity.this);
+                        }else{
+                            loginToService();
+                        }
                     }
                 });
 
@@ -98,6 +129,38 @@ public class LoginActivity extends HhBaseActivity {
             passwordEdit.setText(user.getUserPasswd());
             userNameEdit.setSelection(userNameEdit.getText().length());
         }
+    }
+
+
+    public void showTipsDialog(String msg) {
+        final MNCTransparentDialog mncTransDialog = new MNCTransparentDialog(LoginActivity.this);
+        mncTransDialog.setCancelable(false);
+        View dialogView = LayoutInflater.from(LoginActivity.this).inflate(com.haohai.platform.mapmodel.R.layout.dialog_tips, null, false);
+        TextView message_text = (TextView) dialogView.findViewById(com.haohai.platform.mapmodel.R.id.message_text);
+        message_text.setText(msg);
+        final TextView tv_queren = (TextView) dialogView.findViewById(com.haohai.platform.mapmodel.R.id.tv_right);
+        final TextView tv_left = (TextView) dialogView.findViewById(com.haohai.platform.mapmodel.R.id.tv_left);
+        //确定
+        RxViewAction.clickNoDouble(tv_queren).subscribe(new Action1<Void>() {
+            @Override
+            public void call(Void aVoid) {
+                mncTransDialog.dismiss();
+
+            }
+        });
+        //取消
+        RxViewAction.clickNoDouble(tv_left).subscribe(new Action1<Void>() {
+            @Override
+            public void call(Void aVoid) {
+                mncTransDialog.dismiss();
+
+            }
+        });
+        mncTransDialog.show();
+        Window window = mncTransDialog.getWindow();//对话框窗口
+        window.setGravity(Gravity.CENTER);//设置对话框显示在屏幕中间
+        window.setWindowAnimations(com.haohai.platform.mapmodel.R.style.dialog_style);//添加动画
+        window.setContentView(dialogView);
     }
 
     private void loginToService() {
@@ -166,7 +229,6 @@ public class LoginActivity extends HhBaseActivity {
         // params.addBodyParameter("reqJson", jsonObject.toString());
         params.setConnectTimeout(10000);
         params.addHeader("Authorization","bearer " + access_token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "getUserInfo:-- " + params );
         x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
@@ -191,6 +253,7 @@ public class LoginActivity extends HhBaseActivity {
                         String isSuperAdmin = userJsonObj.getString("isSuperAdmin");
                         String comment = userJsonObj.getString("comment");
                         String groupId = userJsonObj.getString("groupId");
+                        /*String account_type = userJsonObj.getString("account_type");//1：管理员，2：护林员*/
 
                         String gridNo = userJsonObj.getString("gridNo");
                         String bkchar2 = userJsonObj.getString("bkchar2");
@@ -199,14 +262,48 @@ public class LoginActivity extends HhBaseActivity {
                         String groupName = userJsonObj.getString("groupName");
                         String headUrl = userJsonObj.getString("headUrl");
                         String state = userJsonObj.getString("state");
+                        String imToken = userJsonObj.getString("imToken");
 
+                        Set<String> tagSet = new LinkedHashSet<String>();
+                        tagSet.add(gridNo);
+                        tagSet.add(id);
+                        tagSet.add(groupId);
+                        tagSet.add("JiMo231113");
+                        XGPushManager.setTags(getApplicationContext(),"setTag",tagSet);
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                super.run();
+                                try {
+                                    Thread.sleep(15000);//休眠3秒
+                                    //开启华为推送
+                                    XGPushConfig.enableOtherPush(getApplicationContext(), true);
+                                    XGPushManager.registerPush(getApplicationContext(), new XGIOperateCallback() {
+                                        @Override
+                                        public void onSuccess(Object data, int flag) {
+                                            //token在设备卸载重装的时候有可能会变
+                                            Log.d("TPush", "注册成功，设备token为：" + data);
+                                        }
+
+                                        @Override
+                                        public void onFail(Object data, int errCode, String msg) {
+                                            Log.d("TPush", "注册失败，错误码：" + errCode + ",错误信息：" + msg);
+                                        }
+                                    });
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                /**
+                                 * 要执行的操作
+                                 */
+                            }
+                        }.start();
                         User user = new User(id, userCode,userNameEdit.getText().toString(), passwordEdit.getText().toString(), fullName, email, phone, sex, entryTime, birthday, type, isSuperAdmin, comment, groupId,
-                                gridNo, bkchar2, money, lockMoney, groupName, state, 1, access_token,headUrl);
+                                gridNo, bkchar2, money, lockMoney, groupName, state, 1, access_token,headUrl,imToken);
                         user.isShangchuan = false;
-                        user.setIsyunyin(0);
+                        user.setIsyunyin(1);
                         DbConfig dbConfig = new DbConfig(getApplicationContext());
                         DbManager db = dbConfig.getDbManager();
-
                         try {
                             db.delete(User.class);
                             db.saveOrUpdate(user);
@@ -216,27 +313,8 @@ public class LoginActivity extends HhBaseActivity {
 
                         //  doLogin();
                         loginDialog.dismiss();
-                        Set<String> tagSet = new LinkedHashSet<String>();
-                        tagSet.add(gridNo);
-                        Log.e(TAG, "gridNo: "+gridNo);
-                        tagSet.add(id);
-                        XGPushManager.setTags(getApplicationContext(),"setTag",tagSet);
-                        //开启华为推送
-                        XGPushConfig.enableOtherPush(getApplicationContext(), true);
-                        XGPushManager.registerPush(getApplicationContext(), new XGIOperateCallback() {
-                            @Override
-                            public void onSuccess(Object data, int flag) {
-                                //token在设备卸载重装的时候有可能会变
-                                Log.d("TPush", "注册成功，设备token为：" + data);
-                            }
 
-                            @Override
-                            public void onFail(Object data, int errCode, String msg) {
-                                Log.d("TPush", "注册失败，错误码：" + errCode + ",错误信息：" + msg);
-                            }
-                        });
-                        postPermissions();
-                        //startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
                        /* ARouter.getInstance().build(RouteUtils.LoginToMain)
                                 .withInt("state",1)
                                 .navigation();*/
@@ -330,175 +408,274 @@ public class LoginActivity extends HhBaseActivity {
 
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.e(TAG, "onDestroy: " );
+        if(mTunnelStateManager != null){
+            mTunnelStateManager.unregisterTotalStateListener(this);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.e(TAG, "onStop: " );
+        if(mStateManager != null){ mStateManager.unregisterListener(this);
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.e(TAG, "onStart: " );
+        mStateManager.registerListener(LoginActivity.this);
+
+    }
+
+
+    @Override
+    public void keyCertState(VSGService.KeyCertType keyCertType, int container) {
+        VSGService.getInstance().unregisterKeyCertStateListener();
+        /*
+         ****************可以使用Key中证书*****************************
+         * KEYCERTTYPE_RSA_ENC：国际标准，使用的加密证书
+         * KEYCERTTYPE_RSA_SIGN：国际标准，使用的签名证书
+         * KEYCERTTYPE_SM2_SIGN_ENC：国密标准，需要双证书(加密和签名同时存在)
+         * ****************不可以使用卡中证书*****************************
+         * KEYCERTTYPE_KEYNOTEXIST:Key不存在
+         * KEYCERTTYPE_CERTNOTEXIST:证书不存在
+         * KEYCERTTYPE_SM2_SIGN:国密签名证书存在
+         * KEYCERTTYPE_SM2_ENC:国密加密证书存在
+         * */
+        Log.e(TAG, "keyCertState: 证书");
+        switch (keyCertType) {
+            case KEYCERTTYPE_RSA_ENC:
+                Toast.makeText(getApplicationContext(),"国际加密证书存在，容器号："+container, Toast.LENGTH_SHORT).show();
+                break;
+            case KEYCERTTYPE_RSA_SIGN:
+                Toast.makeText(getApplicationContext(),"国际签名证书存在，容器号："+container, Toast.LENGTH_SHORT).show();
+                break;
+            case KEYCERTTYPE_SM2_SIGN_ENC:
+                Toast.makeText(getApplicationContext(),"国密双证书存在，容器号："+container, Toast.LENGTH_SHORT).show();
+                break;
+            case KEYCERTTYPE_SM2_SIGN:
+                Toast.makeText(getApplicationContext(),"国密签名证书存在", Toast.LENGTH_SHORT).show();
+                return;
+            case KEYCERTTYPE_SM2_ENC:
+                Toast.makeText(getApplicationContext(),"国密加密证书存在", Toast.LENGTH_SHORT).show();
+                break;
+            case KEYCERTTYPE_KEYNOTEXIST:
+                Toast.makeText(getApplicationContext(),"KEY不存在！", Toast.LENGTH_SHORT).show();
+                return;
+            case KEYCERTTYPE_CERTNOTEXIST:
+                Toast.makeText(getApplicationContext(),"证书不存在！", Toast.LENGTH_SHORT).show();
+                return;
+            default:
+                return;
+        }
+    }
+
+    @Override
+    public void tunnelTotalStateChanged() {
+        TunnelStateManager.TunnelState state = mTunnelStateManager.getTunnelState();
+        TunnelStateManager.TunnelErrorState errorState = mTunnelStateManager.getTunnelErrorState();
+        Log.e(TAG, "tunnelstate:"+state+",error:"+errorState);
+        if(reportErrorTunnelState(errorState)){
+            return;
+        }
+        switch (state){
+            case DISABLED:
+                CommonData.vpnState = false;
+//                Toast.makeText(getApplicationContext(), "未连接", Toast.LENGTH_SHORT).show();
+                break;
+            case CONNECTING:
+//                Toast.makeText(getApplicationContext(), "连接中", Toast.LENGTH_SHORT).show();
+                break;
+            case CONNECTED:
+                CommonData.vpnState = true;
+                //   Toast.makeText(getApplicationContext(), "已连接", Toast.LENGTH_SHORT).show();
+                break;
+            case DISCONNECTING:
+                CommonData.vpnState = false;
+//                Toast.makeText(getApplicationContext(), "断开连接中", Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+
     /**
-     * 获取按钮权限
+     * Vpn 回调接口
      */
-    private void postPermissions() {
-        showDialogProgress(loginDialog,"正在获取权限...");
-        DbConfig dbConfig = new DbConfig(this);
-        dbManager = dbConfig.getDbManager();
-        userPermission = dbConfig.getUser();
-        userPermission.setPermission("");
-        permissionCount = 0;
-        String[] menuIdList = {"app-map","app-video","app-application","app-setting"};//获取当前用户菜单：/auth/api/auth/auth/list/menu/by/user
-        for (int i = 0; i < menuIdList.length; i++) {
-            postPer(menuIdList[i]);
+    @Override
+    public void authStateChanged() {
+        AuthStateManager.AuthState state = mStateManager.getAuthState();
+        Log.e(TAG, "authStateChanged: " +state);
+
+        int errorCode = mStateManager.getAuthErrorCode();
+        if(reportErrorState(errorCode)){ /*具体实现可以参考demo*/
+
+            return;
         }
-        postMainPer();
-    }
-
-
-    private DbManager dbManager;
-    private User userPermission;
-    private int permissionCount;
-    private boolean permissionMain = false;
-    private void postPer(String id) {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST__URL_HLJ + "auth/api/auth/auth/list/element/from/menu");
-        params.addParameter("menuCode",id);
-        params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        Log.e(TAG, "postPermissions: " + params);
-        x.http().get(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: permissions" + result );
-                try {
-                    JSONObject object = new JSONObject(result);
-                    JSONArray dataList = object.getJSONArray("data");
-                    for (int i = 0; i < dataList.length(); i++) {
-                        JSONObject o = (JSONObject) dataList.get(i);
-                        String code = o.getString("elementCode");
-                        userPermission.addPermission(code+"_");
-                    }
-                    permissionCount++;
-                    if(permissionCount == 4){
-                        try {
-                            Log.e(TAG, "onSuccess: permissions ==>" + userPermission.getPermission() );
-                            dbManager.delete(User.class);
-                            dbManager.saveOrUpdate(userPermission);
-                            goMain();
-
-                        } catch (DbException e) {
-                            e.printStackTrace();
-                            Toast.makeText(LoginActivity.this, "权限获取异常", Toast.LENGTH_SHORT).show();
-                            loginDialog.dismiss();
-                        }
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Toast.makeText(LoginActivity.this, "权限获取异常", Toast.LENGTH_SHORT).show();
-                    loginDialog.dismiss();
+        switch (state){
+            case CONNECTING_SEVER:
+                Log.e(TAG, "authStateChanged: 0" );
+                break;
+            case CONNECTING_SERVER_SUCCESS:
+                Log.e(TAG, "authStateChanged: 1" );
+                AuthTypeUtil.userPasswordAuth(LoginActivity.this, true);
+                break;
+            case MODIFY_PASSWD_SUCCESS:
+                Log.e(TAG, "authStateChanged: 2" );
+                Toast.makeText(getApplicationContext(), "修改密码成功", Toast.LENGTH_SHORT).show();
+                break;
+            case NEED_PASSWORD_AUTH:
+                Log.e(TAG, "authStateChanged: 3" );
+                AuthTypeUtil.userPasswordAuth(LoginActivity.this,false);
+                break;
+            case NEED_CERT_AUTH:
+                Log.e(TAG, "authStateChanged: 4" );
+                AuthTypeUtil.certificateAuth(LoginActivity.this,false);
+                break;
+            case NEED_DYNAMIC_TOKEN:
+                Log.e(TAG, "authStateChanged: 5" );
+                //  startActivity(new Intent(MainActivity.this,DynamicTokenActivity.class));
+                break;
+            case NEED_SMS_AUTH:
+                Log.e(TAG, "authStateChanged: 6" );
+                //  startActivity(new Intent(MainActivity.this,SmsActivity.class));
+                break;
+            case NEED_TERMINAL_AUTH:
+                Log.e(TAG, "authStateChanged: 7" );
+                //     permissionRequest(mReadPhoneStatePermissions);
+                AuthTypeUtil.terminalAuth(LoginActivity.this,false);
+                break;
+            case NEED_COMMIT_TERMINAL_INFO:
+                Log.e(TAG, "authStateChanged: 8" );
+                /*直接提交终端信息*/
+                AuthTypeUtil.commitTerminalInfoAuth(LoginActivity.this,false);
+                break;
+            case NEED_MODIFY_PASSWORD:
+                Log.e(TAG, "authStateChanged: 9" );
+                /*Intent intent = new Intent(MainActivity.this,PwdChangeActivity.class);
+                intent.putExtra(FIRSTPWDCHANGEACTION,true);
+                startActivity(intent);*/
+                break;
+            case AUTH_SUCCESS:
+                Log.e(TAG, "authStateChanged: 10" );
+                //认证成功后 跳转进首页
+                //  handler.sendEmptyMessageDelayed(GO_GUIDE, 2000);
+//                Toast.makeText(getApplicationContext(), "认证成功", Toast.LENGTH_SHORT).show();
+                break;
+            case GET_INTERGRATION_XML:
+                Log.e(TAG, "authStateChanged: 11" );
+                break;
+            case GET_INTERGRATION_XML_SUCCESS:
+                Log.e(TAG, "authStateChanged: 12" );
+//                Toast.makeText(getApplicationContext(), "获取资源成功", Toast.LENGTH_SHORT).show();
+                if(!VSGService.getInstance().isHaveAccessResource()){
+                    Toast.makeText(getApplicationContext(), "没有可访问的资源", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-            }
+                prepareVPNService();
+                break;
+            case SHARED_LOGIN_FAILED:
+                Log.e(TAG, "authStateChanged: 13" );
+                AuthTypeUtil.checkNetworkConnectivity(LoginActivity.this);
+                break;
+            case SHARED_LOGIN_SUCCESS:
+                Log.e(TAG, "authStateChanged: 14" );
+                break;
+            default:
+                break;
+        }
+    }
+    private boolean reportErrorTunnelState(TunnelStateManager.TunnelErrorState error){
+        if (error == TunnelStateManager.TunnelErrorState.NO_ERROR)
+        {
+            return false;
+        }
 
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Toast.makeText(LoginActivity.this, "权限获取异常", Toast.LENGTH_SHORT).show();
-                loginDialog.dismiss();
-            }
+        switch (error)
+        {
+            case PEER_AUTH_FAILED:
+                Toast.makeText(this, "用户认证失败！", Toast.LENGTH_SHORT).show();
+                break;
+            case LOOKUP_FAILED:
+                Toast.makeText(this,"lookup_failed", Toast.LENGTH_SHORT).show();
+                break;
+            case UNREACHABLE:
+                Toast.makeText(this, "网关不可达", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                Toast.makeText(this, "其他错误："+error, Toast.LENGTH_SHORT).show();
+                break;
+        }
 
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-
-            }
-        });
+        return true;
     }
 
-    private void goMain() {
-        if(permissionCount == 4 && permissionMain){
-            loginDialog.dismiss();
-            startActivity(new Intent(getApplicationContext(), MainActivity.class));
-            Log.e(TAG, "goMain: userPermission = " + userPermission.getPermission() + CommonData.hasMainMap + CommonData.hasMainVideo + CommonData.hasMainApp + CommonData.hasMainMy );
+    private void prepareVPNService(){
+        Intent intent;
+        try {
+            intent = VpnService.prepare(this);
+        } catch (IllegalStateException ex) {
+            /*
+             * this happens if the always-on VPN feature (Android 4.2+) is
+             * activated
+             */
+            Toast.makeText(getApplicationContext(), "不支持VpnService", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        /* store profile info until the user grants us permission */
+        if (intent != null) {
+            try {
+                startActivityForResult(intent, PREPARE_VPN_SERVICE);
+            } catch (ActivityNotFoundException ex) {
+                /*
+                 * it seems some devices, even though they come with Android 4,
+                 * don't have the VPN components built into the system image.
+                 * com.android.vpndialogs/com.android.vpndialogs.ConfirmDialog
+                 * will not be found then
+                 */
+                Toast.makeText(getApplicationContext(), "不支持vpn", Toast.LENGTH_SHORT).show();
+            }
+        } else { /* user already granted permission to use VpnService */
+
+            onActivityResult(PREPARE_VPN_SERVICE, RESULT_OK, null);
         }
     }
 
-    private void postMainPer() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST__URL_HLJ + "auth/api/auth/auth/user/auth");
-        params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        Log.e(TAG, "postPermissions: " + params);
-        x.http().get(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: permissions postMainPer" + result );
-                try {
-                    JSONObject object = new JSONObject(result);
-                    JSONArray data = object.getJSONArray("data");
-                    JSONObject obj = (JSONObject) data.get(0);
-                    JSONArray dataList = obj.getJSONArray("menuDTOS");
-                    CommonData.hasMainMap = false;
-                    CommonData.hasMainVideo = false;
-                    CommonData.hasMainApp = false;
-                    CommonData.hasMainMy = false;
-                    for (int i = 0; i < dataList.length(); i++) {
-                        JSONObject o = (JSONObject) dataList.get(i);
-                        String menuCode = o.getString("menuCode");
-                        if(Objects.equals(menuCode, "app-map")){
-                            CommonData.hasMainMap = true;
-                        }
-                        if(Objects.equals(menuCode, "app-video")){
-                            CommonData.hasMainVideo = true;
-                        }
-                        if(Objects.equals(menuCode, "app-application")){
-                            CommonData.hasMainApp = true;
-                        }
-                        if(Objects.equals(menuCode, "app-setting")){
-                            CommonData.hasMainMy = true;
-                        }
-                    }
-                    Log.e(TAG, "handleMessage: getQcl" + CommonData.hasMainMap + CommonData.hasMainVideo + CommonData.hasMainApp + CommonData.hasMainMy );
-                    if(!CommonData.hasMainMap && !CommonData.hasMainVideo && !CommonData.hasMainApp && !CommonData.hasMainMy){
-                        CommonData.hasMainMy = true;
-                    }
-                    permissionMain = true;
-                    DbConfig dbConfig = new DbConfig(LoginActivity.this);
-                    User user = dbConfig.getUser();
-                    user.setHasMainMap(CommonData.hasMainMap);
-                    user.setHasMainVideo(CommonData.hasMainVideo);
-                    user.setHasMainApp(CommonData.hasMainApp);
-                    user.setHasMainMy(CommonData.hasMainMy);
-                    DbManager db = dbConfig.getDbManager();
-                    try {
-                        db.delete(User.class);
-                        db.saveOrUpdate(user);
-                    } catch (DbException e) {
-                        e.printStackTrace();
-                    }
-
-                    goMain();
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    CommonData.hasMainMap = true;
-                    CommonData.hasMainVideo = true;
-                    CommonData.hasMainApp = true;
-                    CommonData.hasMainMy = true;
-                    Toast.makeText(LoginActivity.this, "权限获取异常", Toast.LENGTH_SHORT).show();
-                    loginDialog.dismiss();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.e(TAG, "onActivityResult: 毁掉");
+        switch (requestCode) {
+            case PREPARE_VPN_SERVICE:
+                Log.e(TAG, "onActivityResult: 1" );
+                if (resultCode == RESULT_OK) {
+                    VSGService.getInstance().startNCTunnel(LoginActivity.this,null);
+                    loginToService();
                 }
-            }
+                break;
+        }
+    }
 
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Toast.makeText(LoginActivity.this, "权限获取异常", Toast.LENGTH_SHORT).show();
-                loginDialog.dismiss();
-            }
+    private boolean reportErrorState(int error){
+        if(error == 0){
+            return false;
+        }
+        String errormsg = mStateManager.getAuthErrorMsg();
+        switch (error){
+            case AuthStateManager.LocalStateCode.GATEWAY_INACCESSIBLE:
+                Toast.makeText(getApplicationContext(), "网关不可达,请稍后再试", Toast.LENGTH_SHORT).show();
 
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-
-            }
-        });
+                break;
+            case AuthStateManager.AuthStateCode.USER_SESSION_NOT_FOUND:
+                Toast.makeText(getApplicationContext(), "用户会话超时，请重新登录!", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                Toast.makeText(getApplicationContext(), "errorstate:"+ Integer.toHexString(error)+",errormsg:"+errormsg, Toast.LENGTH_SHORT).show();
+                break;
+        }
+        return true;
     }
 }

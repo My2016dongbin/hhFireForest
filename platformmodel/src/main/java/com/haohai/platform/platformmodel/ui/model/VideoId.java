@@ -17,18 +17,6 @@ public class VideoId {
         this.videoPlayer = videoPlayer;
     }
 
-    public VideoId(String videoId, String videoName, int videoPlayer) {
-        this.videoId = videoId;
-        this.videoName = videoName;
-        this.videoPlayer = videoPlayer;
-    }
-    public VideoId(String videoId, String videoName, int videoPlayer,String chennelId) {
-        this.videoId = videoId;
-        this.videoName = videoName;
-        this.videoPlayer = videoPlayer;
-        this.monitorId = chennelId;
-    }
-
     public String getMonitorId() {
         return monitorId;
     }

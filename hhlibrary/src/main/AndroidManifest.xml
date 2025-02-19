@@ -13,4 +13,5 @@
         <service android:name=".service.BackgroundMp3Service"/>
     </application>
 
+
 </manifest>

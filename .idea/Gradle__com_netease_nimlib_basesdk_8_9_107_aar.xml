@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="Gradle: com.netease.nimlib:basesdk:8.9.107@aar">
+    <CLASSES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/53849fde4aa20b1abc2950e1191f1bd4/basesdk-8.9.107/jars/classes.jar!/" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/53849fde4aa20b1abc2950e1191f1bd4/basesdk-8.9.107/res" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/AndroidManifest.xml" />
+      <root url="file:///Applications//Contents/gradle/gradle-6.7.1/caches/////AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/modules-2/files-2.1/com.netease.nimlib/basesdk/8.9.107/fb092173ce2eb285d8ff98314c5422b1af71f19c/basesdk-8.9.107-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/modules-2/files-2.1/com.netease.nimlib/basesdk/8.9.107/61c0c5acf29ce61fe849c196cf619835f7fd4fe4/basesdk-8.9.107-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

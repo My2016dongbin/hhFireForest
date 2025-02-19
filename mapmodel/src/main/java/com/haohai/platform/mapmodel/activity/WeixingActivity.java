@@ -546,8 +546,8 @@ public class WeixingActivity extends FullBaseActivity {
                         //初始话境外
                         isChooseJingwai = false;
                         isChooseHuanchong = false;
-//                        jingwaiImage.setImageResource(R.drawable.choose_no);
-//                        huanChongImage.setImageResource(R.drawable.choose_no);
+                        jingwaiImage.setImageResource(R.drawable.choose_no);
+                        huanChongImage.setImageResource(R.drawable.choose_no);
                     }
                 });
 

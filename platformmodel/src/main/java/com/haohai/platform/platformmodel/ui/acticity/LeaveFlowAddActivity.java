@@ -186,7 +186,6 @@ public class LeaveFlowAddActivity extends HhBaseActivity implements DatePicker.O
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         params.addParameter("ccs",1);
         params.addParameter("conditions",2);
         Log.e(TAG, "postData:-- params--" + params);

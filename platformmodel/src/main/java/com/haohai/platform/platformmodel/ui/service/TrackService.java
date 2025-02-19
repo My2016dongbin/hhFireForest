@@ -23,10 +23,13 @@ import com.ruyiruyi.rylibrary.db.User;
 import com.haohai.platform.platformmodel.ui.model.PositionModel;
 import com.haohai.platform.platformmodel.ui.utils.TrackReceiver;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
+import com.ruyiruyi.rylibrary.utils.CommonUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xutils.DbManager;
 import org.xutils.common.Callback;
+import org.xutils.ex.DbException;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
@@ -49,31 +52,32 @@ public class TrackService extends Service {
     private String oldLongitude = "";
     private String oldLatitude = "";
     private String currentTime;
+    private final int uploadTime = 10000;//每10秒上传位置
+    private final int downTime = 15;//15分钟后下线
+    private int timeTokenDown = 0;
     private static final int TIME_CHANGE = 10;
     private  List<PositionModel> positionModelList;
     private TrackReceiver trackReceiver;
-   // public LocationClient mLocationClient = null;
 
     private Handler mHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
             if(msg.what == TIME_CHANGE){
-                //Log.e(TAG, "service: 获取时间" );
+
+/*                //超时退出登录
+                if(timeTokenDown >= 1000*60*downTime){
+                    Log.e(TAG, "handleMessage: timeDown -0"  );
+                    new CommonUtil().timeDown(TrackService.this);
+                    timeTokenDown = 0;
+                    onDestroy();
+                }*/
+
                 Date date = new Date();
                 String time = date.toLocaleString();
                 Log.e(TAG, "时间time为： " + time);
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 currentTime = dateFormat.format(date);
-            //    Log.e(TAG, "handleMessage: " + currentTime);
 
-               /* if (currentLatitude.equals("") || currentLatitude== null || currentLongitude.equals("") || currentLongitude == null){
-                    Toast.makeText(TrackService.this, "定位失败，正在重新开启定位", Toast.LENGTH_SHORT).show();
-                 //   getLocation();
-                    initBaiduLocation();
-                    return;
-                }*/
-
-                //   Log.e(TAG, "handleMessage: " + user.getIsLogin());
                 User user = new DbConfig(getApplicationContext()).getUser();
                 if (user != null){      //用户不存在
                     if (user.getIsLogin() == 1){
@@ -89,12 +93,18 @@ public class TrackService extends Service {
     }
 
     private void changeUserPosition(User user) {
-
-        Log.e(TAG, "changeUserPosition: currentLatitude = " + currentLatitude );
-        String is = currentLatitude + "";
-        if(currentLatitude == 0 || is.isEmpty() || is.startsWith("0")|| is.startsWith("null")){
-            return;
+        DbConfig dbConfig = new DbConfig(getApplicationContext());
+        DbManager db = dbConfig.getDbManager();
+        User userM = dbConfig.getUser();
+        userM.setLatitude(currentLatitude);
+        userM.setLongitude(currentLongitude);
+        try {
+            db.delete(User.class);
+            db.saveOrUpdate(userM);
+        } catch (DbException e) {
+            e.printStackTrace();
         }
+
         final JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("userId",user.getId());
@@ -111,7 +121,6 @@ public class TrackService extends Service {
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         params.setConnectTimeout(10000);
         Log.e(TAG, "service---" + params);
         Log.e(TAG, "service---" + jsonObject.toString());
@@ -119,9 +128,7 @@ public class TrackService extends Service {
             @Override
             public void onSuccess(String result) {
                Log.e(TAG, "onSuccess:更新用户位置成功 " + result);
-              //  Toast.makeText(TrackService.this, "", Toast.LENGTH_SHORT).show();
-                Log.i("UpdateGUI: ","11111");
-                //broadcast
+
                 // service 通过广播来更新GUI
                 Intent intent=new Intent();
                 intent.putExtra("message",jsonObject.toString());
@@ -132,6 +139,9 @@ public class TrackService extends Service {
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 Log.e(TAG, "onError: 请求失败" + ex.toString());
+                if(ex.toString().contains("998")){
+                    new com.ruyiruyi.rylibrary.utils.CommonUtil().tokenDown(TrackService.this);
+                }
             }
 
             @Override
@@ -157,6 +167,12 @@ public class TrackService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+    }
+
+    @Override
+    public void onStart(Intent intent, int startId) {
+        super.onStart(intent, startId);
+
         positionModelList = new ArrayList<>();
         getLocation();
         Log.e(TAG, "onCreate: 1");
@@ -167,16 +183,20 @@ public class TrackService extends Service {
                 Log.e(TAG, "onCreate: 2");
                 Message message=new Message();
                 message.what=TIME_CHANGE;
+                timeTokenDown += uploadTime;
                 mHandler.sendMessage(message);   //需要开启轨迹上传 打开
             }
-        },0, 10000);//每隔一秒使用handler发送一下消息,也就是每隔一秒执行一次,一直重复执行
+        },0, uploadTime);//每隔一秒使用handler发送一下消息,也就是每隔一秒执行一次,一直重复执行
 
-     //   initBaiduLocation();
-
+        //   initBaiduLocation();
     }
 
-
-
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        timer.cancel();
+        mHandler.removeMessages(TIME_CHANGE);
+    }
 
     /**
      * 获取当前位置经纬度
@@ -185,7 +205,7 @@ public class TrackService extends Service {
     // @JavascriptInterface
     public void getLocation() {
         //获得位置服务
-        Criteria criteria = new Criteria();
+        final Criteria criteria = new Criteria();
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
         criteria.setAltitudeRequired(false);//不要求海拔
         criteria.setBearingRequired(false);//不要求方位
@@ -197,6 +217,7 @@ public class TrackService extends Service {
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 0.0001f, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
+                Log.e(TAG, "onLocationChanged: " + location.getLongitude() + "," + location.getLatitude());
                 double longitude = 0.00;
                 double latitude = 0.00;
                 try {
@@ -208,7 +229,8 @@ public class TrackService extends Service {
                 
                 currentLongitude = longitude;
                 currentLatitude = latitude;
-                 //  Toast.makeText(TrackService.this, "经纬度发生改变了,经度" +longitude + "纬度" +latitude, Toast.LENGTH_SHORT).show();
+
+                //  Toast.makeText(TrackService.this, "经纬度发生改变了,经度" +longitude + "纬度" +latitude, Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -223,13 +245,13 @@ public class TrackService extends Service {
 
             @Override
             public void onProviderDisabled(String provider) {
-                //Toast.makeText(getApplicationContext(), "请打开GPS", Toast.LENGTH_SHORT).show();
-                //startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                Toast.makeText(getApplicationContext(), "请打开GPS", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             }
         });
         if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-//            Toast.makeText(this, "请打开GPS和使用网络定位以提高精度", Toast.LENGTH_LONG).show();
-//            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            Toast.makeText(this, "请打开GPS和使用网络定位以提高精度", Toast.LENGTH_LONG).show();
+            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         }
         // 获取最好的定位方式
         String provider = locationManager.getBestProvider(criteria, true); // true 代表从打开的设备中查找

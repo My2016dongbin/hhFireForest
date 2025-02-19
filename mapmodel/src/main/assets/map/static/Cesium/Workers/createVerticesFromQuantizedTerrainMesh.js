@@ -1,7 +1,7 @@
 /**
- * Cesium - https://github.com/AnalyticalGraphicsInc/cesium
+ * Cesium - https://github.com/CesiumGS/cesium
  *
- * Copyright 2011-2017 Cesium Contributors
+ * Copyright 2011-2020 Cesium Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
  * Columbus View (Pat. Pend.)
  *
  * Portions licensed separately.
- * See https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md for full licensing details.
+ * See https://github.com/CesiumGS/cesium/blob/master/LICENSE.md for full licensing details.
  */
-define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-52d9479f', './BoundingSphere-ab31357a', './RuntimeError-7c184ac0', './WebGLConstants-4c11ee5f', './ComponentDatatype-919a7463', './FeatureDetection-bac17d71', './Transforms-794e44e6', './buildModuleUrl-02e5236f', './AttributeCompression-4a5b893f', './IndexDatatype-18a8cae6', './IntersectionTests-afd4a13d', './Plane-68b37818', './WebMercatorProjection-65629b9f', './createTaskProcessorWorker', './EllipsoidTangentPlane-7eb9b50e', './OrientedBoundingBox-80ab75fe', './TerrainEncoding-f6db33b5'], function (when, Check, _Math, Cartesian2, BoundingSphere, RuntimeError, WebGLConstants, ComponentDatatype, FeatureDetection, Transforms, buildModuleUrl, AttributeCompression, IndexDatatype, IntersectionTests, Plane, WebMercatorProjection, createTaskProcessorWorker, EllipsoidTangentPlane, OrientedBoundingBox, TerrainEncoding) { 'use strict';
+define(['./when-8d13db60', './Check-70bec281', './Math-61ede240', './Cartographic-fe4be337', './Cartesian2-85064f09', './BoundingSphere-775c5788', './Cartesian4-5af5bb24', './RuntimeError-ba10bc3e', './WebGLConstants-4c11ee5f', './ComponentDatatype-5862616f', './FeatureDetection-7bd32c34', './Transforms-a1cf7267', './buildModuleUrl-e7952659', './AttributeCompression-84a90a13', './IndexDatatype-9435b55f', './IntersectionTests-397d9494', './Plane-8390418f', './WebMercatorProjection-80c70558', './createTaskProcessorWorker', './EllipsoidTangentPlane-e324bfa4', './OrientedBoundingBox-0ede1598', './TerrainEncoding-a807a704'], function (when, Check, _Math, Cartographic, Cartesian2, BoundingSphere, Cartesian4, RuntimeError, WebGLConstants, ComponentDatatype, FeatureDetection, Transforms, buildModuleUrl, AttributeCompression, IndexDatatype, IntersectionTests, Plane, WebMercatorProjection, createTaskProcessorWorker, EllipsoidTangentPlane, OrientedBoundingBox, TerrainEncoding) { 'use strict';
 
     /**
          * Provides terrain or other geometry for the surface of an ellipsoid.  The surface geometry is
@@ -153,6 +153,31 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
             var indices = byWidth[height];
             if (!when.defined(indices)) {
                 if (width * height < _Math.CesiumMath.SIXTY_FOUR_KILOBYTES) {
+                    indices = byWidth[height] = new Uint16Array((width - 1) * (height - 1) * 6 + 3*(width + height - 2));
+                } else {
+                    indices = byWidth[height] = new Uint32Array((width - 1) * (height - 1) * 6 + 3*(width + height - 2));
+                }
+                addRegularGridIndices(width, height, indices, 0);
+            }
+
+            return indices;
+        };
+
+        TerrainProvider.getRegularGridIndicesForReproject = function(width, height) {
+            //>>includeStart('debug', pragmas.debug);
+            if (width * height >= _Math.CesiumMath.FOUR_GIGABYTES) {
+                throw new Check.DeveloperError('The total number of vertices (width * height) must be less than 4,294,967,296.');
+            }
+            //>>includeEnd('debug');
+
+            var byWidth = regularGridIndicesCache[width];
+            if (!when.defined(byWidth)) {
+                regularGridIndicesCache[width] = byWidth = [];
+            }
+
+            var indices = byWidth[height];
+            if (!when.defined(indices)) {
+                if (width * height < _Math.CesiumMath.SIXTY_FOUR_KILOBYTES) {
                     indices = byWidth[height] = new Uint16Array((width - 1) * (height - 1) * 6);
                 } else {
                     indices = byWidth[height] = new Uint32Array((width - 1) * (height - 1) * 6);
@@ -226,7 +251,10 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
                 var edgeVertexCount = width * 2 + height * 2;
                 var edgeIndexCount = Math.max(0, edgeVertexCount - 4) * 6;
                 var vertexCount = gridVertexCount + edgeVertexCount;
-                var indexCount = gridIndexCount + edgeIndexCount;
+
+                var boundaryIndexCount = 3*(width + height - 2);
+
+                var indexCount = gridIndexCount + edgeIndexCount + boundaryIndexCount;
 
                 var edgeIndices = getEdgeIndices(width, height);
                 var westIndicesSouthToNorth = edgeIndices.westIndicesSouthToNorth;
@@ -236,7 +264,7 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
 
                 var indices = IndexDatatype.IndexDatatype.createTypedArray(vertexCount, indexCount);
                 addRegularGridIndices(width, height, indices, 0);
-                TerrainProvider.addSkirtIndices(westIndicesSouthToNorth, southIndicesEastToWest, eastIndicesNorthToSouth, northIndicesWestToEast, gridVertexCount, indices, gridIndexCount);
+                TerrainProvider.addSkirtIndices(westIndicesSouthToNorth, southIndicesEastToWest, eastIndicesNorthToSouth, northIndicesWestToEast, gridVertexCount, indices, gridIndexCount + boundaryIndexCount);
 
                 indicesAndEdges = byWidth[height] = {
                     indices : indices,
@@ -310,6 +338,44 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
                 }
                 ++index;
             }
+            var boundaryHeight = (height - 1)/2;
+            var boundaryWidth = (width - 1)/2;
+
+            index = 0;
+            for(var i=0; i<boundaryWidth; i++)
+            {
+                indices[offset++] = index;
+                indices[offset++] = index + 1;
+                indices[offset++] = index + 2;
+                index+=2;
+            }
+
+            index = width * (height - 1);
+            for(var i=0; i<boundaryWidth; i++)
+            {
+                indices[offset++] = index + 1;
+                indices[offset++] = index;
+                indices[offset++] = index + 2;
+                index+=2;
+            }
+
+            index = 0;
+            for(var i=0; i<boundaryHeight; i++)
+            {
+                indices[offset++] = index + width;
+                indices[offset++] = index;
+                indices[offset++] = index + 2*width;
+                index+=2*width;
+            }
+
+            index = width - 1;
+            for(var i=0; i<boundaryHeight; i++)
+            {
+                indices[offset++] = index;
+                indices[offset++] = index + width;
+                indices[offset++] = index + 2*width;
+                index+=2*width;
+            }
         }
 
         function addSkirtIndices(edgeIndices, vertexIndex, indices, offset, edgeMap) {
@@ -321,6 +387,8 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
                 var index = edgeIndices[i];
 
                 if(hasEdgeMap && !edgeMap[previousIndex + '_' + index]){
+                    previousIndex = index;
+                    ++vertexIndex;
                     continue ;
                 }
 
@@ -412,12 +480,12 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
 
     var maxShort = 32767;
 
-    var cartesian3Scratch = new Cartesian2.Cartesian3();
-    var scratchMinimum = new Cartesian2.Cartesian3();
-    var scratchMaximum = new Cartesian2.Cartesian3();
-    var cartographicScratch = new Cartesian2.Cartographic();
+    var cartesian3Scratch = new Cartographic.Cartesian3();
+    var scratchMinimum = new Cartographic.Cartesian3();
+    var scratchMaximum = new Cartographic.Cartesian3();
+    var cartographicScratch = new Cartographic.Cartographic();
     var toPack = new Cartesian2.Cartesian2();
-    var scratchNormal = new Cartesian2.Cartesian3();
+    var scratchNormal = new Cartographic.Cartesian3();
     var scratchToENU = new BoundingSphere.Matrix4();
     var scratchFromENU = new BoundingSphere.Matrix4();
 
@@ -506,8 +574,8 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
 
             BoundingSphere.Matrix4.multiplyByPoint(toENU, position, cartesian3Scratch);
 
-            Cartesian2.Cartesian3.minimumByComponent(cartesian3Scratch, minimum, minimum);
-            Cartesian2.Cartesian3.maximumByComponent(cartesian3Scratch, maximum, maximum);
+            Cartographic.Cartesian3.minimumByComponent(cartesian3Scratch, minimum, minimum);
+            Cartographic.Cartesian3.maximumByComponent(cartesian3Scratch, maximum, maximum);
         }
 
         var westIndicesSouthToNorth = copyAndSort(parameters.westIndices, function(a, b) {
@@ -563,10 +631,10 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
 
                     BoundingSphere.Matrix4.multiplyByPointAsVector(toENUNormal, normal, normal);
                     normal.z *= exaggeration;
-                    Cartesian2.Cartesian3.normalize(normal, normal);
+                    Cartographic.Cartesian3.normalize(normal, normal);
 
                     BoundingSphere.Matrix4.multiplyByPointAsVector(fromENUNormal, normal, normal);
-                    Cartesian2.Cartesian3.normalize(normal, normal);
+                    Cartographic.Cartesian3.normalize(normal, normal);
 
                     AttributeCompression.AttributeCompression.octEncode(normal, toPack);
                 }
@@ -632,7 +700,7 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
         }
 
         var edgeMap = {};
-        var len = indices.length / 3;
+        var len = indices.length;
         for(var i = 0;i < len;i += 3){
             var i0 = indices[i];
             var i1 = indices[i + 1];
@@ -690,8 +758,8 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
             var position = ellipsoid.cartographicToCartesian(cartographicScratch, cartesian3Scratch);
             BoundingSphere.Matrix4.multiplyByPoint(toENU, position, position);
 
-            Cartesian2.Cartesian3.minimumByComponent(position, minimum, minimum);
-            Cartesian2.Cartesian3.maximumByComponent(position, maximum, maximum);
+            Cartographic.Cartesian3.minimumByComponent(position, minimum, minimum);
+            Cartographic.Cartesian3.maximumByComponent(position, maximum, maximum);
 
             hMin = Math.min(hMin, cartographicScratch.height);
         }
@@ -734,10 +802,10 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
 
                     BoundingSphere.Matrix4.multiplyByPointAsVector(toENUNormal, normal, normal);
                     normal.z *= exaggeration;
-                    Cartesian2.Cartesian3.normalize(normal, normal);
+                    Cartographic.Cartesian3.normalize(normal, normal);
 
                     BoundingSphere.Matrix4.multiplyByPointAsVector(fromENUNormal, normal, normal);
-                    Cartesian2.Cartesian3.normalize(normal, normal);
+                    Cartographic.Cartesian3.normalize(normal, normal);
 
                     AttributeCompression.AttributeCompression.octEncode(normal, toPack);
                 }

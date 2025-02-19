@@ -50,7 +50,6 @@ public class AttendanceRecordInfoActivity extends HhBaseActivity {
         params.addParameter("time",time);
 
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         Log.e(TAG, "getDataFromService: " + params );
         params.setConnectTimeout(10000);

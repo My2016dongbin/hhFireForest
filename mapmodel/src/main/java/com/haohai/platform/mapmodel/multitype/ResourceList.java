@@ -19,25 +19,13 @@ public class ResourceList {
     private String description;
     private String groupId;
     private String state;
-    private boolean isNew = false;
 
-    private boolean status;
     private boolean isCheck;
 
-    public boolean isStatus() {
-        return status;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
-
     public ResourceList() {
-        isNew = false;
     }
 
     public ResourceList(String id, String name, String code, String isDisplay, String totalCount, String useCount, String unuseCount, String apiUrl, String checkApiUrl, String textColor, String iconFile, String description, String groupId, String state, boolean isCheck) {
-        isNew = false;
         this.id = id;
         this.name = name;
         this.code = code;
@@ -53,14 +41,6 @@ public class ResourceList {
         this.groupId = groupId;
         this.state = state;
         this.isCheck = isCheck;
-    }
-
-    public boolean isNew() {
-        return isNew;
-    }
-
-    public void setNew(boolean aNew) {
-        isNew = aNew;
     }
 
     public String getId() {

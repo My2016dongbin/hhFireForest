@@ -1,7 +1,7 @@
 /**
- * Cesium - https://github.com/AnalyticalGraphicsInc/cesium
+ * Cesium - https://github.com/CesiumGS/cesium
  *
- * Copyright 2011-2017 Cesium Contributors
+ * Copyright 2011-2020 Cesium Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
  * Columbus View (Pat. Pend.)
  *
  * Portions licensed separately.
- * See https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md for full licensing details.
+ * See https://github.com/CesiumGS/cesium/blob/master/LICENSE.md for full licensing details.
  */
-define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-52d9479f', './BoundingSphere-ab31357a', './RuntimeError-7c184ac0', './WebGLConstants-4c11ee5f', './ComponentDatatype-919a7463', './GeometryAttribute-ba19792d', './PrimitiveType-97893bc7', './FeatureDetection-bac17d71', './Transforms-794e44e6', './buildModuleUrl-02e5236f', './GeometryAttributes-1c7ce91d', './IndexDatatype-18a8cae6', './GeometryOffsetAttribute-c9accdb9', './CylinderGeometryLibrary-08369efb'], function (when, Check, _Math, Cartesian2, BoundingSphere, RuntimeError, WebGLConstants, ComponentDatatype, GeometryAttribute, PrimitiveType, FeatureDetection, Transforms, buildModuleUrl, GeometryAttributes, IndexDatatype, GeometryOffsetAttribute, CylinderGeometryLibrary) { 'use strict';
+define(['./when-8d13db60', './Check-70bec281', './Math-61ede240', './Cartographic-fe4be337', './Cartesian2-85064f09', './BoundingSphere-775c5788', './Cartesian4-5af5bb24', './RuntimeError-ba10bc3e', './WebGLConstants-4c11ee5f', './ComponentDatatype-5862616f', './GeometryAttribute-ed9d707f', './PrimitiveType-97893bc7', './FeatureDetection-7bd32c34', './Transforms-a1cf7267', './buildModuleUrl-e7952659', './GeometryAttributes-aacecde6', './IndexDatatype-9435b55f', './arrayFill-9766fb2e', './GeometryOffsetAttribute-999fc023', './CylinderGeometryLibrary-8c0fda9f'], function (when, Check, _Math, Cartographic, Cartesian2, BoundingSphere, Cartesian4, RuntimeError, WebGLConstants, ComponentDatatype, GeometryAttribute, PrimitiveType, FeatureDetection, Transforms, buildModuleUrl, GeometryAttributes, IndexDatatype, arrayFill, GeometryOffsetAttribute, CylinderGeometryLibrary) { 'use strict';
 
     var radiusScratch = new Cartesian2.Cartesian2();
 
@@ -226,13 +226,13 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
             radiusScratch.x = length * 0.5;
             radiusScratch.y = Math.max(bottomRadius, topRadius);
 
-            var boundingSphere = new BoundingSphere.BoundingSphere(Cartesian2.Cartesian3.ZERO, Cartesian2.Cartesian2.magnitude(radiusScratch));
+            var boundingSphere = new BoundingSphere.BoundingSphere(Cartographic.Cartesian3.ZERO, Cartesian2.Cartesian2.magnitude(radiusScratch));
 
             if (when.defined(cylinderGeometry._offsetAttribute)) {
                 length = positions.length;
                 var applyOffset = new Uint8Array(length / 3);
                 var offsetValue = cylinderGeometry._offsetAttribute === GeometryOffsetAttribute.GeometryOffsetAttribute.NONE ? 0 : 1;
-                GeometryOffsetAttribute.arrayFill(applyOffset, offsetValue);
+                arrayFill.arrayFill(applyOffset, offsetValue);
                 attributes.applyOffset = new GeometryAttribute.GeometryAttribute({
                     componentDatatype : ComponentDatatype.ComponentDatatype.UNSIGNED_BYTE,
                     componentsPerAttribute : 1,

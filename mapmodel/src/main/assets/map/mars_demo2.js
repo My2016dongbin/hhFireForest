@@ -24,23 +24,15 @@ let googleLayer = null
 const guijiMap = {};
 var item2=""
 var billboardConfig = () => ({
-    scale: 0.7, // 原始大小的缩放比例
+    scale: 0.2, // 原始大小的缩放比例
     horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
     verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
     heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, // 贴地
     scaleByDistance: new Cesium.NearFarScalar(8.5e3, 1.2, 4e5, 0.16),
-    distanceDisplayCondition: new Cesium.DistanceDisplayCondition(100, 29600000)
-});
-var billboardConfigNew = () => ({
-    scale: 0.1, // 原始大小的缩放比例
-    horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, // 贴地
-    scaleByDistance: new Cesium.NearFarScalar(8.5e3, 1.2, 4e5, 0.16),
-    distanceDisplayCondition: new Cesium.DistanceDisplayCondition(100, 29600000)
+    distanceDisplayCondition: new Cesium.DistanceDisplayCondition(10, 29600000)
 });
 var labelConfig = () => ({
-    font: 'normal small-caps normal 14px 楷体',
+    font: 'normal small-caps normal 8px 楷体',
     style: Cesium.LabelStyle.FILL_AND_OUTLINE,
     fillColor: Cesium.Color.AZURE,
     outlineColor: Cesium.Color.BLACK,
@@ -55,6 +47,7 @@ var labelConfig = () => ({
 var resourcetype="checkStation"
 var dist=""
 var type2=""
+
 var listitem3=[{"id":"2020061515383178102208ee4cc660c",
     "name":"四川省阿坝藏族羌族自治州阿坝县河支乡阿两路",
     "resourceType":"fire_weixng",
@@ -66,6 +59,9 @@ var listitem3=[{"id":"2020061515383178102208ee4cc660c",
 var item1={"userId":"510865864568864768","position":{"lat":36.3029,"lng":120.3025}};
 var list= [];
 console.log(listitem3.length)
+
+// list.push(listitem1);
+// list.push(listitem2);
 for (var i=0;i<listitem3.length;i++){
     console.log(listitem3[i])
     list.push(listitem3[i]);
@@ -87,15 +83,20 @@ function createMap(id, config) {
   }
     window.viewer = new Cesium.Viewer(id, { ...defaultMapConfig, ...config })
     CesiumPopup();
+
+    window.viewer.scene.camera.moveEnd.addEventListener(function() {
+        // console.log('camera height', Math.ceil(viewer.camera.positionCartographic.height))
+        _setLayerByCameraHeight()
+    })
   }
+var jimoLayerObj = {}
 function onload(Cesium) {
     //初始化viewer部件
 
     const imageryLayers = viewer.imageryLayers
     const baseLayer = imageryLayers.get(1)
     //changeMapCIA();
-viewer.imageryLayers.addImageryProvider(new Cesium.ArcGisMapServerImageryProvider({	url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer' }));
-
+    changeLocalJimo();
 }
 if (typeof Cesium !== 'undefined') {
     window.startupCalled = true;
@@ -148,33 +149,18 @@ function getGPS() {
         }
     });
 }
-// 切换到超图本地server端地图
-function changeLocal() {
-  viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
-    url: 'http://192.168.1.144:8090/iserver/services/3D-Qingdao/rest/realspace/datas/青岛市_高程@Qingdao',
-    isSct: true// 地形服务源自SuperMap iServer发布时需设置isSct为true
-  })
 
-  const imageryLayers = viewer.imageryLayers
-  const baseLayer = imageryLayers.get(1)
-  const labelImagery = new Cesium.SuperMapImageryProvider({
-    url: 'http://192.168.1.144:8090/iserver/services/3D-Qingdao/rest/realspace/datas/Qingdao_image@Qingdao'
-  })
-  imageryLayers.addImageryProvider(labelImagery)
-  imageryLayers.remove(baseLayer)
-}
- //县区界线
-// viewer.dataSources.add(Cesium.GeoJsonDataSource.load('xianjie.json', {
-//     stroke: Cesium.Color.WHITE,//设置多边形轮廓的默认颜色
-//     fill: Cesium.Color.RED.withAlpha(0.0),//多边形的内部默认颜色
-//     strokeWidth: 5,//轮廓的宽度
-//     clamToGround: true//让地图贴地
-// }));
+viewer.dataSources.add(Cesium.GeoJsonDataSource.load('jimo.json', {
+    stroke: Cesium.Color.WHITE,//设置多边形轮廓的默认颜色
+    fill: Cesium.Color.RED.withAlpha(0.0),//多边形的内部默认颜色
+    strokeWidth: 5,//轮廓的宽度
+    clamToGround: true//让地图贴地
+}));
 // 移动中心点，便于观察效果
 function flyToCenter(data) {
     const defaultCenter = {
-        longitude: 120.3306728037,
-        latitude: 36.1106233801,
+        longitude: 120.6806728037,
+        latitude: 36.4806233801,
         height: 40000
     }
     const center = Object.assign({}, defaultCenter, data)
@@ -184,13 +170,13 @@ function flyToCenter(data) {
         orientation: {
             heading: Cesium.Math.toRadians(359.2), //绕垂直于地心的轴旋转
             pitch: Cesium.Math.toRadians(-90), //绕纬度线旋转
-            roll: Cesium.Math.toRadians(0) //绕经度线旋转
+            roll: Cesium.Math.toRadians(0) //   绕经度线旋转
         },
         duration: 3 //动画持续时间
     });
 }
 viewer.scene.screenSpaceCameraController.minimumZoomDistance = 200;
-viewer.scene.globe.depthTestAgainstTerrain = false;
+viewer.scene.globe.depthTestAgainstTerrain = true;  //true点遮挡  fasle点漂移
 //单击地图
 /*var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 handler.setInputAction(event => {
@@ -262,19 +248,22 @@ handler.setInputAction(event => {
 function flyTo(entities) {
     viewer.flyTo(entities, { duration: 2, offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-85), 32500) })
 }
-//andoird 请求显示谷歌在线
+//andoird 请求显示本地
 dsBridge.register('google_yingxiang', function (responseCallback) {
-    changeOnline();
+    //changeOnline();
+    changeLocalJimo();
     return "chenggong";
 });
 //andoird 请求显示天地图影像
 dsBridge.register('tianditu_shiliang', function (responseCallback) {
     changeMapIMG();
+    closeLocalMap();
     return "chenggong";
 });
 //andoird 请求显示天地图中文标记
 dsBridge.register('tianditu_yingxiang', function (responseCallback) {
     changeMapCIA();
+    closeLocalMap();
     return "chenggong";
 });
 //实时轨迹
@@ -293,12 +282,12 @@ dsBridge.register('GPSflyto', function (gpsinfo) {
     console.log("经度",gpsInfo1.position.lng)
     if(gpsInfo1.position.lng!=undefined) {
         viewer.camera.flyTo({
-            destination: Cesium.Cartesian3.fromDegrees(gpsInfo1.position.lng, gpsInfo1.position.lat, 1000.0)
+            destination: Cesium.Cartesian3.fromDegrees(gpsInfo1.position.lng, gpsInfo1.position.lat, 5000.0)
         });
     }else {
         console.log("没打开GPS！");
         viewer.camera.flyTo({
-            destination: Cesium.Cartesian3.fromDegrees(116.404844,39.916485,1000.0)
+            destination: Cesium.Cartesian3.fromDegrees(116.404844,39.916485,15000.0)
         });
     }
 });
@@ -315,180 +304,160 @@ dsBridge.register('showPointforresource', function (resourcetype1,data,dist1) {
     console.log(data);
     showPointBillbordDataOnMap(resourcetype1, data, dist1, type2);
 });
-dsBridge.register('showPointforresourcenew', function (resourcetype1,data,dist1,iconFile) {
-    console.log(JSON.stringify(data));
-    console.log(data);
-    showPointBillbordDataOnMapNew(resourcetype1, data, dist1, type2,iconFile);
-});
 //清楚点位
 dsBridge.register('removeDataSource', function (data) {
     removeDataSource(data);
 });
-
-dsBridge.register('setBoards', function (data) {
-    console.log('setBoards data '+data)
-
-    for (const item of data) {
-        console.log('setBoards item -'+ item)
-        console.log('setBoards item --'+ JSON.stringify(item))
-        const value = JSON.stringify(item);
-        console.log('setBoards item ----'+ item.data[0].areasPoint)
-        console.log('setBoards item -----'+ JSON.parse(item.data[0].areasPoint))
-        setBoards(item);
-    }
-});
  //地图打点
  function showPointBillbordDataOnMap(resourcetype, list, dist, type2) {
      console.log(JSON.stringify(list))
+     var mointortype = ""
     // https://cesiumjs.org/Cesium/Build/Documentation/EntityCollection.html#EntityCollection
     return new Promise((resolve, reject) => {
-         console.profile('showPointBillbordDataOnMap')
+        // console.profile('showPointBillbordDataOnMap')
         try {
-            var sourceName = resourcetype + dist + type2
-            console.log(sourceName)
-            sourceNameArray.push(sourceName)
-            var dataSource_ = viewer.dataSources.getByName(sourceName)
-            console.log(dataSource_, dataSource_.length)
-            if (dataSource_!=null&&dataSource_.length >= 1) {
-                viewer.flyTo(dataSource_.entities, { duration: 3 })
-                resolve()
-                return
-            }
-            var dataSource = new Cesium.CustomDataSource(sourceName)
-
-            if (arrPoint[sourceName]) {
-                setTimeout(() => _hideDivPoint(sourceName, true), 3000)
-            }
-            let lastEntity = null
-            viewer.entities.suspendEvents()
-            console.log(list)
-            for (const item of list) {
-                console.log(item)
-                // 添加实体
-                if (!item.position) {
-                    console.log('position为空：', item)
-                    continue
+            if(resourcetype=='monitor'){
+                var sourceName = resourcetype + dist + type2
+                console.log(sourceName)
+                sourceNameArray.push(sourceName)
+                var dataSource_ = viewer.dataSources.getByName(sourceName)
+                console.log(dataSource_, dataSource_.length)
+                if (dataSource_ != null && dataSource_.length >= 1) {
+                    viewer.flyTo(dataSource_.entities, {duration: 3})
+                    resolve()
+                    return
                 }
-                // console.log(item.position.z)
-                lastEntity = dataSource.entities.add({
-                    id: item.id,
-                    name: item.name,
-                    position: Cesium.Cartesian3.fromDegrees(item.position.lng, item.position.lat, item.position.z),
-                    billboard:{
-                        image: `img/marker/resource/${resourcetype}.png`,
-                        ...billboardConfig()
-                    },
-                    label: {
-                        text: item.name,
-                        ...labelConfig()
-                    },
-                    data: item,
-                    tooltip: {
-                        html: item.name,
-                        anchor: [0, -12]
-                    }
-                    ,
-                    click: clickcallback(resourcetype,item.id)
-                })
-                // if (resourcetype === 'monitor') {
-                //     lastEntity.ellipse = {
-                //         height: 0.0,
-                //         semiMinorAxis: 3000.0,
-                //         semiMajorAxis: 3000.0,
-                //         outline: true,
-                //         outlineColor: Cesium.Color.WHITE,
-                //         outlineWidth: 3.0,
-                //         distanceDisplayCondition: Cesium.DistanceDisplayCondition(100, 10000),
-                //         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, // 贴地
-                //         fill: false
-                //     }
-                //     setInterval(forpolygon, 1000, item, lastEntity, Cesium.DistanceDisplayCondition(100, 10000))
-                // }
-            }
-            viewer.entities.resumeEvents()
-            viewer.dataSources.add(dataSource)
-            flyTo(lastEntity)
-            lastEntity = null
-            resolve()
-        } catch (e) {
-            reject(e)
-        }
-        // console.profileEnd()
-    })
-}
- //地图打点-resource new 后端新增 。。。
- function showPointBillbordDataOnMapNew(resourcetype, list, dist, type2,iconFile) {
-     console.log(JSON.stringify(list))
-    // https://cesiumjs.org/Cesium/Build/Documentation/EntityCollection.html#EntityCollection
-    return new Promise((resolve, reject) => {
-         console.profile('showPointBillbordDataOnMapNew')
-        try {
-            var sourceName = resourcetype + dist + type2
-            console.log(sourceName)
-            sourceNameArray.push(sourceName)
-            var dataSource_ = viewer.dataSources.getByName(sourceName)
-            console.log(dataSource_, dataSource_.length)
-            if (dataSource_!=null&&dataSource_.length >= 1) {
-                viewer.flyTo(dataSource_.entities, { duration: 3 })
-                resolve()
-                return
-            }
-            var dataSource = new Cesium.CustomDataSource(sourceName)
+                var dataSource = new Cesium.CustomDataSource(sourceName)
 
-            if (arrPoint[sourceName]) {
-                setTimeout(() => _hideDivPoint(sourceName, true), 3000)
-            }
-            let lastEntity = null
-            viewer.entities.suspendEvents()
-            console.log(list)
-            for (const item of list) {
-                console.log(item)
-                // 添加实体
-                if (!item.position) {
-                    console.log('position为空：', item)
-                    continue
+                if (arrPoint[sourceName]) {
+                    setTimeout(() => _hideDivPoint(sourceName, true), 3000)
                 }
-                // console.log(item.position.z)
-                lastEntity = dataSource.entities.add({
-                    id: item.id,
-                    name: item.resourceName,
-                    position: Cesium.Cartesian3.fromDegrees(item.position.lng, item.position.lat, item.position.z),
-                    billboard:{
-                        image: iconFile,
-                        ...billboardConfigNew()
-                    },
-                    label: {
-                        text: item.resourceName,
-                        ...labelConfig()
-                    },
-                    data: item,
-                    tooltip: {
-                        html: item.resourceName,
-                        anchor: [0, -12]
+                let lastEntity = null
+                viewer.entities.suspendEvents()
+                console.log(list)
+                for (const item of list) {
+                    console.log(item.monitorType)
+                    if (item.monitorType=='1'){
+                        mointortype="ic_monitor_森林"
+                    }else if(item.monitorType=='2'){
+                        mointortype="ic_monitor_海域"
+                    }else if(item.monitorType=='3'){
+                        mointortype="ic_monitor_砂石"
                     }
-                    ,
-                    click: clickcallback(resourcetype,item.id)
-                })
-                // if (resourcetype === 'monitor') {
-                //     lastEntity.ellipse = {
-                //         height: 0.0,
-                //         semiMinorAxis: 3000.0,
-                //         semiMajorAxis: 3000.0,
-                //         outline: true,
-                //         outlineColor: Cesium.Color.WHITE,
-                //         outlineWidth: 3.0,
-                //         distanceDisplayCondition: Cesium.DistanceDisplayCondition(100, 10000),
-                //         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, // 贴地
-                //         fill: false
-                //     }
-                //     setInterval(forpolygon, 1000, item, lastEntity, Cesium.DistanceDisplayCondition(100, 10000))
-                // }
+                    // 添加实体
+                    if (!item.position) {
+                        console.log('position为空：', item)
+                        continue
+                    }
+                    // console.log(item.position.z)
+                    lastEntity = dataSource.entities.add({
+                        id: item.id,
+                        name: item.name,
+                        position: Cesium.Cartesian3.fromDegrees(item.position.lng, item.position.lat, item.position.z),
+                        billboard: {
+                            image: `img/marker/resource/${mointortype}.png`,
+                            ...billboardConfig()
+                        },
+                        label: {
+                            text: item.name,
+                            ...labelConfig()
+                        },
+                        data: item,
+                        tooltip: {
+                            html: item.name,
+                            anchor: [0, -12]
+                        }
+                        ,
+                        click: clickcallback(resourcetype, item.id)
+                    })
+                    // if (resourcetype === 'monitor') {
+                    //     lastEntity.ellipse = {
+                    //         height: 0.0,
+                    //         semiMinorAxis: 3000.0,
+                    //         semiMajorAxis: 3000.0,
+                    //         outline: true,
+                    //         outlineColor: Cesium.Color.WHITE,
+                    //         outlineWidth: 3.0,
+                    //         distanceDisplayCondition: Cesium.DistanceDisplayCondition(100, 10000),
+                    //         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, // 贴地
+                    //         fill: false
+                    //     }
+                    //     setInterval(forpolygon, 1000, item, lastEntity, Cesium.DistanceDisplayCondition(100, 10000))
+                    // }
+                }
+                viewer.entities.resumeEvents()
+                viewer.dataSources.add(dataSource)
+                //flyTo(lastEntity)
+                lastEntity = null
+                resolve()
+            }else {
+                var sourceName = resourcetype + dist + type2
+                console.log(sourceName)
+                sourceNameArray.push(sourceName)
+                var dataSource_ = viewer.dataSources.getByName(sourceName)
+                console.log(dataSource_, dataSource_.length)
+                if (dataSource_ != null && dataSource_.length >= 1) {
+                    viewer.flyTo(dataSource_.entities, {duration: 3})
+                    resolve()
+                    return
+                }
+                var dataSource = new Cesium.CustomDataSource(sourceName)
+
+                if (arrPoint[sourceName]) {
+                    setTimeout(() => _hideDivPoint(sourceName, true), 3000)
+                }
+                let lastEntity = null
+                viewer.entities.suspendEvents()
+                console.log(list)
+                for (const item of list) {
+                    console.log(item)
+                    // 添加实体
+                    if (!item.position) {
+                        console.log('position为空：', item)
+                        continue
+                    }
+                    // console.log(item.position.z)
+                    lastEntity = dataSource.entities.add({
+                        id: item.id,
+                        name: item.name,
+                        position: Cesium.Cartesian3.fromDegrees(item.position.lng, item.position.lat, item.position.z),
+                        billboard: {
+                            image: `img/marker/resource/${resourcetype}.png`,
+                            ...billboardConfig()
+                        },
+                        label: {
+                            text: item.name,
+                            ...labelConfig()
+                        },
+                        data: item,
+                        tooltip: {
+                            html: item.name,
+                            anchor: [0, -12]
+                        }
+                        ,
+                        click: clickcallback(resourcetype, item.id)
+                    })
+                    // if (resourcetype === 'monitor') {
+                    //     lastEntity.ellipse = {
+                    //         height: 0.0,
+                    //         semiMinorAxis: 3000.0,
+                    //         semiMajorAxis: 3000.0,
+                    //         outline: true,
+                    //         outlineColor: Cesium.Color.WHITE,
+                    //         outlineWidth: 3.0,
+                    //         distanceDisplayCondition: Cesium.DistanceDisplayCondition(100, 10000),
+                    //         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, // 贴地
+                    //         fill: false
+                    //     }
+                    //     setInterval(forpolygon, 1000, item, lastEntity, Cesium.DistanceDisplayCondition(100, 10000))
+                    // }
+                }
+                viewer.entities.resumeEvents()
+                viewer.dataSources.add(dataSource)
+                //flyTo(lastEntity)
+                lastEntity = null
+                resolve()
             }
-            viewer.entities.resumeEvents()
-            viewer.dataSources.add(dataSource)
-            flyTo(lastEntity)
-            lastEntity = null
-            resolve()
         } catch (e) {
             reject(e)
         }
@@ -651,7 +620,6 @@ function addHulinyuan(item) {
 }
 
 function changeMapCIA() {
-
     const imageryLayers = viewer.imageryLayers
 
     if (!tidituBaseLayer) {
@@ -726,19 +694,18 @@ function _setStateClose(flag) {
         case 'cia':
             STATE_TIANDITU_CIA = true
             removeMapIMG()
-            removeGoogleMap()
+            closeLocalMap()
+            re
             break
         case 'img':
             STATE_TIANDITU_IMG = true
-            removeGoogleMap()
-            break
-        case 'google':
-            STATE_GOOGLE_MAP = true
+            closeLocalMap()
             removeMapCIA()
-            removeMapIMG()
             break
-        case 'local':
+        case 'jimo':
             STATE_ISERVER_MAP = true
+            removeMapIMG()
+            removeMapCIA()
             break
     }
 }
@@ -755,136 +722,84 @@ function removeMapIMG() {
     }
     STATE_TIANDITU_IMG = false
 }
-function removeGoogleMap() {
+/*function removeGoogleMap() {
     if (googleLayer) {
         const i = viewer.imageryLayers.indexOf(googleLayer)
         const s = viewer.imageryLayers.remove(googleLayer)
         console.log(s, i)
     }
     STATE_GOOGLE_MAP = false
-}
+}*/
 function gohome(){
      console.log(item2.position.lat)
     viewer.camera.flyTo({
         destination : Cesium.Cartesian3.fromDegrees(item2.position.lng, item2.position.lat, 32500)
     });
 }
-
-
-function addGeoJsonWithColor({ url, textColor, innerColor, outColor, width, dsName, fillOpacity = 0.5, flyTo = false }) {
-  removeDataSourceByName(dsName)
-
-  let geoJsonLayer = null
-  if (typeof url === 'string') {
-    geoJsonLayer = new mars3d.layer.GeoJsonLayer({
-      name: dsName,
-      url,
-      symbol: {
-        styleOptions: {
-          fill: fillOpacity !== 0,
-          opacity: fillOpacity,
-          outline: true,
-          outlineColor: outColor,
-          outlineWidth: 3.0,
-          color: innerColor ? Cesium.Color.fromCssColorString(innerColor) : Cesium.Color.TRANSPARENT
-        }
-      },
-      flyTo: false
-    })
-  } else {
-    console.log('home', innerColor)
-    geoJsonLayer = new mars3d.layer.GeoJsonLayer({
-      name: dsName,
-      data: url,
-      symbol: {
-        styleOptions: {
-          fill: fillOpacity !== 0,
-          opacity: fillOpacity,
-          outline: true,
-          outlineColor: outColor,
-          outlineWidth: 3.0,
-          color: innerColor ? Cesium.Color.fromCssColorString(innerColor) : Cesium.Color.TRANSPARENT
-        }
-      },
-      flyTo: false
-    })
-  }
-  if (flyTo) {
-    geoJsonLayer.readyPromise.then(data => {
-      map3d.flyToGraphic(geoJsonLayer.graphics, { heading: 0, pitch: -90 })
-    })
-  }
-  if (geoJsonLayer) map3d.addLayer(geoJsonLayer)
-}
-
-function addInitGeoJsonColor(url, textColor, innerColor, outColor, width, height) {
-//  const sourceName = url
-  const sourceName = url.features[0].geometry
-//  viewer.scene.globe.depthTestAgainstTerrain = true
-//  viewer.scene.globe.show = false
-  const dsArr = viewer.dataSources.getByName(sourceName)//.features[0].geometry
-  console.log('addInitGeoJsonColor url', url)
-  console.log('addInitGeoJsonColor stringify', JSON.stringify(url))
-  console.log('addInitGeoJsonColor dsArr', dsArr)
-  console.log('addInitGeoJsonColor length', dsArr.length)
-  if (dsArr && dsArr.length > 0) {
-    for (const ds of dsArr) {
-      ds.show = true
+// 即墨本地地图
+ function changeLocalJimo() {
+    if (jimoLayerObj['L13']) {
+        _setStateClose('jimo')
+        _setLayerByCameraHeight()
+        return
     }
-  } else {
-    // viewer.dataSources.add(Cesium.GeoJsonDataSource.load('/json/jimojiedao.json', {
-    //   markerColor: Cesium.Color.fromCssColorString(textColor),
-    //   stroke: Cesium.Color.fromCssColorString(outColor),
-    //   fill: Cesium.Color.TRANSPARENT,
-    //   strokeWidth: 3.0,
-    //   clampToGround: true
-    // }))
-    var promise = Cesium.GeoJsonDataSource.load(sourceName, {
-      markerColor: Cesium.Color.fromCssColorString(textColor),
-      stroke: Cesium.Color.fromCssColorString(outColor),
-      fill: Cesium.Color.TRANSPARENT,
-      strokeWidth: 3.0,
-//      clampToGround: false
+
+    const url = 'http://223.80.108.114:8090/iserver/services/3D-Jimo/rest/realspace'
+    var promise = viewer.scene.open(url)
+
+    Cesium.when(promise, function(layers) {
+        for (const layer of layers) {
+            console.log(layer instanceof Cesium.S3MTilesLayer) // 控制台打印false
+            // console.log(layer instanceof Cesium.ImageryLayer) // 控制台打印 true
+            if (layer.show !== undefined) {
+                layer.show = false
+            }
+        }
+        jimoLayerObj['L19'] = [layers[3]]
+        jimoLayerObj['L13'] = [layers[0]]
+        jimoLayerObj['L15'] = [layers[1]]
+        jimoLayerObj['L17'] = [layers[2]]
+
+        // jimoLayerObj['L13'].show = true
+    }, function(e) {
     })
-    promise.then(function(dataSource) {
-      viewer.dataSources.add(dataSource)
-      // const entities = dataSource.entities.values
-      // for (var i = 0; i < entities.length; i++) {
-      //   var entity = entities[i]
-      //   entity.polyline = new Cesium.PolylineGraphics({
-      //     positions: entity.polygon.hierarchy.positions
-      //   })
-      //   entity.polygon.fill = false
-      //   console.log(entity.polygon.hierarchy.positions)
-      // }
-      viewer.flyTo(dataSource.entities, { offset: { heading: 0, pitch: Cesium.Math.toRadians(-90), range: height || getCameraHeight() }})
-    })
-  }
+    _setStateClose('jimo')
 }
-
-function removeDataSourceByName(dict_resourcetype, type = '') {
-  const dataSource = viewer.dataSources.getByName(dict_resourcetype + type)
-  if (dataSource?.length >= 1) {
-    try {
-      dataSource.forEach(ds => {
-        viewer.dataSources.remove(ds)
-      })
-    } catch (e) {
-      console.log(`removeDataSourceByName`, e)
+function _setLayerByCameraHeight() {
+    const height = Math.ceil(viewer.camera.positionCartographic.height)
+    console.log('height', height)
+    if (height > 25000) {
+        _setJimoLayersVisible('L13')
+    } else if (height > 8000) {
+        _setJimoLayersVisible('L15')
+    } else if (height > 1500) {
+        _setJimoLayersVisible('L17')
+    } else {
+        _setJimoLayersVisible('L19')
     }
-  }
-
- }
-
-function setBoards(res){
-// const params = { url: JSON.parse(res.data[0].areasPoint), textColor: 'white', innerColor: '', outColor: '#08FFFF', dsName: 'border-ds', fillOpacity: 0.0, flyTo: true }
-// addGeoJsonWithColor(params)
-
-// const paramS = { url: JSON.parse(res.data[0].areasPoint), textColor: 'white', innerColor: '', outColor: '#08FFFF'}
-// addInitGeoJsonColor(paramS)
-const geojson = JSON.parse(res.data[0].areasPoint);
- setTimeout(() => {
-    addInitGeoJsonColor(geojson, 'white', '', '#08FFFF')
- }, 0)
-
+}
+function _setJimoLayersVisible(level) {
+    const keys = ['L13', 'L15', 'L17', 'L19']
+    console.log('keys', keys, level, jimoLayerObj)
+    for (const key of keys) {
+        const layers = jimoLayerObj[key]
+        if (!layers) continue
+        const visible = key === level
+        for (const layer of layers) {
+            layer.show = visible
+            console.log(visible, layer)
+        }
+    }
+}
+function closeLocalMap() {
+    if (!jimoLayerObj) return
+    const keys = ['L09', 'L11', 'L13', 'L15', 'L17', 'L19']
+    for (const key of keys) {
+        const layers = lacalLayerObj[key]
+        if (!layers) continue
+        for (const layer of layers) {
+            layer.show = false
+        }
+    }
+    STATE_ISERVER_MAP = false
 }

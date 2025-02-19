@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Gradle: com.xdandroid:hellodaemon:1.2.2@aar">
+    <CLASSES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/6cb404470746fcb7b246ec89d0871ee8/hellodaemon-1.2.2/jars/classes.jar!/" />
+      <root url="file:///Applications//Contents/gradle/gradle-6.7.1/caches/////res" />
+      <root url="file:///Applications//Contents/gradle/gradle-6.7.1/caches/////AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/modules-2/files-2.1/com.xdandroid/hellodaemon/1.2.2/5b61340cf0cf43d6b9902373801683f1ce65d875/hellodaemon-1.2.2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/modules-2/files-2.1/com.xdandroid/hellodaemon/1.2.2/dd1c4c60e809c23a0c8beb927698b816c917fb34/hellodaemon-1.2.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
