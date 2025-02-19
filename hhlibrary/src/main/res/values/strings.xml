@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">智慧管廊</string>
+    <string name="web_title">智慧管廊</string>
+
+    <string name="progressActivityErrorButton">重新加载</string>
+    <string name="progressActivityEmptyTitlePlaceholder">未加载到任何内容!</string>
+    <string name="progressActivityEmptyContentPlaceholder">We couldn\'t find anything. Tap the button to take your first image</string>
+    <string name="progressActivityErrorTitlePlaceholder">No Connection</string>
+    <string name="progressActivityErrorContentPlaceholder">网络不给力哦，加载失败</string>
+<!--    <string name="yun_xin_key">e814a08c4bd96022aaa7bd9972f52637</string>--><!--邹平-->
+    <string name="yun_xin_key">54eaf5c3472609291c0e9dd313873d7e</string>
+</resources>

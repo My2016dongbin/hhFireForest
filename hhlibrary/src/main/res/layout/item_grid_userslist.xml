@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/ll_items"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="90dp">
+        <ImageView
+            android:id="@+id/item_status"
+            android:src="@mipmap/ic_uns"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="15dp"
+            android:layout_width="23dp"
+            android:layout_height="23dp"/>
+
+        <FrameLayout
+            android:id="@+id/fl_item"
+            android:layout_marginBottom="5dp"
+            android:background="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="90dp">
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="95dp"
+                android:layout_marginRight="26dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/tv_name"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        />
+
+                    <TextView
+                        android:id="@+id/tv_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/c5mid"
+                        android:textSize="13sp" />
+                </LinearLayout>
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="6dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/tv_content"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:lines="1"
+                        android:ellipsize="end"
+                        android:textColor="@color/c5mid"
+                        android:textSize="14sp"
+                        />
+                    <TextView
+                        android:id="@+id/tv_unread"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:layout_marginLeft="5dp"
+                        android:paddingStart="7dp"
+                        android:paddingEnd="7dp"
+                        android:background="@drawable/beidou_unread"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        />
+                </LinearLayout>
+            </LinearLayout>
+
+            <com.ruyiruyi.rylibrary.utils.CircleImageView
+                android:id="@+id/iv_user"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="20dp"
+                android:src="@mipmap/user02"
+                app:roundHeight="30dp"
+                app:roundWidth="30dp" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <View
+        android:background="@color/c"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"/>
+
+
+</LinearLayout>
