@@ -138,7 +138,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
      * 上传图片到服务器
      */
     private void postPicToService() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_FIRE + "oa/api/workReport/fileUploadAnByNotToken");
         params.setAsJsonContent(true);
         params.setMultipart(true);    //以表单得形式上传  文件上传必须要
 
@@ -165,8 +165,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
         Log.e(TAG, "postPicToService: " + params );
         Log.e(TAG, "postPicToService: " + new DbConfig(this).getUser().getToken() );
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        params.setConnectTimeout(1000000);
+
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -273,7 +272,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
                                     .countable(true)
                                     .capture(true)
                                     .captureStrategy(
-                                            new CaptureStrategy(true,"com.haohai.platform.fireforestplatform.fileProvider")
+                                            new CaptureStrategy(true,"com.haohai.platform.fireforestplatform")
                                     )
                                     .maxSelectable(size)
                                     .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
@@ -431,14 +430,13 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
 
 
     private void postVideoToServiceRx() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_FIRE+"oa/api/workReport/fileUploadAnByNotToken");
         params.addBodyParameter("file", new File(videoPath),null,videoPath);
         params.setAsJsonContent(true);
         params.setMultipart(true);
         params.setConnectTimeout(1000000);
         //params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "resource: --"  + params);
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
@@ -505,7 +503,6 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
         params.setBodyContent(jsonObject.toString());
         params.setConnectTimeout(10000);
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {

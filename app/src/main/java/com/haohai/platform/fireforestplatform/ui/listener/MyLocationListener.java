@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
+import com.ruyiruyi.rylibrary.utils.CommonData;
 
 /**
  * Created by geyang on 2020/11/19.
@@ -28,6 +29,10 @@ public class MyLocationListener extends BDAbstractLocationListener {
         int errorCode = location.getLocType();
         //获取定位类型、定位错误返回码，具体信息可参照类参考中BDLocation类中的说明
 
+        if(latitude != 0 && longitude != 0){
+            CommonData.lat = latitude;
+            CommonData.lng = longitude;
+        }
         Log.e(TAG, "onReceiveLocation:经纬度是 " +  latitude +"," +longitude);
     }
 }

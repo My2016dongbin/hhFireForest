@@ -12,26 +12,7 @@ public class TreePoint {
     private int DISPLAY_ORDER; // 1       //同一个级别的显示顺序
     private boolean isExpand = false;  //是否展开了
     private boolean isSelected = false; //是否选中了
-    public String rtspUrl;
 
-
-    public TreePoint(String ID, String NNAME, String PARENTID, String ISLEAF, int DISPLAY_ORDER,String rtspUrl) {
-        this.ID = ID;
-        this.NNAME = NNAME;
-        this.PARENTID = PARENTID;
-        this.ISLEAF = ISLEAF;
-        this.DISPLAY_ORDER = DISPLAY_ORDER;
-        this.rtspUrl = rtspUrl;
-    }
-    public TreePoint(String ID, String NNAME, String PARENTID, String ISLEAF, int DISPLAY_ORDER,boolean isExpand,String rtspUrl) {
-        this.ID = ID;
-        this.NNAME = NNAME;
-        this.PARENTID = PARENTID;
-        this.ISLEAF = ISLEAF;
-        this.DISPLAY_ORDER = DISPLAY_ORDER;
-        this.isExpand = isExpand;
-        this.rtspUrl = rtspUrl;
-    }
 
     public TreePoint(String ID, String NNAME, String PARENTID, String ISLEAF, int DISPLAY_ORDER) {
         this.ID = ID;
@@ -47,19 +28,6 @@ public class TreePoint {
         this.ISLEAF = ISLEAF;
         this.DISPLAY_ORDER = DISPLAY_ORDER;
         this.isExpand = isExpand;
-    }
-
-
-    public void setNNAME(String NNAME) {
-        this.NNAME = NNAME;
-    }
-
-    public String getRtspUrl() {
-        return rtspUrl;
-    }
-
-    public void setRtspUrl(String rtspUrl) {
-        this.rtspUrl = rtspUrl;
     }
 
     public String getID() {

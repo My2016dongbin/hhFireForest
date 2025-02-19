@@ -3,7 +3,6 @@ package com.haohai.platform.platformmodel.ui.fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,8 +17,8 @@ import com.haohai.platform.platformmodel.ui.acticity.WorkReportListActivity;
 import com.haohai.platform.platformmodel.ui.fragment.base.HhBaseFragment;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.db.DbConfig;
+import com.ruyiruyi.rylibrary.db.UserMenu;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
-import com.ruyiruyi.rylibrary.utils.CommonUtils;
 
 import rx.functions.Action1;
 
@@ -32,10 +31,10 @@ public class AppsFragment extends HhBaseFragment {
     private LinearLayout huibaoLayout;
     private LinearLayout liuchengLayout;
     private LinearLayout daishenpiLayout;
-    private LinearLayout ll_1;
     private LinearLayout huoqingLayout;
     private LinearLayout renwuLayout;
     private LinearLayout yinhuanpaichaLayout;
+    private UserMenu usermenu;
 
     @Nullable
     @Override
@@ -46,7 +45,7 @@ public class AppsFragment extends HhBaseFragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
+        usermenu = new UserMenu();
         initView();
 
         bindView();
@@ -59,27 +58,23 @@ public class AppsFragment extends HhBaseFragment {
         liuchengLayout = ((LinearLayout) getView().findViewById(R.id.liucheng_layout));
         daishenpiLayout = ((LinearLayout) getView().findViewById(R.id.daishenpi_layout));
 
-        ll_1 = ((LinearLayout) getView().findViewById(R.id.ll_1));
         huoqingLayout = ((LinearLayout) getView().findViewById(R.id.huoqing_layout));
         renwuLayout = ((LinearLayout) getView().findViewById(R.id.renwu_layout));
         yinhuanpaichaLayout=((LinearLayout) getView().findViewById(R.id.yinhuanpaicha_layout));
-        initPermission();
-    }
-
-    private void initPermission() {
-        if(!CommonUtils.hasPermission(getActivity(),"app-application-btn-fire")){//TODO 应用权限
+        if (usermenu.getAppApplicationBtnReport()){
+            huoqingLayout.setVisibility(View.VISIBLE);
+        }else {
             huoqingLayout.setVisibility(View.GONE);
         }
-        if(!CommonUtils.hasPermission(getActivity(),"app-application-btn-danger")){
+        if (usermenu.getAppApplicationBtnDangerCheck()){
+            yinhuanpaichaLayout.setVisibility(View.VISIBLE);
+        }else {
             yinhuanpaichaLayout.setVisibility(View.GONE);
         }
-        if(!CommonUtils.hasPermission(getActivity(),"app-application-btn-task")){
+        if (usermenu.getAppApplicationBtnTask()){
+            renwuLayout.setVisibility(View.VISIBLE);
+        }else {
             renwuLayout.setVisibility(View.GONE);
-        }
-        if((!CommonUtils.hasPermission(getActivity(),"app-application-btn-fire"))
-                && (!CommonUtils.hasPermission(getActivity(),"app-application-btn-danger"))
-                && (!CommonUtils.hasPermission(getActivity(),"app-application-btn-task"))){
-            ll_1.setVisibility(View.GONE);
         }
     }
 

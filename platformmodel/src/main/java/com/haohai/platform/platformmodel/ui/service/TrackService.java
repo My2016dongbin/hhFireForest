@@ -1,3 +1,4 @@
+/*
 package com.haohai.platform.platformmodel.ui.service;
 
 import android.Manifest;
@@ -66,12 +67,14 @@ public class TrackService extends Service {
                 currentTime = dateFormat.format(date);
             //    Log.e(TAG, "handleMessage: " + currentTime);
 
-               /* if (currentLatitude.equals("") || currentLatitude== null || currentLongitude.equals("") || currentLongitude == null){
+               */
+/* if (currentLatitude.equals("") || currentLatitude== null || currentLongitude.equals("") || currentLongitude == null){
                     Toast.makeText(TrackService.this, "定位失败，正在重新开启定位", Toast.LENGTH_SHORT).show();
                  //   getLocation();
                     initBaiduLocation();
                     return;
-                }*/
+                }*//*
+
 
                 //   Log.e(TAG, "handleMessage: " + user.getIsLogin());
                 User user = new DbConfig(getApplicationContext()).getUser();
@@ -90,11 +93,6 @@ public class TrackService extends Service {
 
     private void changeUserPosition(User user) {
 
-        Log.e(TAG, "changeUserPosition: currentLatitude = " + currentLatitude );
-        String is = currentLatitude + "";
-        if(currentLatitude == 0 || is.isEmpty() || is.startsWith("0")|| is.startsWith("null")){
-            return;
-        }
         final JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("userId",user.getId());
@@ -111,7 +109,6 @@ public class TrackService extends Service {
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         params.setConnectTimeout(10000);
         Log.e(TAG, "service---" + params);
         Log.e(TAG, "service---" + jsonObject.toString());
@@ -178,10 +175,12 @@ public class TrackService extends Service {
 
 
 
-    /**
+    */
+/**
      * 获取当前位置经纬度
      * @return
-     */
+     *//*
+
     // @JavascriptInterface
     public void getLocation() {
         //获得位置服务
@@ -205,7 +204,7 @@ public class TrackService extends Service {
                 }catch (Exception e){
 
                 }
-                
+
                 currentLongitude = longitude;
                 currentLatitude = latitude;
                  //  Toast.makeText(TrackService.this, "经纬度发生改变了,经度" +longitude + "纬度" +latitude, Toast.LENGTH_SHORT).show();
@@ -223,13 +222,13 @@ public class TrackService extends Service {
 
             @Override
             public void onProviderDisabled(String provider) {
-                //Toast.makeText(getApplicationContext(), "请打开GPS", Toast.LENGTH_SHORT).show();
-                //startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                Toast.makeText(getApplicationContext(), "请打开GPS", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             }
         });
         if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-//            Toast.makeText(this, "请打开GPS和使用网络定位以提高精度", Toast.LENGTH_LONG).show();
-//            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            Toast.makeText(this, "请打开GPS和使用网络定位以提高精度", Toast.LENGTH_LONG).show();
+            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         }
         // 获取最好的定位方式
         String provider = locationManager.getBestProvider(criteria, true); // true 代表从打开的设备中查找
@@ -273,8 +272,10 @@ public class TrackService extends Service {
             currentLatitude = latitude ;
             Log.e(TAG, "getLocation: --" + longitude);
             Log.e(TAG, "getLocation: *--" + latitude);
-         /*   BigDecimal   la   =   new BigDecimal(latitude);
-            double   lat = la.setScale(6,BigDecimal.ROUND_HALF_UP).doubleValue();*/
+         */
+/*   BigDecimal   la   =   new BigDecimal(latitude);
+            double   lat = la.setScale(6,BigDecimal.ROUND_HALF_UP).doubleValue();*//*
+
             //    return longitude + "," + latitude;
             //   return "0.00,0.00";
         }else {
@@ -284,3 +285,4 @@ public class TrackService extends Service {
 
 
 }
+*/

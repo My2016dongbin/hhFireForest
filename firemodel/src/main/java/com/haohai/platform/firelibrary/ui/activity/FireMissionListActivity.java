@@ -90,7 +90,6 @@ public class FireMissionListActivity extends HhBaseActivity implements FireMissi
         Log.e(TAG, "getDataFromService: " + params);
         Log.e(TAG, "getDataFromService: " + jsonObject.toString());
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         params.setConnectTimeout(10000);
         x.http().post(params, new Callback.CommonCallback<String>() {
@@ -175,7 +174,6 @@ public class FireMissionListActivity extends HhBaseActivity implements FireMissi
                 currentPage = 0;
                 isShowDialog = false;
                 getDataFromService();*/
-                getDataFromService();
 
 
             }

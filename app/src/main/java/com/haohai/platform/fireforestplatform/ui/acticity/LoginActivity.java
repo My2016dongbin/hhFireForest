@@ -1,10 +1,17 @@
 package com.haohai.platform.fireforestplatform.ui.acticity;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.RequiresApi;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -13,14 +20,17 @@ import android.widget.Toast;
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.haohai.platform.fireforestplatform.MainActivity;
 import com.haohai.platform.fireforestplatform.R;
+import com.haohai.platform.fireforestplatform.ui.utils.NotificationsUtils;
 import com.haohai.platform.fireforestplatform.ui.utils.TraceServiceImpl;
 import com.haohai.platform.platformmodel.ui.acticity.base.HhBaseActivity;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.db.User;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
+import com.ruyiruyi.rylibrary.db.UserMenu;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
-import com.ruyiruyi.rylibrary.utils.CommonData;
+import com.ruyiruyi.rylibrary.utils.AESUtils3;
+import com.ruyiruyi.rylibrary.utils.AesUtil;
 import com.tencent.android.tpush.XGIOperateCallback;
 import com.tencent.android.tpush.XGPushConfig;
 import com.tencent.android.tpush.XGPushManager;
@@ -35,7 +45,6 @@ import org.xutils.http.RequestParams;
 import org.xutils.x;
 
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import rx.functions.Action1;
@@ -64,15 +73,44 @@ public class LoginActivity extends HhBaseActivity {
     private TextView registerButton;
     private String access_token;
     private User user;
+    private UserMenu usermenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         loginDialog = new ProgressDialog(this);
-
+        usermenu = new UserMenu();
         initView();
+
+        /*try{
+            String phoneId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+            Log.e("ANDROID_ID = ",phoneId);
+        }catch(Exception e){
+            Log.e(TAG, "phoneId: error " + e );
+        }*/
+
+        /*if (NotificationsUtils.isNotificationEnabled(this)){
+            Log.i(TAG, "--> showPromptDialog -- 通知权限 已开启 = ");
+
+        }else {
+            Log.i(TAG, "--> showPromptDialog -- 通知权限 未开启 = ");
+            // TODO 弹框提示用户去设置，跳转到应用信息界面
+            gotoAppDetailIntent(this);
+
+        }*/
     }
+
+    /**
+     * 跳转到应用详情界面
+     */
+    public static void gotoAppDetailIntent(Activity activity) {
+        Intent intent = new Intent();
+        intent.setAction(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        intent.setData(Uri.parse("package:" + activity.getPackageName()));
+        activity.startActivity(intent);
+    }
+
 
     private void initView() {
 
@@ -84,6 +122,7 @@ public class LoginActivity extends HhBaseActivity {
 
         RxViewAction.clickNoDouble(loginButton)
                 .subscribe(new Action1<Void>() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void call(Void aVoid) {
 
@@ -100,7 +139,7 @@ public class LoginActivity extends HhBaseActivity {
         }
     }
 
-    private void loginToService() {
+    private void loginToServiceOld() {
 
         if (userNameEdit.getText().toString().isEmpty()){
             Toast.makeText(this, "请输入用户名", Toast.LENGTH_SHORT).show();
@@ -161,12 +200,108 @@ public class LoginActivity extends HhBaseActivity {
         });
     }
 
+    private String aesPassword;//AES私钥
+    private final String rsaPassword_g = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCq6jRoYYLf3Vm+ownCz10nrxdojIIVuZlaqxrSOAehPHVJZ038P1LjsbimfaklYa2q4jpCFFgQG4ttQ2h/iliqFt5ZTTHYSYPREg6opGs9RlGb2+mVPSHVi8BTFygLFBFJzYiCIQ21Lhus+UBhWjivj/pL0gvCjRddXcX6bpwJSwIDAQAB";//RSA公钥
+    //private final String rsaPassword_g = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCFPmKB1bh6oGLagic663u/xWNkrtDbLTMeJuROwe5w9ipWwSDIzqos+2p7IukUPi7yZoYv080m8Wu4RsMOBzCUb0H9TSer68KW1Wqky75DtKY+UKj1Y3wU8H+CxVXoN10q3GCgjaEdtQZabcjjwoUvIHT7xTCzB0P3TxjZ7/fscwIDAQAB";//RSA公钥
+    private final String rsaPassword_s = "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAIU+YoHVuHqgYtqCJzrre7/FY2Su0NstMx4m5E7B7nD2KlbBIMjOqiz7ansi6RQ+LvJmhi/TzSbxa7hGww4HMJRvQf1NJ6vrwpbVaqTLvkO0pj5QqPVjfBTwf4LFVeg3XSrcYKCNoR21BlptyOPChS8gdPvFMLMHQ/dPGNnv9+xzAgMBAAECgYAtPqfYiqggC8JFjJihq0DUN8SudaY6JrkK7g3sqHG9Lfnmh6IIThT/PUhFE++tjggHC8VZDETHiocXhf/KDary3BegSUIAfsGkr81tlTfhBjMsCOLH22LeZw//XIx7OplStK/CetX2727Ds5fGol9C+e6D1WOSwCJOO+jLlxvAQQJBAOTs0qzjpmHLZPaTgoFq62fDdr6lBHq+ReIBGLyPX9Ezvtp81r6/KVTeaB22LxtTpO2OJXXcatR4dfMH+lqSjXECQQCVAJxulw6eNdOYAAwyMoLRCVBS66j2ylmhEUN9uPAr8o7XC5PB8pF/fsMk5Q6WDe6uHE7v7PSd8ypSQMeoRPYjAkEArznm+Jc4H9sD6Ql393/TuJURK1Q8XYePDjMwsAQ+n28wQyUTauX/yQqEP1nYLN6Ve5A2dETHMOMTxXbx1qoewQJAUgVgF1B374dZztZX4FoFwOQLn1myTQfehtdl+5MOQmLnVmE9GQpaJYC2E10zxk4tERLsMQ6TKU9uAJFAVtR/WQJAY+JHFUxmIZWb7YyKu60bYYI/beje9fNmNppyMtZMrwEYsvtiU5y4GnmWZVyRNNYCgghXT3KdUsD09F4YHRTiwA==";//RSA私钥
+    //AES加密
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void loginToService() {
+//        aesPassword = AESUtils3.getKey();
+//        aesPassword = "dec3c3dc6928c04a0469ee92a7bb590132";
+        aesPassword = "nPhPGOMzoMTdN9wq";
+        if (userNameEdit.getText().toString().isEmpty()){
+            Toast.makeText(this, "请输入用户名", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (passwordEdit.getText().toString().isEmpty()){
+            Toast.makeText(this, "请输入密码", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        showDialogProgress(loginDialog,"登录中...              ");
+        String user_ = null;
+        String pass_ = null;
+        try {
+            user_ = AesUtil.encrypt(userNameEdit.getText().toString(),aesPassword);
+            pass_ = AesUtil.encrypt(passwordEdit.getText().toString(),aesPassword);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        final RequestParams params = new RequestParams(RequestUtils.LOGIN_URL + "auth/api/auth/user/encryptedLogin");
+        String str = null;
+        String str_de = null;
+        try {
+            str = AESUtils3.EncryptRSA(aesPassword, rsaPassword_g);
+            str_de = AESUtils3.DecryptRSA(str, rsaPassword_s);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, "loginToService: e = " + e );
+        }
+        Log.e(TAG, "loginToService: username_ " + user_);
+        Log.e(TAG, "loginToService: password_ " + pass_);
+        JSONObject object = new JSONObject();
+        try {
+            object.put("aeskey",str);
+            object.put("userName",user_);
+            object.put("userPasswd",pass_);
+            object.put("grant_type","password");
+            object.put("client_id","client_password");
+            object.put("client_secret","123456");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        params.setBodyContent(object.toString());
+        Log.e(TAG, "loginToService: object = " + object.toString() );
+        params.setConnectTimeout(10000);
+        Log.e(TAG, "loginGetToken: --"  + params);
+        x.http().post(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "onSuccess: --1-" + result );
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(result);
+                    JSONArray data = jsonObject.getJSONArray("data");
+                    JSONObject obj = (JSONObject) data.get(0);
+                    access_token = obj.getString("access_token");
+
+                    getUserInfo();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                Log.e(TAG, "onError: " + ex.toString());
+                if (ex.toString().contains("400")) {
+                    Toast.makeText(LoginActivity.this, "密码错误", Toast.LENGTH_SHORT).show();
+                }else  if (ex.toString().contains("401")) {
+                    Toast.makeText(LoginActivity.this, "账号不存在", Toast.LENGTH_SHORT).show();
+                }else {
+                    Toast.makeText(LoginActivity.this, "网络异常", Toast.LENGTH_SHORT).show();
+                }
+
+                loginDialog.dismiss();
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
+            }
+        });
+    }
+
     private void getUserInfo() {
         final RequestParams params = new RequestParams(RequestUtils.LOGIN_URL + "auth/api/auth/user/get/userinfo");
         // params.addBodyParameter("reqJson", jsonObject.toString());
         params.setConnectTimeout(10000);
         params.addHeader("Authorization","bearer " + access_token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "getUserInfo:-- " + params );
         x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
@@ -203,7 +338,7 @@ public class LoginActivity extends HhBaseActivity {
                         User user = new User(id, userCode,userNameEdit.getText().toString(), passwordEdit.getText().toString(), fullName, email, phone, sex, entryTime, birthday, type, isSuperAdmin, comment, groupId,
                                 gridNo, bkchar2, money, lockMoney, groupName, state, 1, access_token,headUrl);
                         user.isShangchuan = false;
-                        user.setIsyunyin(0);
+                        user.setIsyunyin(1);
                         DbConfig dbConfig = new DbConfig(getApplicationContext());
                         DbManager db = dbConfig.getDbManager();
 
@@ -213,13 +348,13 @@ public class LoginActivity extends HhBaseActivity {
                         } catch (DbException e) {
                             e.printStackTrace();
                         }
-
                         //  doLogin();
                         loginDialog.dismiss();
                         Set<String> tagSet = new LinkedHashSet<String>();
                         tagSet.add(gridNo);
-                        Log.e(TAG, "gridNo: "+gridNo);
                         tagSet.add(id);
+                        tagSet.add(groupId);
+                        tagSet.add("test0406");//测试推送
                         XGPushManager.setTags(getApplicationContext(),"setTag",tagSet);
                         //开启华为推送
                         XGPushConfig.enableOtherPush(getApplicationContext(), true);
@@ -235,13 +370,12 @@ public class LoginActivity extends HhBaseActivity {
                                 Log.d("TPush", "注册失败，错误码：" + errCode + ",错误信息：" + msg);
                             }
                         });
-                        postPermissions();
-                        //startActivity(new Intent(getApplicationContext(), MainActivity.class));
+
                        /* ARouter.getInstance().build(RouteUtils.LoginToMain)
                                 .withInt("state",1)
                                 .navigation();*/
-
-
+                        //getUserMenuforshouye();
+                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -265,6 +399,161 @@ public class LoginActivity extends HhBaseActivity {
         });
     }
 
+    private void getUserMenu() {
+        final RequestParams params = new RequestParams(RequestUtils.LOGIN_URL + "auth/api/auth/auth/list/element/from/menuApp");
+        // params.addBodyParameter("reqJson", jsonObject.toString());
+        params.setConnectTimeout(10000);
+        params.addHeader("Authorization","bearer " + access_token);
+        Log.e(TAG, "getUserMenu:-- " + params );
+        x.http().get(params, new Callback.CommonCallback<String>() {
+                    @Override
+                    public void onSuccess(String result) {
+                        Log.e(TAG, "getUserMenuonSuccess:--2- " + result);
+                        try {
+                            JSONObject jsonObject = new JSONObject(result);
+                            String code = jsonObject.getString("code");
+                            if (code.equals("200")) {
+                                JSONArray data = jsonObject.getJSONArray("data");
+                                for (int i = 0; i < data.length(); i++) {
+                                    JSONObject userMenuJsonObj = data.getJSONObject(i);
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-map-btn-satelliteFirealarm")) {
+                                        Log.e(TAG, "onSuccess: 33333");
+                                        usermenu.setAppMapBtnSatelliteFirealarm(true);
+                                        Log.e(TAG, "getUserMenu: " + usermenu.getAppMapBtnSatelliteFirealarm());
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-satelliteFirealarm-btn-list")) {
+                                        usermenu.setAppSatelliteFirealarmBtnList(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-satelliteFirealarm-btn-query")) {
+                                        usermenu.setAppSatelliteFirealarmBtnQuery(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-satelliteFirealarm-btn-setting")) {
+                                        usermenu.setAppSatelliteFirealarmBtnSetting(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-map-btn-resource")) {
+                                        usermenu.setAppMapBtnResource(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-map-btn-firealarm")) {
+                                        usermenu.setAppMapBtnFirealarm(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-map-btn-task")) {
+                                        usermenu.setAppMapBtnTask(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-video-btn-directionControl")) {
+                                        usermenu.setAppVideoBtnDirectionControl(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-video-btn-zoomControl")) {
+                                        usermenu.setAppVideoBtnZoomControl(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-application-btn-report")) {
+                                        usermenu.setAppApplicationBtnReport(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-report-btn-add")) {
+                                        usermenu.setAppReportBtnAdd(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-application-btn-dangerCheck")) {
+                                        usermenu.setAppApplicationBtnDangerCheck(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-dangerCheck-btn-add")) {
+                                        usermenu.setAppDangerCheckBtnAdd(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-application-btn-task")) {
+                                        usermenu.setAppApplicationBtnTask(true);
+                                    }
+                                    if (userMenuJsonObj.getString("elementCode").equals("app-setting-btn-position")) {
+                                        usermenu.setAppSettingBtnPosition(true);
+                                    }
+                                }
+                                Log.e(TAG, "onSuccess: yunxing kkan zou mei zou zhe");
+                                DbConfig dbConfig = new DbConfig(getApplicationContext());
+                                DbManager db = dbConfig.getDbManager();
+                                try {
+                                    Log.e(TAG, "onSuccess: aa" );
+                                    db.delete(UserMenu.class);
+                                    Log.e(TAG, "onSuccess: bb" );
+                                    db.saveOrUpdate(usermenu);
+                                } catch (DbException e) {
+                                    e.printStackTrace();
+                                }
+                                UserMenu userMenu = dbConfig.getUserMenu();
+                                Log.e(TAG, "onSuccess: " + userMenu.getAppMapBtnSatelliteFirealarm());
+                                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable ex, boolean isOnCallback) {
+
+                    }
+
+                    @Override
+                    public void onCancelled(CancelledException cex) {
+
+                    }
+
+                    @Override
+                    public void onFinished() {
+
+                    }
+        });
+    }
+    private void getUserMenuforshouye() {
+        final RequestParams params = new RequestParams(RequestUtils.LOGIN_URL + "auth/api/auth/auth/list/menu/by/user");
+        params.setConnectTimeout(10000);
+        params.addHeader("Authorization","bearer " + access_token);
+        Log.e(TAG, "getUserMenu:-- " + params );
+        x.http().get(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "getUserMenuonSuccess:--3- " + result);
+                try {
+                    JSONObject jsonObject = new JSONObject(result);
+                    String code = jsonObject.getString("code");
+                    if (code.equals("200")) {
+                        JSONArray data = jsonObject.getJSONArray("data");
+                        for (int i = 0; i < data.length(); i++) {
+                            JSONObject userMenuJsonObj = data.getJSONObject(i);
+                            if (userMenuJsonObj.getString("menuCode").equals("app-map")) {
+                                Log.e(TAG, "onSuccess: 33333");
+                                usermenu.setAppmap(true);
+                                Log.e(TAG, "getUserMenu: " + usermenu.isAppmap());
+                            }
+                            if (userMenuJsonObj.getString("menuCode").equals("app-video")) {
+                                usermenu.setAppvideo(true);
+                            }
+                            if (userMenuJsonObj.getString("menuCode").equals("app-application")) {
+                                usermenu.setAppapplication(true);
+                            }
+                            if (userMenuJsonObj.getString("menuCode").equals("app-setting")) {
+                                usermenu.setAppsetting(true);
+                            }
+                        }
+                        //getUserMenu();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
+            }
+        });
+    }
     /**
      * 登录环信
      */
@@ -325,180 +614,5 @@ public class LoginActivity extends HhBaseActivity {
             //  System.exit(0);
             TraceServiceImpl.stopService();
         }
-    }
-
-
-
-
-    /**
-     * 获取按钮权限
-     */
-    private void postPermissions() {
-        showDialogProgress(loginDialog,"正在获取权限...");
-        DbConfig dbConfig = new DbConfig(this);
-        dbManager = dbConfig.getDbManager();
-        userPermission = dbConfig.getUser();
-        userPermission.setPermission("");
-        permissionCount = 0;
-        String[] menuIdList = {"app-map","app-video","app-application","app-setting"};//获取当前用户菜单：/auth/api/auth/auth/list/menu/by/user
-        for (int i = 0; i < menuIdList.length; i++) {
-            postPer(menuIdList[i]);
-        }
-        postMainPer();
-    }
-
-
-    private DbManager dbManager;
-    private User userPermission;
-    private int permissionCount;
-    private boolean permissionMain = false;
-    private void postPer(String id) {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST__URL_HLJ + "auth/api/auth/auth/list/element/from/menu");
-        params.addParameter("menuCode",id);
-        params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        Log.e(TAG, "postPermissions: " + params);
-        x.http().get(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: permissions" + result );
-                try {
-                    JSONObject object = new JSONObject(result);
-                    JSONArray dataList = object.getJSONArray("data");
-                    for (int i = 0; i < dataList.length(); i++) {
-                        JSONObject o = (JSONObject) dataList.get(i);
-                        String code = o.getString("elementCode");
-                        userPermission.addPermission(code+"_");
-                    }
-                    permissionCount++;
-                    if(permissionCount == 4){
-                        try {
-                            Log.e(TAG, "onSuccess: permissions ==>" + userPermission.getPermission() );
-                            dbManager.delete(User.class);
-                            dbManager.saveOrUpdate(userPermission);
-                            goMain();
-
-                        } catch (DbException e) {
-                            e.printStackTrace();
-                            Toast.makeText(LoginActivity.this, "权限获取异常", Toast.LENGTH_SHORT).show();
-                            loginDialog.dismiss();
-                        }
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Toast.makeText(LoginActivity.this, "权限获取异常", Toast.LENGTH_SHORT).show();
-                    loginDialog.dismiss();
-                }
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Toast.makeText(LoginActivity.this, "权限获取异常", Toast.LENGTH_SHORT).show();
-                loginDialog.dismiss();
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-
-            }
-        });
-    }
-
-    private void goMain() {
-        if(permissionCount == 4 && permissionMain){
-            loginDialog.dismiss();
-            startActivity(new Intent(getApplicationContext(), MainActivity.class));
-            Log.e(TAG, "goMain: userPermission = " + userPermission.getPermission() + CommonData.hasMainMap + CommonData.hasMainVideo + CommonData.hasMainApp + CommonData.hasMainMy );
-        }
-    }
-
-    private void postMainPer() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST__URL_HLJ + "auth/api/auth/auth/user/auth");
-        params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        Log.e(TAG, "postPermissions: " + params);
-        x.http().get(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: permissions postMainPer" + result );
-                try {
-                    JSONObject object = new JSONObject(result);
-                    JSONArray data = object.getJSONArray("data");
-                    JSONObject obj = (JSONObject) data.get(0);
-                    JSONArray dataList = obj.getJSONArray("menuDTOS");
-                    CommonData.hasMainMap = false;
-                    CommonData.hasMainVideo = false;
-                    CommonData.hasMainApp = false;
-                    CommonData.hasMainMy = false;
-                    for (int i = 0; i < dataList.length(); i++) {
-                        JSONObject o = (JSONObject) dataList.get(i);
-                        String menuCode = o.getString("menuCode");
-                        if(Objects.equals(menuCode, "app-map")){
-                            CommonData.hasMainMap = true;
-                        }
-                        if(Objects.equals(menuCode, "app-video")){
-                            CommonData.hasMainVideo = true;
-                        }
-                        if(Objects.equals(menuCode, "app-application")){
-                            CommonData.hasMainApp = true;
-                        }
-                        if(Objects.equals(menuCode, "app-setting")){
-                            CommonData.hasMainMy = true;
-                        }
-                    }
-                    Log.e(TAG, "handleMessage: getQcl" + CommonData.hasMainMap + CommonData.hasMainVideo + CommonData.hasMainApp + CommonData.hasMainMy );
-                    if(!CommonData.hasMainMap && !CommonData.hasMainVideo && !CommonData.hasMainApp && !CommonData.hasMainMy){
-                        CommonData.hasMainMy = true;
-                    }
-                    permissionMain = true;
-                    DbConfig dbConfig = new DbConfig(LoginActivity.this);
-                    User user = dbConfig.getUser();
-                    user.setHasMainMap(CommonData.hasMainMap);
-                    user.setHasMainVideo(CommonData.hasMainVideo);
-                    user.setHasMainApp(CommonData.hasMainApp);
-                    user.setHasMainMy(CommonData.hasMainMy);
-                    DbManager db = dbConfig.getDbManager();
-                    try {
-                        db.delete(User.class);
-                        db.saveOrUpdate(user);
-                    } catch (DbException e) {
-                        e.printStackTrace();
-                    }
-
-                    goMain();
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    CommonData.hasMainMap = true;
-                    CommonData.hasMainVideo = true;
-                    CommonData.hasMainApp = true;
-                    CommonData.hasMainMy = true;
-                    Toast.makeText(LoginActivity.this, "权限获取异常", Toast.LENGTH_SHORT).show();
-                    loginDialog.dismiss();
-                }
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Toast.makeText(LoginActivity.this, "权限获取异常", Toast.LENGTH_SHORT).show();
-                loginDialog.dismiss();
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-
-            }
-        });
     }
 }

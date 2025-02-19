@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.sax.RootElement;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.haohai.platform.fireforestplatform.MainActivity;
 import com.haohai.platform.fireforestplatform.ui.service.BackgroundMp3Service;
@@ -79,6 +80,7 @@ public class TengxunReceiver extends XGPushBaseReceiver{
                 String fire_id = content.getString("id");
                 String ob_time = content.getString("time");
                 String type = content.getString("type");
+                Log.e(TAG, "onNotificationClickedResult: type = " + type );
                 Intent intent= new Intent();
                 intent.setAction("fire_weixing_tengxun");
                 intent.putExtra("sele","新火警");
@@ -107,8 +109,13 @@ public class TengxunReceiver extends XGPushBaseReceiver{
         Log.e(TAG, "onNotificationShowedResult: " + xgPushShowedResult.getMsgId());
         Log.e(TAG, "onNotificationShowedResult: " + xgPushShowedResult.getNotifactionId());
 
-        Intent intenta = new Intent(context,BackgroundMp3Service.class);
+        /*Intent intenta = new Intent(context,BackgroundMp3Service.class);
         context.startService(intenta);
-        Log.e(TAG, "" );
+        Log.e(TAG, "" );*/
+
+
+        Intent intenta = new Intent(context, com.ruyiruyi.rylibrary.service.BackgroundMp3Service.class);
+        intenta.putExtra("type", "14");
+        context.startService(intenta);
     }
 }

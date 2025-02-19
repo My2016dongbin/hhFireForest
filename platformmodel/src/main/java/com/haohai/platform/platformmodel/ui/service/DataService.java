@@ -48,7 +48,6 @@ public class DataService extends Service {
         RequestParams params = new RequestParams(RequestUtils.REQUEST_QUANXIAN + "api/department/list");
         params.setAsJsonContent(true);
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         JSONObject jsonObject = new JSONObject();
         params.setBodyContent(jsonObject.toString());
@@ -97,7 +96,6 @@ public class DataService extends Service {
         RequestParams params = new RequestParams(RequestUtils.REQUEST_QUANXIAN + "api/auth/user/list");
         params.setAsJsonContent(true);
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         JSONObject jsonObject = new JSONObject();
         params.setBodyContent(jsonObject.toString());

@@ -77,7 +77,6 @@ public class FireListActivity extends HhBaseActivity {
         Log.e(TAG, "getDataFromService: " + params);
         Log.e(TAG, "getDataFromService: " + jsonObject.toString());
         params.addHeader("Authorization", "bearer " + token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         params.setConnectTimeout(10000);
         x.http().post(params, new Callback.CommonCallback<String>() {

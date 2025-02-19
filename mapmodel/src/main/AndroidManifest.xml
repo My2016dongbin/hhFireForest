@@ -8,7 +8,15 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
         <activity android:name=".activity.WeixingActivity"/>
-        <activity android:name=".activity.PlayerActivity"/>
+        <activity
+            android:name=".activity.PlayerActivity"
+            android:configChanges="keyboard|orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Full" />
+        <activity android:name=".activity.PlayerRtspActivity"
+            android:configChanges="keyboard|orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Full"/>
     </application>
 
 </manifest>

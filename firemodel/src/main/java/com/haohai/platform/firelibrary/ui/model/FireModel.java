@@ -71,7 +71,6 @@ public class FireModel implements IFireModel {
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "getAreFromService: " + params);
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override

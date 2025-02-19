@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/FireForestPlatform.iml" filepath="$PROJECT_DIR$/.idea/modules/FireForestPlatform.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FireForestPlatform.iml" filepath="$PROJECT_DIR$/FireForestPlatform.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/FireForestPlatform.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/FireForestPlatform.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/appnaturalresource/FireForestPlatform.appnaturalresource.iml" filepath="$PROJECT_DIR$/.idea/modules/appnaturalresource/FireForestPlatform.appnaturalresource.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/chatimmodel/FireForestPlatform.chatimmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/chatimmodel/FireForestPlatform.chatimmodel.iml" />

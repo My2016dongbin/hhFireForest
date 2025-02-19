@@ -35,7 +35,7 @@ public class LatLngChangeNew {
      * @param longitude 经度
      * @return [纬度, 经度]
      */
-    public static double[] calWGS84toBD09(double latitude, double longitude) {
+    public double[] calWGS84toBD09(double latitude, double longitude) {
         Point dev = calDev(latitude, longitude);
         double retLat = latitude + dev.getLatitude();
         double retLon = longitude + dev.getLongitude();
@@ -109,7 +109,7 @@ public class LatLngChangeNew {
      * @param longitude 经度
      * @return [纬度, 经度]
      */
-    public static double[] calGCJ02toBD09(double latitude, double longitude) {
+    public double[] calGCJ02toBD09(double latitude, double longitude) {
         double x = longitude, y = latitude;
         double z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * PI);
         double theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * PI);

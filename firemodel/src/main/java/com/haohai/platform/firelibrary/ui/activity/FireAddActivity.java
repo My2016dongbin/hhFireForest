@@ -53,12 +53,12 @@ import com.ruyiruyi.rylibrary.cell.ActionBar;
 import com.ruyiruyi.rylibrary.cell.MessagePicturesLayout;
 import com.ruyiruyi.rylibrary.db.Area;
 import com.ruyiruyi.rylibrary.db.DbConfig;
+import com.ruyiruyi.rylibrary.db.UserMenu;
 import com.ruyiruyi.rylibrary.image.ImageUtils;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
 import com.ruyiruyi.rylibrary.ui.cell.WheelView;
 import com.ruyiruyi.rylibrary.utils.GifSizeFilter;
-import com.ruyiruyi.rylibrary.utils.LatLngChangeNew;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
@@ -84,13 +84,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import rx.functions.Action1;
 
-import static com.ruyiruyi.rylibrary.request.RequestUtils.REQUEST__URL_HLJ;
+import static com.ruyiruyi.rylibrary.request.RequestUtils.REQUEST__URL_tt;
 
 @Route(path = RouteUtils.FireAdd)
 public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDateChangedListener , MessagePicturesLayout.Callback {
@@ -175,6 +174,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
     private String videoSericePath;
     private List<Object> imglist;
     private String videostr;
+    private UserMenu usermenu;
     @Autowired
     String token;
     private FirePresenter firePrecenter;
@@ -197,6 +197,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         date = new StringBuffer();
         endDate = new StringBuffer();
         addFireDialog = new ProgressDialog(this);
+        usermenu = new UserMenu();
         initDateTime();
         initView();
         bindView();
@@ -255,6 +256,12 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         shipinView = (TextView) findViewById(R.id.shipin_view);
         firenameview=(EditText) findViewById(R.id.fire_name_view);
         personText=((EditText) findViewById(R.id.person_view));
+        if (usermenu.getAppReportBtnAdd()){
+            addFireButton.setVisibility(View.VISIBLE);
+        }else {
+            addFireButton.setVisibility(View.GONE);
+            Toast.makeText(this, "您没有上报权限！", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void bindView() {
@@ -272,9 +279,8 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                     @Override
                     public void call(Void aVoid) {
                         Intent intent = new Intent(getApplicationContext(), FireMapActivity.class);
-                        double[] doubles = LatLngChangeNew.calWGS84toBD09(currentLatitude, currentLongitude);
-                        intent.putExtra("longitude_double", doubles[1]);
-                        intent.putExtra("latitude_double", doubles[0]);
+                        intent.putExtra("longitude_double", currentLongitude);
+                        intent.putExtra("latitude_double", currentLatitude);
                         startActivityForResult(intent, MAP_REUEST_CODE);
                     }
                 });
@@ -302,7 +308,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                             Toast.makeText(getApplicationContext(), "请输入时间", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        if (personText.getText().toString().equals("时间")){
+                        if (personText.getText().toString().equals("上报人")){
                             Toast.makeText(getApplicationContext(), "请输入上报人", Toast.LENGTH_SHORT).show();
                             return;
                         }
@@ -417,10 +423,8 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                     public void call(Void aVoid) {
                         if (uriChooseList.size() == 1){  //只有一张图
                             uriChooseList.remove(0);
-
-                            oneImageDelete.setVisibility(View.GONE);
-                            oneImage.setImageDrawable(getResources().getDrawable(R.drawable.ic_add_photo));
-                            //photoLayout.setVisibility(View.GONE);
+                            //  Glide.with(getApplicationContext()).load(R.drawable.ic_bigphoto).into(oneImage);
+                            photoLayout.setVisibility(View.GONE);
                         }else {     //如果有两张图
                             uriChooseList.remove(0);
                             Glide.with(getApplicationContext()).load(uriChooseList.get(0)).into(oneImage);
@@ -479,7 +483,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
     }
     private void postPictoService(){
 
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_FIRE+"oa/api/workReport/fileUploadAnByNotToken");
         params.setAsJsonContent(true);
         params.setMultipart(true);    //以表单得形式上传  文件上传必须要
         String picStr = null;
@@ -503,8 +507,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
             }
         }
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        params.setConnectTimeout(1000000);
+
         x.http().post(params, new Callback.CommonCallback<String>() {
 
 
@@ -559,14 +562,13 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
 //        } catch (JSONException e) {
 //        }
 
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_FIRE+"oa/api/workReport/fileUploadAnByNotToken");
         params.addBodyParameter("file", new File(videoPath),null,videoPath);
         params.setAsJsonContent(true);
         params.setMultipart(true);
         params.setConnectTimeout(1000000);
         //params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "resource: --"  + params);
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
@@ -630,11 +632,6 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                 quId = quList.get(i).getId();
             }
         }
-        if (quId.isEmpty()){
-            hideDialogProgress(addFireDialog);
-            Toast.makeText(getApplicationContext(), "请选择区", Toast.LENGTH_SHORT).show();
-            return;
-        }
         String addressStr = addressView.getText().toString();
         String jingduStr = jingduView.getText().toString();
         String weiduStr = weiduView.getText().toString();
@@ -677,10 +674,10 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
 
-        Log.e(TAG, "postDataService:jsonObject.toString() = " + jsonObject.toString());
+        Log.e(TAG, "postDataService:反馈---11 " + jingduStr);
+        Log.e(TAG, "postDataService:反馈---11 " + weiduStr);
         params.setConnectTimeout(10000);
         params.addHeader("Authorization","bearer " + token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -734,7 +731,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                                 .countable(true)
                                 .capture(true)
                                 .captureStrategy(
-                                        new CaptureStrategy(true,"com.haohai.platform.fireforestplatform.fileProvider")
+                                        new CaptureStrategy(true,"com.haohai.platform.fireforestplatform")
                                 )
                                 .maxSelectable(size)
                                 .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
@@ -760,36 +757,42 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.e(TAG, "onActivityResult:resultCode " + resultCode + "requestcode" + requestCode);
+//        Log.e(TAG, "onActivityResult:data ",data);
         if (requestCode == MAP_REUEST_CODE && resultCode == MAP_REUEST_CODE) {
             longitude = data.getStringExtra("longitude");
             latitude = data.getStringExtra("latitude");
             cityAddress = data.getStringExtra("cityAddress");
             currentCity = data.getStringExtra("city");
             if (!currentCity.isEmpty()){
-                String p = data.getStringExtra("PROVINCE");
-                String c = data.getStringExtra("CITY");
-                String s = data.getStringExtra("DISTRICT");
-                initAreaById(p);
-                String c_id = "";
-                String s_id = "";
-                for (int i = 0; i < allAreaList.size(); i++) {
-                    if(Objects.equals(allAreaList.get(i).getName(), c)){
-                        c_id = allAreaList.get(i).getId();
-                    }
-                }
-                for (int i = 0; i < allAreaList.size(); i++) {
-                    if(Objects.equals(allAreaList.get(i).getName(), s)){
-                        s_id = allAreaList.get(i).getId();
-                    }
-                }
-                initShiByShiId(shengList.get(shengSelectIndex-1).getId(),c_id);
-                initquByQuId(shiList.get(shiSelectIndex-1).getId(),s_id);
+                String currentCiryParentId = "";
+                String currentCiryId = "";
 
-                shengText.setText(p);
-                shiText.setText(c);
-                quText.setText(s);
+                String currentPro = "";
+                String currentProId = "";
+                for (int i = 0; i < allAreaList.size(); i++) {
+                    if (allAreaList.get(i).getName().equals(currentCity)) {
+                        currentCiryParentId = allAreaList.get(i).getParentId();
+                        currentCiryId = allAreaList.get(i).getId();
+                    }
+                }
+
+                for (int i = 0; i < allAreaList.size(); i++) {
+                    if (allAreaList.get(i).getId().equals(currentCiryParentId)){
+                        currentPro = allAreaList.get(i).getName();
+                        currentProId = allAreaList.get(i).getId();
+                    }
+                }
+                shengStrList.add(currentPro);
+                shiStrList.add(currentCity);
+                isChooseSheng = true;
+
+                shengText.setText(currentPro);
+                shiText.setText(currentCity);
 
                 fromMap = true;
+                initAreaById(currentPro);
+                initShiByShiId(currentProId,currentCiryId);
+                initquByQuId(currentCiryId);
 
             }
 
@@ -840,7 +843,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         }
 
     }
-    private void initquByQuId(String currentShiId,String quId) {
+    private void initquByQuId(String currentShiId) {
         quList.clear();
         quStrList.clear();
         quStrList.add("请选择区");
@@ -850,11 +853,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                 quStrList.add(allAreaList.get(i).getName());
             }
         }
-        for (int i = 0; i < quList.size(); i++) {
-            if (quList.get(i).getId().equals(quId)) {
-                quSelectIndex = i + 1;
-            }
-        }
+        //  showAreaDialog(shiStrList);
     }
     private void initShiByShiId(String currentShengId,String currentShiId) {
         shiList.clear();
@@ -872,6 +871,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
             }
         }
 
+        //  showAreaDialog(shiStrList);
     }
 
     private void initAreaById(String shengName) {
@@ -901,7 +901,6 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.i(TAG, "getAreaFromService: "+params);
         x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
@@ -1022,15 +1021,15 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                     shiText.setText("请选择市");
                     currentChooseShi = "请选择市";
                     shiSelectIndex = 0;
-                    quText.setText("请选择区");
-                    currentChooseQu = "请选择区";
+                    quText.setText("请选择市");
+                    currentChooseQu = "请选择市";
                     quSelectIndex = 0;
                 }else if(currentChooseArea == 1){                          //选择市
                     currentChooseShi = areaWy.getSelectedItem();
                     shiSelectIndex = areaWy.getSelectedPosition();
                     shiText.setText(currentChooseShi);
-                    quText.setText("请选择区");
-                    currentChooseQu = "请选择区";
+                    quText.setText("请选择市");
+                    currentChooseQu = "请选择市";
                     quSelectIndex = 0;
                 }else {
                     currentChooseQu = areaWy.getSelectedItem();

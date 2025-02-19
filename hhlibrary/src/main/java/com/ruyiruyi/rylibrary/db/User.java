@@ -1,11 +1,7 @@
 package com.ruyiruyi.rylibrary.db;
 
-import com.ruyiruyi.rylibrary.utils.CommonData;
-
 import org.xutils.db.annotation.Column;
 import org.xutils.db.annotation.Table;
-
-import java.util.Objects;
 
 /**
  * Created by geyang on 2020/6/3.
@@ -39,6 +35,16 @@ public class User {
      */
     @Column(name = "fullname")
     private String fullName;
+    /**
+     * 经度
+     */
+    @Column(name = "longitude")
+    private double longitude;
+    /**
+     * 纬度
+     */
+    @Column(name = "latitude")
+    private double latitude;
     /**
      * 邮箱
      */
@@ -79,22 +85,6 @@ public class User {
      */
     @Column(name = "comment")
     private String comment;
-    /**
-     * 按钮权限
-     */
-    @Column(name = "permission")
-    private String permission;
-    /**
-     * 主页主模块权限
-     */
-    @Column(name = "hasmainmap")
-    private boolean hasMainMap;
-    @Column(name = "hasmainvideo")
-    private boolean hasMainVideo;
-    @Column(name = "hasmainapp")
-    private boolean hasMainApp;
-    @Column(name = "hasmainmy")
-    private boolean hasMainMy;
     /**
      * 组织id
      */
@@ -208,51 +198,20 @@ public class User {
         this.headUrl = headUrl;
     }
 
-    public boolean isHasMainMap() {
-        return hasMainMap;
+    public double getLongitude() {
+        return longitude;
     }
 
-    public void setHasMainMap(boolean hasMainMap) {
-        this.hasMainMap = hasMainMap;
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
-    public boolean isHasMainVideo() {
-        return hasMainVideo;
+    public double getLatitude() {
+        return latitude;
     }
 
-    public void setHasMainVideo(boolean hasMainVideo) {
-        this.hasMainVideo = hasMainVideo;
-    }
-
-    public boolean isHasMainApp() {
-        return hasMainApp;
-    }
-
-    public void setHasMainApp(boolean hasMainApp) {
-        this.hasMainApp = hasMainApp;
-    }
-
-    public boolean isHasMainMy() {
-        return hasMainMy;
-    }
-
-    public void setHasMainMy(boolean hasMainMy) {
-        this.hasMainMy = hasMainMy;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
-    public void addPermission(String permission) {
-        if(Objects.equals(this.permission, "")){
-            this.permission = this.permission + permission;
-        }else{
-            this.permission = this.permission + "," + permission;
-        }
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 
     public int getIsyunyin() {

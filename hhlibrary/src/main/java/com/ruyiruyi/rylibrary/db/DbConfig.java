@@ -25,7 +25,7 @@ public class DbConfig {
                 .setAllowTransaction(true)
                 .setDbDir(context.getFilesDir())
                 //.setDbDir(Environment.getExternalStorageDirectory())
-                .setDbVersion(8);
+                .setDbVersion(6);
 
         return daoConfig;
     }
@@ -107,26 +107,6 @@ public class DbConfig {
         return null;
     }
 
-    public String getPermissions(){
-        DbManager.DaoConfig daoConfig = getDaoConfig();
-        DbManager db = x.getDb(daoConfig);
-        try {
-            List<User> users = db.selector(User.class)
-                    .findAll();
-            if (users != null){
-                for (int i = 0; i < users.size(); i++) {
-                    User user = users.get(i);
-                    if (user.getIsLogin() == 1){
-                        return user.getPermission();
-                    }
-                }
-            }
-
-        } catch (DbException e) {
-        }
-        return "";
-    }
-
     public User getUserOut(){
         DbManager.DaoConfig daoConfig = getDaoConfig();
         DbManager db = x.getDb(daoConfig);
@@ -153,6 +133,22 @@ public class DbConfig {
             if (settings != null){
                 Setting setting = settings.get(0);
                 return setting;
+            }
+
+        } catch (DbException e) {
+        }
+        return null;
+    }
+    public UserMenu getUserMenu(){
+        DbManager.DaoConfig daoConfig = getDaoConfig();
+        DbManager db = x.getDb(daoConfig);
+        try {
+            List<UserMenu> userMenus = db.selector(UserMenu.class)
+                    .findAll();
+            if (userMenus != null){
+                UserMenu usermenu = userMenus.get(0);
+                return usermenu;
+
             }
 
         } catch (DbException e) {

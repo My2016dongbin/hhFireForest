@@ -13,10 +13,6 @@
         <activity android:name=".ui.acticity.WorkReportWeekAddActivity" />
         <activity android:name=".ui.acticity.AttendanceActivity" />
 
-        <service
-            android:name=".ui.service.TrackService"
-            android:enabled="true"
-            android:exported="true" />
 
         <activity android:name=".ui.acticity.AttendanceRecordActivity" />
         <activity android:name=".ui.acticity.AttendanceRecordInfoActivity" />

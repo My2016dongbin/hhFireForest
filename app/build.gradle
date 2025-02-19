@@ -1,13 +1,10 @@
 apply plugin: 'com.android.application'
 
-def VERSION_CODE = 202
-def VERSION_NAME = "2.0.2"
+def VERSION_CODE = 14
+def VERSION_NAME = "1.1.4"
 
 def keystoreFilepath = ''
 def keyfile = file('s.keystore.temp')
-
-// 依赖插件脚本
-apply from: 'tinker-support.gradle'
 
 android {
     compileSdkVersion rootProject.compileSdkVersion
@@ -20,7 +17,7 @@ android {
         versionCode VERSION_CODE
         versionName VERSION_NAME
         multiDexEnabled true
-
+        flavorDimensions "versionCode"
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = [moduleName: project.getName()]
@@ -38,16 +35,13 @@ android {
                 XG_ACCESS_KEY : "AO3YNOCJ0AK2",
                 HW_APPID: "103450845"
         ]
-        /*jackOptions {
-            enabled true
-        }*/
     }
 
     signingConfigs {
         config {
             keyAlias 'haohai'
             keyPassword 'haohaiadmin'
-            storeFile file('../app/sign.jks')
+            storeFile file('.../app/sign.jks')
             //storeFile file('C:/workspaces/haohai/FireForestPlatform/app/sign.jks')
             storePassword 'haohaiadmin'
         }
@@ -65,15 +59,9 @@ android {
             //是否混淆
             minifyEnabled false
             //是否移除无用资源
-            zipAlignEnabled false
-            multiDexKeepFile file ('multidex-config.txt')// 小括号记得要加上，官方文档没有 bugly
+            zipAlignEnabled true
             //混淆配置
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-
-            ndk{
-                //QQ微信等大佬都只用"armeabi"
-                abiFilters "armeabi-v7a"
-            }
             //签名文件存在，则签名
             if (keyfile.exists()) {
                 println("WITH -> buildTypes -> release: using jks key")
@@ -85,7 +73,7 @@ android {
                 variant ->
                     variant.outputs.all {
                         //在这里修改apk文件名
-                        outputFileName = "haohai-${variant.versionName}.apk"
+                        outputFileName = "hechuan-${variant.versionName}.apk"
                     }
             }
             signingConfig signingConfigs.config
@@ -93,55 +81,14 @@ android {
     }
     lintOptions {
         abortOnError false
-        disable "Instantiatable"
     }
 
-
-    flavorDimensions "app"
     productFlavors {
-        /*  xiaomi {
-              manifestPlaceholders = [UMENG_CHANNEL_VALUE: "xiaomi"]
-          }*/
-        /*  kuan {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "kuan"]
-        }*/
         xiaomi {
             manifestPlaceholders = [
                     UMENG_CHANNEL_VALUE: "xiaomi",
             ]
         }
-        /*   qh360 {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "qh360"]
-        }
-        baidu {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "baidu"]
-        }
-        wandoujia {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "wandoujia"]
-        }
-        oppo {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "oppo"]
-        }
-        vivo {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "vivo"]
-        }*/
-        oppo {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "oppo"]
-        }
-        huawei {
-            manifestPlaceholders = [
-                    UMENG_CHANNEL_VALUE: "huawei",
-
-            ]
-
-        }
-        /*
-        yingyongbao {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "yingyongbao"]
-        }
-        anzhi {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "anzhi"]
-        }*/
     }
 
     packagingOptions {
@@ -192,11 +139,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     annotationProcessor 'com.alibaba:arouter-compiler:1.1.4'
     api 'com.xdandroid:hellodaemon:+'
-//    api 'com.android.support:support-v4:26.0.0-alpha1'
+    api 'com.android.support:support-v4:26.0.0-alpha1'
 
-
-    api "com.android.support:multidex:1.0.3" // 多dex配置
-    api 'com.tencent.bugly:nativecrashreport:3.9.0'
-    api 'com.tencent.tinker:tinker-android-lib:1.9.14.17'
-    api 'com.tencent.bugly:crashreport_upgrade:1.5.23'
 }

@@ -50,8 +50,8 @@ import com.haohai.platform.firelibrary.ui.multitype.ChooseImageViewBinder;
 import com.ruyiruyi.rylibrary.cell.ActionBar;
 import com.ruyiruyi.rylibrary.db.Area;
 import com.ruyiruyi.rylibrary.db.DbConfig;
+import com.ruyiruyi.rylibrary.db.UserMenu;
 import com.ruyiruyi.rylibrary.ui.cell.WheelView;
-import com.ruyiruyi.rylibrary.utils.LatLngChangeNew;
 import com.ruyiruyi.rylibrary.utils.image.ImagPagerUtil;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.cell.MessagePicturesLayout;
@@ -190,6 +190,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
     public String currentChooseLeibie = "";
     public String currentChooseLeixing = "";
     private EditText nameEdit;
+    private UserMenu usermenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -207,7 +208,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
         endDate = new StringBuffer();
         imgStrList = new ArrayList<>();
         leiBieList = new ArrayList<>();
-
+        usermenu = new UserMenu();
         initDateTime();
         initView();
 
@@ -299,9 +300,10 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                     @Override
                     public void call(Void aVoid) {
                         Intent intent = new Intent(getApplicationContext(), FireMapActivity.class);
-                        double[] doubles = LatLngChangeNew.calWGS84toBD09(currentLatitude, currentLongitude);
-                        intent.putExtra("longitude_double", doubles[1]);
-                        intent.putExtra("latitude_double", doubles[0]);
+                        Log.e(TAG, "call: " +currentLongitude );
+                        Log.e(TAG, "call: " + currentLatitude);
+                        intent.putExtra("longitude_double", currentLongitude);
+                        intent.putExtra("latitude_double", currentLatitude);
                         startActivityForResult(intent, MAP_REUEST_CODE);
                     }
                 });
@@ -725,7 +727,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
     private void postPicToService() {
         showDialogProgress(progressDialog,"提交中...");
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_FIRE + "oa/api/workReport/fileUploadAnByNotToken");
         params.setAsJsonContent(true);
         params.setMultipart(true);    //以表单得形式上传  文件上传必须要
 
@@ -752,7 +754,6 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
         Log.e(TAG, "postPicToService: " + params );
         Log.e(TAG, "postPicToService: " + token );
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
@@ -838,12 +839,11 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
             e.printStackTrace();
         }
 
-        RequestParams params = new RequestParams(RequestUtils.REQUEST__URL_HLJ + "fire/api/dangerCheck");
+        RequestParams params = new RequestParams(RequestUtils.REQUEST__URL_tt + "fire/api/dangerCheck");
         params.setBodyContent(jsonObject.toString());
         Log.e(TAG, "postPicToService: " + params );
         Log.e(TAG, "postPicToService: " + jsonObject.toString() );
         params.addHeader("Authorization","bearer " + new DbConfig(getApplicationContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -938,6 +938,12 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
         adapter.register(ChooseImage.class, chooseImageViewBinder);
         listView.setAdapter(adapter);
         assertHasTheSameAdapter(listView, adapter);
+        if (usermenu.getAppDangerCheckBtnAdd()){
+            addButton.setVisibility(View.VISIBLE);
+        }else {
+            addButton.setVisibility(View.GONE);
+            Toast.makeText(this, "您没有上报权限", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -962,7 +968,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                                     .countable(true)
                                     .capture(true)
                                     .captureStrategy(
-                                            new CaptureStrategy(true,"com.haohai.platform.fireforestplatform.fileProvider")
+                                            new CaptureStrategy(true,"com.haohai.platform.fireforestplatform")
                                     )
                                     .maxSelectable(size)
                                     .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
@@ -1206,7 +1212,6 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.i(TAG, "getAreaFromService: "+params);
         x.http().get(params, new Callback.CommonCallback<String>() {
             @Override

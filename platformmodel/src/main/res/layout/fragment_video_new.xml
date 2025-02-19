@@ -65,14 +65,22 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="@drawable/bg_video_choose_no">
-
-                    <com.haohai.ledge.videolibrary.video.MultiSampleVideo
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="1dp">
+                    <com.ywl5320.wlmedia.surface.WlSurfaceView
                         android:id="@+id/video1_player"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:padding="1dp"
                         android:visibility="gone" />
-
+                        <com.ywl5320.wlmedia.widget.WlCircleLoadView
+                            android:id="@+id/circleview"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
                     <ImageView
                         android:id="@+id/video1_add_view"
                         android:layout_width="match_parent"
@@ -94,13 +102,22 @@
                     android:layout_weight="1"
                     android:background="@drawable/bg_video_choose_no"
                     android:visibility="gone">
-
-                    <com.haohai.ledge.videolibrary.video.MultiSampleVideo
-                        android:id="@+id/video2_player"
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:visibility="gone"
-                        android:padding="1dp" />
+                        android:padding="1dp">
+                        <com.ywl5320.wlmedia.surface.WlSurfaceView
+                            android:id="@+id/video2_player"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone"
+                            android:padding="1dp" />
+                        <com.ywl5320.wlmedia.widget.WlCircleLoadView
+                            android:id="@+id/circleview2"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
                     <ImageView
                         android:id="@+id/video2_add_view"
                         android:layout_width="match_parent"
@@ -122,12 +139,22 @@
                     android:background="@drawable/bg_video_choose_no"
                     android:visibility="gone">
 
-                    <com.haohai.ledge.videolibrary.video.MultiSampleVideo
-                        android:id="@+id/video3_player"
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:visibility="gone"
-                        android:padding="1dp" />
+                        android:padding="1dp">
+                        <com.ywl5320.wlmedia.surface.WlSurfaceView
+                            android:id="@+id/video3_player"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone"
+                            android:padding="1dp" />
+                        <com.ywl5320.wlmedia.widget.WlCircleLoadView
+                            android:id="@+id/circleview3"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
                     <ImageView
                         android:id="@+id/video3_add_view"
                         android:layout_width="match_parent"
@@ -158,12 +185,22 @@
                     android:layout_weight="1"
                     android:background="@drawable/bg_video_choose_no">
 
-                    <com.haohai.ledge.videolibrary.video.MultiSampleVideo
-                        android:id="@+id/video4_player"
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:visibility="gone"
-                        android:padding="1dp" />
+                        android:padding="1dp">
+                        <com.ywl5320.wlmedia.surface.WlSurfaceView
+                            android:id="@+id/video4_player"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone"
+                            android:padding="1dp" />
+                        <com.ywl5320.wlmedia.widget.WlCircleLoadView
+                            android:id="@+id/circleview4"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
                     <ImageView
                         android:id="@+id/video4_add_view"
                         android:layout_width="match_parent"
@@ -184,12 +221,22 @@
                     android:layout_weight="1"
                     android:background="@drawable/bg_video_choose_no">
 
-                    <com.haohai.ledge.videolibrary.video.MultiSampleVideo
-                        android:id="@+id/video5_player"
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:visibility="gone"
-                        android:padding="1dp" />
+                        android:padding="1dp">
+                        <com.ywl5320.wlmedia.surface.WlSurfaceView
+                            android:id="@+id/video5_player"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone"
+                            android:padding="1dp" />
+                        <com.ywl5320.wlmedia.widget.WlCircleLoadView
+                            android:id="@+id/circleview5"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
                     <ImageView
                         android:id="@+id/video5_add_view"
                         android:layout_width="match_parent"
@@ -210,12 +257,22 @@
                     android:layout_weight="1"
                     android:background="@drawable/bg_video_choose_no">
 
-                    <com.haohai.ledge.videolibrary.video.MultiSampleVideo
-                        android:id="@+id/video6_player"
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:visibility="gone"
-                        android:padding="1dp" />
+                        android:padding="1dp">
+                        <com.ywl5320.wlmedia.surface.WlSurfaceView
+                            android:id="@+id/video6_player"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone"
+                            android:padding="1dp" />
+                        <com.ywl5320.wlmedia.widget.WlCircleLoadView
+                            android:id="@+id/circleview6"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
                     <ImageView
                         android:id="@+id/video6_add_view"
                         android:layout_width="match_parent"
@@ -246,12 +303,22 @@
                     android:layout_weight="1"
                     android:background="@drawable/bg_video_choose_no">
 
-                    <com.haohai.ledge.videolibrary.video.MultiSampleVideo
-                        android:id="@+id/video7_player"
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:visibility="gone"
-                        android:padding="1dp" />
+                        android:padding="1dp">
+                        <com.ywl5320.wlmedia.surface.WlSurfaceView
+                            android:id="@+id/video7_player"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone"
+                            android:padding="1dp" />
+                        <com.ywl5320.wlmedia.widget.WlCircleLoadView
+                            android:id="@+id/circleview7"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
                     <ImageView
                         android:id="@+id/video7_add_view"
                         android:layout_width="match_parent"
@@ -272,12 +339,22 @@
                     android:layout_weight="1"
                     android:background="@drawable/bg_video_choose_no">
 
-                    <com.haohai.ledge.videolibrary.video.MultiSampleVideo
-                        android:id="@+id/video8_player"
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:visibility="gone"
-                        android:padding="1dp" />
+                        android:padding="1dp">
+                        <com.ywl5320.wlmedia.surface.WlSurfaceView
+                            android:id="@+id/video8_player"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone"
+                            android:padding="1dp" />
+                        <com.ywl5320.wlmedia.widget.WlCircleLoadView
+                            android:id="@+id/circleview8"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
                     <ImageView
                         android:id="@+id/video8_add_view"
                         android:layout_width="match_parent"
@@ -298,12 +375,22 @@
                     android:layout_weight="1"
                     android:background="@drawable/bg_video_choose_no">
 
-                    <com.haohai.ledge.videolibrary.video.MultiSampleVideo
-                        android:id="@+id/video9_player"
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:visibility="gone"
-                        android:padding="1dp" />
+                        android:padding="1dp">
+                        <com.ywl5320.wlmedia.surface.WlSurfaceView
+                            android:id="@+id/video9_player"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone"
+                            android:padding="1dp" />
+                        <com.ywl5320.wlmedia.widget.WlCircleLoadView
+                            android:id="@+id/circleview9"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
                     <ImageView
                         android:id="@+id/video9_add_view"
                         android:layout_width="match_parent"
@@ -461,13 +548,16 @@
                             android:layout_width="60dp"
                             android:layout_height="60dp"
                             android:background="@drawable/ic_button"
-                            android:drawableTop="@drawable/ic_xunhang"
-                            android:gravity="center"
                             android:paddingBottom="8dp"
+                            android:layout_gravity="center_vertical"
                             android:paddingTop="12dp"
+
+                            />
+                        <!-- android:drawableTop="@drawable/ic_xunhang"
+                            android:gravity="center"
                             android:text="巡航"
                             android:textColor="@color/c12"
-                            android:textSize="13sp" />
+                            android:textSize="13sp"-->
 
 
                         <Button
@@ -561,13 +651,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="60dp"
                         android:background="@drawable/ic_button"
-                        android:drawableTop="@drawable/ic_printscreen"
+                        />
+                    <!-- android:drawableTop="@drawable/ic_printscreen"
                         android:gravity="center"
                         android:paddingBottom="8dp"
                         android:paddingTop="12dp"
                         android:text="截屏"
                         android:textColor="@color/c12"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"-->
 
                     <Button
                         android:id="@+id/jujiao_button"
@@ -608,13 +699,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="60dp"
                         android:background="@drawable/ic_button"
-                        android:drawableTop="@drawable/ic_luxiang1"
+                        />
+
+                    <!--   android:drawableTop="@drawable/ic_luxiang1"
                         android:gravity="center"
                         android:paddingBottom="8dp"
                         android:paddingTop="12dp"
                         android:text="录像"
                         android:textColor="@color/c12"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"-->
 
                     <Button
                         android:id="@+id/yichu_button"

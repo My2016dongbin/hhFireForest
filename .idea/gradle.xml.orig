@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="distributionType" value="LOCAL" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+
+        <option name="gradleHome" value="C:/kaifa/android/AndroidStudio/Studio/gradle/gradle-3.3" />
+
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/appnaturalresource" />
+            <option value="$PROJECT_DIR$/chatimmodel" />
+            <option value="$PROJECT_DIR$/firemodel" />
+            <option value="$PROJECT_DIR$/hhlibrary" />
+            <option value="$PROJECT_DIR$/mapmodel" />
+            <option value="$PROJECT_DIR$/platformmodel" />
+            <option value="$PROJECT_DIR$/videolibrary" />
+          </set>
+        </option>
+        <option name="resolveModulePerSourceSet" value="false" />
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

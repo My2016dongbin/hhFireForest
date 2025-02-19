@@ -63,7 +63,8 @@
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_map_button"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <TextView
                     android:id="@+id/weixing_button"
@@ -223,5 +224,14 @@
             android:layout_gravity="bottom"
             android:text=" - "
             android:visibility="gone" />
+        <ImageView
+            android:id="@+id/order_warn_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="30dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_warning" />
     </FrameLayout>
 </LinearLayout>

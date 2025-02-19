@@ -10,6 +10,7 @@
     <color name="color_fff">#ffffff</color>
 
     <color name="theme_primary_bg">#fc6421</color>
+    <color name="c5mid">#939393</color>
 
     <color name="no_color">#00000000</color>
     <color name="choose_eara_item_press_color">#f4f4f4</color>
@@ -117,7 +118,6 @@
     <color name="web_top">#F2F2F2</color>
     <color name="map">#4a90e2</color>
     <color name="line">#334056</color>
-    <color name="white_tr">#bbFFFFFF</color>
 
     <color name="divider">#ffd2d2d2</color>
     <!--透明色-->

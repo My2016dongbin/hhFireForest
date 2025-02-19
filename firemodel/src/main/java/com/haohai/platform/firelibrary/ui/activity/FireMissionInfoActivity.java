@@ -7,6 +7,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
+import android.os.Environment;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +18,6 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +29,9 @@ import com.amap.api.navi.AmapPageType;
 import com.amap.api.navi.INaviInfoCallback;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.gson.Gson;
 import com.haohai.platform.firelibrary.R;
 import com.haohai.platform.firelibrary.ui.activity.base.HhBaseActivity;
@@ -46,7 +51,15 @@ import org.xutils.http.HttpMethod;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import rx.functions.Action1;
@@ -69,7 +82,6 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
     private ImageView imageTwoView;
     private ImageView imageThreeView;
     private TextView dizhiView;
-    private LinearLayout ll_address;
     private TextView orderStateView;
     private TextView kaishirenwuView;
     private TextView daozheliView;
@@ -181,7 +193,6 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
         imageOneView = (ImageView) findViewById(R.id.image_one_view);
         imageTwoView = (ImageView) findViewById(R.id.image_two_view);
         imageThreeView = (ImageView) findViewById(R.id.image_three_view);
-        ll_address = (LinearLayout) findViewById(R.id.ll_address);
         dizhiView = (TextView) findViewById(R.id.dizhi_view);
     }
 
@@ -206,9 +217,7 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "oa/api/taskManagement");
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "changeStateToService: " + params);
-        Log.e(TAG, "changeStateToService: params.getHeaders() = " + params.getHeaders());
         Log.e(TAG, "changeStateToService: " + jsonObject.toString());
         x.http().request(HttpMethod.PUT,params, new Callback.CommonCallback<String>() {
             @Override
@@ -220,7 +229,6 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
                     if (code.equals("200")){
                         isChange = true;
                       getDataFromService();
-                        Toast.makeText(FireMissionInfoActivity.this, "修改成功", Toast.LENGTH_SHORT).show();
                     }
 
 
@@ -251,7 +259,6 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
         showDialogProgress(progressDialog,"加载中...");
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "oa/api/taskManagement");
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         params.addParameter("id",id);
         Log.e(TAG, "postData:-- params--" + params);
         params.setConnectTimeout(10000);
@@ -311,8 +318,7 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
         renwuneirongView.setText(fireMission.getTaskContent());
         jingduView.setText(fireMission.getPosition().getLng() +" ");
         weiduView.setText(fireMission.getPosition().getLat() + " ");
-        dizhiView.setText(fireMission.getTaskRegion());
-        ll_address.setVisibility(View.GONE);
+        dizhiView.setText(fireMission.getReserve());
 
         //0未开始，1执行中，2已结束
         if (fireMission.getStatus() == 0) {
@@ -328,30 +334,316 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
             imageOneView.setVisibility(View.VISIBLE);
             imageTwoView.setVisibility(View.GONE);
             imageThreeView.setVisibility(View.GONE);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[0])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
+            Glide.with(getApplicationContext()).load(imgArray[0].replace("10.10.13.3:80","183.230.142.120:8081"))
+                    .error(R.drawable.ic_jaizai)
+                    .placeholder(R.drawable.ic_jaizai).listener(new RequestListener<String, GlideDrawable>() {
+                @Override
+                public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                    Log.e(TAG, "onException: pic1 - 1" );
+                    String str = imgArray[0].replace("10.10.13.3:80","183.230.142.120:8081");
+                    if(!str.contains("tmp")){
+                        str += ".tmp";
+                    }
+
+                    Log.e(TAG, "onException: pic1 - 1 str = " + str);
+                    final DownloadTask downloadTask = new DownloadTask(FireMissionInfoActivity.this);
+                    downloadTask.setLocation(1);
+                    downloadTask.execute(str);
+                    return false;
+                }
+
+                @Override
+                public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                    return false;
+                }
+            }).into(imageOneView);
         }else if (imgArray.length==2){
             imageOneView.setVisibility(View.VISIBLE);
             imageTwoView.setVisibility(View.VISIBLE);
             imageThreeView.setVisibility(View.GONE);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[0])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[1])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
+            Glide.with(getApplicationContext()).load(imgArray[0].replace("10.10.13.3:80","183.230.142.120:8081"))
+                    .error(R.drawable.ic_jaizai)
+                    .placeholder(R.drawable.ic_jaizai).listener(new RequestListener<String, GlideDrawable>() {
+                @Override
+                public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                    Log.e(TAG, "onException: pic1 - 1" );
+                    String str = imgArray[0].replace("10.10.13.3:80","183.230.142.120:8081");
+                    if(!str.contains("tmp")){
+                        str += ".tmp";
+                    }
+
+                    Log.e(TAG, "onException: pic1 - 1 str = " + str);
+                    final DownloadTask downloadTask = new DownloadTask(FireMissionInfoActivity.this);
+                    downloadTask.setLocation(1);
+                    downloadTask.execute(str);
+                    return false;
+                }
+
+                @Override
+                public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                    return false;
+                }
+            }).into(imageOneView);
+            Glide.with(getApplicationContext()).load(imgArray[1].replace("10.10.13.3:80","183.230.142.120:8081"))
+                    .error(R.drawable.ic_jaizai)
+                    .placeholder(R.drawable.ic_jaizai).listener(new RequestListener<String, GlideDrawable>() {
+                @Override
+                public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                    Log.e(TAG, "onException: pic1 - 1" );
+                    String str = imgArray[1].replace("10.10.13.3:80","183.230.142.120:8081");
+                    if(!str.contains("tmp")){
+                        str += ".tmp";
+                    }
+
+                    Log.e(TAG, "onException: pic1 - 1 str = " + str);
+                    final DownloadTask downloadTask = new DownloadTask(FireMissionInfoActivity.this);
+                    downloadTask.setLocation(2);
+                    downloadTask.execute(str);
+                    return false;
+                }
+
+                @Override
+                public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                    return false;
+                }
+            }).into(imageTwoView);
         }else {
             imageOneView.setVisibility(View.VISIBLE);
             imageTwoView.setVisibility(View.VISIBLE);
             imageThreeView.setVisibility(View.VISIBLE);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[0])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[1])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[2])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageThreeView);
-        }
+
+            Glide.with(getApplicationContext()).load(imgArray[0].replace("10.10.13.3:80","183.230.142.120:8081"))
+                    .error(R.drawable.ic_jaizai)
+                    .placeholder(R.drawable.ic_jaizai).listener(new RequestListener<String, GlideDrawable>() {
+                @Override
+                public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                    Log.e(TAG, "onException: pic1 - 1" );
+                    String str = imgArray[0].replace("10.10.13.3:80","183.230.142.120:8081");
+                    if(!str.contains("tmp")){
+                        str += ".tmp";
+                    }
+
+                    Log.e(TAG, "onException: pic1 - 1 str = " + str);
+                    final DownloadTask downloadTask = new DownloadTask(FireMissionInfoActivity.this);
+                    downloadTask.setLocation(1);
+                    downloadTask.execute(str);
+                    return false;
+                }
+
+                @Override
+                public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                    return false;
+                }
+            }).into(imageOneView);
+            Glide.with(getApplicationContext()).load(imgArray[1].replace("10.10.13.3:80","183.230.142.120:8081"))
+                    .error(R.drawable.ic_jaizai)
+                    .placeholder(R.drawable.ic_jaizai).listener(new RequestListener<String, GlideDrawable>() {
+                @Override
+                public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                    Log.e(TAG, "onException: pic1 - 1" );
+                    String str = imgArray[1].replace("10.10.13.3:80","183.230.142.120:8081");
+                    if(!str.contains("tmp")){
+                        str += ".tmp";
+                    }
+
+                    Log.e(TAG, "onException: pic1 - 1 str = " + str);
+                    final DownloadTask downloadTask = new DownloadTask(FireMissionInfoActivity.this);
+                    downloadTask.setLocation(2);
+                    downloadTask.execute(str);
+                    return false;
+                }
+
+                @Override
+                public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                    return false;
+                }
+            }).into(imageTwoView);
+            Glide.with(getApplicationContext()).load(imgArray[2].replace("10.10.13.3:80","183.230.142.120:8081"))
+                    .error(R.drawable.ic_jaizai)
+                    .placeholder(R.drawable.ic_jaizai).listener(new RequestListener<String, GlideDrawable>() {
+                @Override
+                public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                    Log.e(TAG, "onException: pic1 - 1" );
+                    String str = imgArray[2].replace("10.10.13.3:80","183.230.142.120:8081");
+                    if(!str.contains("tmp")){
+                        str += ".tmp";
+                    }
+
+                    Log.e(TAG, "onException: pic1 - 1 str = " + str);
+                    final DownloadTask downloadTask = new DownloadTask(FireMissionInfoActivity.this);
+                    downloadTask.setLocation(3);
+                    downloadTask.execute(str);
+                    return false;
+                }
+
+                @Override
+                public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                    return false;
+                }
+            }).into(imageThreeView);
+         }
     }
 
-    private String parseImg(String s) {
-        if(s==null){
-            return "";
-        }
-        return s.replace("172.17.221.115","1.181.45.82");
-    }
+    private File file1 = null;
+    private File file2 = null;
+    private File file3 = null;
+    /**
+     * 下载文件
+     */
+    class DownloadTask extends AsyncTask<String, Integer, String> {
 
+        private Context context;
+        private PowerManager.WakeLock mWakeLock;
+        private int number = 1;
+
+        public DownloadTask(Context context) {
+            this.context = context;
+        }
+
+        void setLocation(int num){
+            number = num;
+        }
+
+        @Override
+        protected String doInBackground(String... sUrl) {
+            InputStream input = null;
+            OutputStream output = null;
+            HttpURLConnection connection = null;
+            try {
+                URL url = new URL(sUrl[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    return "Server returned HTTP "
+                            + connection.getResponseCode() + " "
+                            + connection.getResponseMessage();
+                }
+                int fileLength = connection.getContentLength();
+                if (Environment.getExternalStorageState().equals(
+                        Environment.MEDIA_MOUNTED)) {
+                    if(number == 1){
+                        file1 = new File(FireMissionInfoActivity.this.getObbDir().getAbsolutePath(),
+                                "pic1" + new Date().getTime() + ".jpeg");
+
+                        if (!file1.exists()) {
+                            // 判断父文件夹是否存在
+                            if (!file1.getParentFile().exists()) {
+                                file1.getParentFile().mkdirs();
+                            }
+                        }
+                    }else if (number == 2){
+                        file2 = new File(FireMissionInfoActivity.this.getObbDir().getAbsolutePath(),
+                                "pic1" + new Date().getTime() + ".jpeg");
+
+                        if (!file2.exists()) {
+                            // 判断父文件夹是否存在
+                            if (!file2.getParentFile().exists()) {
+                                file2.getParentFile().mkdirs();
+                            }
+                        }
+                    }else if (number == 3){
+                        file3 = new File(FireMissionInfoActivity.this.getObbDir().getAbsolutePath(),
+                                "pic1" + new Date().getTime() + ".jpeg");
+
+                        if (!file3.exists()) {
+                            // 判断父文件夹是否存在
+                            if (!file3.getParentFile().exists()) {
+                                file3.getParentFile().mkdirs();
+                            }
+                        }
+                    }
+
+                } else {
+                    Toast.makeText(FireMissionInfoActivity.this, "sd卡未挂载",
+                            Toast.LENGTH_LONG).show();
+                }
+                input = connection.getInputStream();
+                if(number == 1){
+                    output = new FileOutputStream(file1);
+                }else if(number == 2){
+                    output = new FileOutputStream(file2);
+                }else if(number == 3){
+                    output = new FileOutputStream(file3);
+                }
+                byte data[] = new byte[4096];
+                long total = 0;
+                int count;
+                while ((count = input.read(data)) != -1) {
+                    // allow canceling with back button
+                    if (isCancelled()) {
+                        input.close();
+                        return null;
+                    }
+                    total += count;
+                    // publishing the progress....
+                    if (fileLength > 0) // only if total length is known
+                        publishProgress((int) (total * 100 / fileLength));
+                    output.write(data, 0, count);
+
+                }
+            } catch (Exception e) {
+                System.out.println(e.toString());
+                Log.e(TAG, "doInBackground1: e.toString() " + e.toString() );
+                return e.toString();
+
+            } finally {
+                try {
+                    if (output != null)
+                        output.close();
+                    if (input != null)
+                        input.close();
+                } catch (IOException ignored) {
+                }
+                if (connection != null)
+                    connection.disconnect();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // take CPU lock to prevent CPU from going off if the user
+            // presses the power button during download
+            PowerManager pm = (PowerManager) context
+                    .getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                    getClass().getName());
+            mWakeLock.acquire();
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... progress) {
+            super.onProgressUpdate(progress);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mWakeLock.release();
+            if (result != null) {
+                //Toast.makeText(context, "您未打开SD卡权限" + result, Toast.LENGTH_LONG).show();
+            } else {
+                //加载图片
+                if(number == 1){
+                    Log.e(TAG, "onPostExecute: isLeft " + file1.getPath() );
+                    Glide.with(FireMissionInfoActivity.this).load(file1)
+                            .error(R.drawable.ic_no_pic)
+                            .placeholder(R.drawable.ic_jaizai).into(imageOneView);
+                }else if(number == 2){
+                    Log.e(TAG, "onPostExecute: isRight " + file2.getPath() );
+                    Glide.with(FireMissionInfoActivity.this).load(file2)
+                            .error(R.drawable.ic_no_pic)
+                            .placeholder(R.drawable.ic_jaizai).into(imageTwoView);
+                }else if(number == 3){
+                    Log.e(TAG, "onPostExecute: isRight " + file3.getPath() );
+                    Glide.with(FireMissionInfoActivity.this).load(file3)
+                            .error(R.drawable.ic_no_pic)
+                            .placeholder(R.drawable.ic_jaizai).into(imageThreeView);
+                }
+            }
+
+        }
+    }
     @Override
     public void onBackPressed() {
         if (isChange){

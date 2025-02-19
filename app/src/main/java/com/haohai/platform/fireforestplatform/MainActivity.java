@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
 import android.net.VpnService;
 import android.os.AsyncTask;
@@ -27,11 +26,9 @@ import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -40,34 +37,35 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.haohai.platform.fireforestplatform.ui.LocationService;
-import com.haohai.platform.fireforestplatform.ui.acticity.LauncherActivity;
 import com.haohai.platform.fireforestplatform.ui.service.AlarmPointService;
 //import com.haohai.platform.fireforestplatform.ui.utils.AuthTypeUtil;
+import com.haohai.platform.fireforestplatform.ui.service.TrackService;
 import com.haohai.platform.fireforestplatform.ui.utils.TraceServiceImpl;
 import com.haohai.platform.fireforestplatform.ui.utils.whitelistUtil;
 import com.haohai.platform.firelibrary.ui.activity.FireMissionListActivity;
 import com.haohai.platform.firelibrary.ui.service.MQTTService;
-import com.haohai.platform.mapmodel.fragment.MapNewFragment;
+import com.haohai.platform.mapmodel.fragment.MapFragment;
 import com.haohai.platform.platformmodel.ui.service.ForegroundService;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
+import com.ruyiruyi.rylibrary.bus.MessageWrap;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.db.User;
 import com.haohai.platform.platformmodel.ui.fragment.AppsFragment;
 import com.haohai.platform.platformmodel.ui.fragment.MyFragment;
-import com.haohai.platform.platformmodel.ui.fragment.VideoIOSFragment;
+import com.haohai.platform.platformmodel.ui.fragment.VideoNewFragment;
 import com.haohai.platform.platformmodel.ui.service.DataService;
-import com.haohai.platform.platformmodel.ui.service.TrackService;
 import com.ruyiruyi.rylibrary.base.BaseFragmentActivity;
 import com.ruyiruyi.rylibrary.cell.HomeTabsCell;
 import com.ruyiruyi.rylibrary.cell.NoCanSlideViewPager;
 import com.ruyiruyi.rylibrary.cell.downcell.CommonProgressDialog;
+import com.ruyiruyi.rylibrary.db.UserMenu;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.ui.adapter.FragmentViewPagerAdapter;
 import com.ruyiruyi.rylibrary.utils.AndroidUtilities;
-import com.ruyiruyi.rylibrary.utils.CommonData;
+import com.ruyiruyi.rylibrary.utils.CommonUtil;
 import com.ruyiruyi.rylibrary.utils.LayoutHelper;
 import com.tencent.android.tpns.mqtt.util.Debug;
 import com.tencent.android.tpush.XGPushManager;
@@ -77,10 +75,12 @@ import com.tencent.android.tpush.XGPushManager;
 //import com.vsg.trustaccess.sdks.logic.TunnelStateManager;
 import com.xdandroid.hellodaemon.DaemonEnv;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.xutils.common.Callback;
-import org.xutils.common.util.LogUtil;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
@@ -96,6 +96,7 @@ import java.util.List;
 
 import static android.app.Notification.FLAG_NO_CLEAR;
 import static android.support.v4.app.NotificationCompat.FLAG_ONGOING_EVENT;
+import static com.haohai.platform.fireforestplatform.ui.utils.whitelistUtil.isIgnoringBatteryOptimizations;
 
 /*@Route(path = RouteUtils.LoginToMain)*/
 public class MainActivity extends BaseFragmentActivity {
@@ -135,29 +136,63 @@ public class MainActivity extends BaseFragmentActivity {
     private FireWeixingReceiver fireWeixingReceiver;
     private Intent mForegroundService;
     private ChangeTabReceiver changeTabReceiver;
+    private UserMenu usermenu;
 
 
+
+    /*退出登录回调*/
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGetMessage(MessageWrap message) {
+        finish();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
+
+        //电池优化
+        batterySetting();
 
         android.os.Debug.startMethodTracing();
         setContentView(R.layout.activity_main);
-        User user = new DbConfig(this).getUser();
-        String permission = user.getPermission();
-        String[] strings = permission.split(",");
-        for (int i = 0; i < strings.length; i++) {
-            LogUtil.e("permission = " + strings[i] );
-        }
+        usermenu = new UserMenu();
+        //usermenu=new DbConfig(this).getUserMenu();
+       // permissionRequest(mExternalStoragePermissions);
+        Trace.beginSection("zhazha");
 
+/*
+        if (!whitelistUtil.isIgnoringBatteryOptimizations(this)){
+            whitelistUtil.requestIgnoreBatteryOptimizations(this);
+        }
+*/
+
+
+        //后台保活
+    //    TraceServiceImpl.sShouldStopService=false;
+   //     DaemonEnv.startServiceMayBind(TraceServiceImpl.class);
+      //  ARouter.getInstance().inject(this);
+        //开启MQTT服务
+        //startService(new Intent(getApplicationContext(), MQTTService.class));
         //开启轨迹服务
         startService(new Intent(getApplicationContext(), TrackService.class));
         //获取人员组织数据
         startService(new Intent(getApplicationContext(), DataService.class));
         //开启百度定位服务
         startService(new Intent(getApplicationContext(), LocationService.class));
-
+        //启动前台服务
+       /* if (!ForegroundService.serviceIsLive) {
+            // Android 8.0使用startForegroundService在前台启动新服务
+            mForegroundService = new Intent(this, ForegroundService.class);
+            mForegroundService.putExtra("Foreground", "This is a foreground service.");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(mForegroundService);
+            } else {
+                startService(mForegroundService);
+            }
+        } else {
+            Toast.makeText(this, "前台服务正在运行中...", Toast.LENGTH_SHORT).show();
+        }*/
         //保持屏幕常亮
         //getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
        // getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);  清除屏幕常亮
@@ -213,8 +248,8 @@ public class MainActivity extends BaseFragmentActivity {
         tabsCell.setSelected(0);
 
 
-        this.user = new DbConfig(this).getUser();
-        if (this.user.getIsLogin() == 1) {
+        user = new DbConfig(this).getUser();
+        if (user.getIsLogin() == 1) {
             //版本更新
             getVersion();
         }
@@ -237,56 +272,40 @@ public class MainActivity extends BaseFragmentActivity {
         initImageLoader();
         Trace.endSection();
         android.os.Debug.stopMethodTracing();
-        NotificationManagerCompat notification = NotificationManagerCompat.from(this);
-        boolean isEnabled = notification.areNotificationsEnabled();
-        if (!isEnabled) {
-            //未打开通知
-            AlertDialog alertDialog = new AlertDialog.Builder(this)
-                    .setTitle("提示")
-                    .setMessage("请在“通知”中打开通知权限")
-                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.cancel();
-                        }
-                    })
-                    .setPositiveButton("去设置", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.cancel();
-                            Intent intent = new Intent();
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
-                                intent.putExtra("android.provider.extra.APP_PACKAGE", MainActivity.this.getPackageName());
-                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {  //5.0
-                                intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
-                                intent.putExtra("app_package", MainActivity.this.getPackageName());
-                                intent.putExtra("app_uid", MainActivity.this.getApplicationInfo().uid);
-                                startActivity(intent);
-                            } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {  //4.4
-                                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                intent.addCategory(Intent.CATEGORY_DEFAULT);
-                                intent.setData(Uri.parse("package:" + MainActivity.this.getPackageName()));
-                            } else if (Build.VERSION.SDK_INT >= 15) {
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.setAction("android.settings.APPLICATION_DETAILS_SETTINGS");
-                                intent.setData(Uri.fromParts("package", MainActivity.this.getPackageName(), null));
-                            }
-                            startActivity(intent);
+    }
 
-                        }
-                    })
-                    .create();
-            alertDialog.show();
-            alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(Color.BLACK);
-            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.BLACK);
+    private void batterySetting() {
+        boolean status = queryBatteryOptimizeStatus();
+        Log.e(TAG, "batterySetting: bingo " + status );
+        if(!status){
+            //通过Intent打开忽略电池优化弹框：
+
         }
     }
+
+    //查询是否成功开启忽略电池优化开关
+    boolean queryBatteryOptimizeStatus(){
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+           return powerManager.isIgnoringBatteryOptimizations("com.haohai.platform.fireforestplatform");
+        } else{
+            return true;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(data!=null){
+            Log.e(TAG, "onActivityResult: bingo " + data.toString() );
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(changeTabReceiver);
         unregisterReceiver(fireWeixingReceiver);
+        EventBus.getDefault().unregister(this);
     }
     class HomePagerAdapeter extends FragmentViewPagerAdapter {
 
@@ -305,18 +324,10 @@ public class MainActivity extends BaseFragmentActivity {
     }
 
     private void initTitle() {
-        if(CommonData.hasMainMap) {
-            tabsCell.addView(R.drawable.ic_mode_map, R.drawable.ic_mode_map_selected, "地图");
-        }
-        if(CommonData.hasMainVideo) {
-            tabsCell.addView(R.drawable.ic_jiankong, R.drawable.ic_jiankong_selected, "视频监控");
-        }
-        if(CommonData.hasMainApp) {
-            tabsCell.addView(R.drawable.ic_yingyong, R.drawable.ic_yingyong_selected, "应用");
-        }
-        if(CommonData.hasMainMy) {
-            tabsCell.addView(R.drawable.ic_xiaoxi, R.drawable.ic_xiaoxi_selected, "我的");
-        }
+
+
+
+
       //  tabsCell.addView(R.drawable.ic_mine, R.drawable.ic_mine_selected, "我的 ");
 
     }
@@ -324,36 +335,34 @@ public class MainActivity extends BaseFragmentActivity {
     private List<Fragment> initFragment() {
         List<Fragment> fragments = new ArrayList<>();
 
-        if(CommonData.hasMainMap){
-            fragments.add(new MapNewFragment());
+        //fragments.add(new MapHomeFragment());
+        Log.e(TAG, "initFragment: " +usermenu.isAppvideo());
+        if (usermenu.isAppmap()){
+            tabsCell.addView(R.drawable.ic_mode_map, R.drawable.ic_mode_map_selected, "地图");
+            fragments.add(new MapFragment());
         }
-        if(CommonData.hasMainVideo) {
-            fragments.add(new VideoIOSFragment());
+        if (usermenu.isAppvideo()){
+            tabsCell.addView(R.drawable.ic_jiankong, R.drawable.ic_jiankong_selected, "视频监控");
+            fragments.add(new VideoNewFragment());
         }
-        if(CommonData.hasMainApp) {
+        if (usermenu.isAppapplication()){
+            tabsCell.addView(R.drawable.ic_yingyong, R.drawable.ic_yingyong_selected, "应用");
             fragments.add(new AppsFragment());
         }
-        if(CommonData.hasMainMy) {
-            fragments.add(new MyFragment());
+        if (usermenu.isAppsetting()){
+            tabsCell.addView(R.drawable.ic_xiaoxi, R.drawable.ic_xiaoxi_selected, "我的");
+            fragments.add(new MyFragment() );
         }
-
+        //fragments.add(new VideoFragment());
         return fragments;
     }
 
     protected List<String> initPagerTitle() {
         titles = new ArrayList<>();
-        if(CommonData.hasMainMap){
-            titles.add("地图");
-        }
-        if(CommonData.hasMainVideo){
-            titles.add("视频监控");
-        }
-        if(CommonData.hasMainApp){
-            titles.add("应用");
-        }
-        if(CommonData.hasMainMy){
-            titles.add("我的");
-        }
+        titles.add("首页");
+        titles.add("地图");
+        titles.add("数据统计");
+        titles.add("我的");
         return titles;
     }
     @Override
@@ -407,7 +416,6 @@ public class MainActivity extends BaseFragmentActivity {
         RequestParams params = new RequestParams(RequestUtils.REQUEST_QUANXIAN +"api/androidUpgrade/getCurrent");
         Log.e(TAG, "version: " + params);
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         //   params.addBodyParameter("reqJson", jsonObject.toString());
         x.http().get(params, new Callback.CommonCallback<String>() {
 
@@ -722,7 +730,7 @@ public class MainActivity extends BaseFragmentActivity {
         startActivity(intent);*/
         if (Build.VERSION.SDK_INT >= 24) {
             File file = new File(fileName);
-            tempUri = FileProvider.getUriForFile(MainActivity.this, "com.haohai.platform.fireforestplatform.fileProvider", file);
+            tempUri = FileProvider.getUriForFile(MainActivity.this, "com.haohai.platform.fireforestplatform", file);
             Intent install = new Intent(Intent.ACTION_VIEW);
             install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);//添加这一句表示对目标应用临时授权该Uri所代表的文件
@@ -744,12 +752,12 @@ public class MainActivity extends BaseFragmentActivity {
     class FireWeixingReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
-            String type = intent.getStringExtra("type");
-            if (type.equals("4")){
+            String type = intent.getStringExtra("type");//12 火警    2 任务
+            if (type.equals("4") || type.equals("12")){
                 viewPager.setCurrentItem(0);
                 tabsCell.setSelected(0);
 
-            }else {
+            }else if(type.equals("2")){
                 startActivity(new Intent(getApplicationContext(), FireMissionListActivity.class));
             }
         }
