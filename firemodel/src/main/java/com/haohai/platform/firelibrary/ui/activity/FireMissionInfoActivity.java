@@ -328,30 +328,22 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
             imageOneView.setVisibility(View.VISIBLE);
             imageTwoView.setVisibility(View.GONE);
             imageThreeView.setVisibility(View.GONE);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[0])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
+            Glide.with(getApplicationContext()).load(imgArray[0].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
         }else if (imgArray.length==2){
             imageOneView.setVisibility(View.VISIBLE);
             imageTwoView.setVisibility(View.VISIBLE);
             imageThreeView.setVisibility(View.GONE);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[0])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[1])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
+            Glide.with(getApplicationContext()).load(imgArray[0].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
+            Glide.with(getApplicationContext()).load(imgArray[1].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
         }else {
             imageOneView.setVisibility(View.VISIBLE);
             imageTwoView.setVisibility(View.VISIBLE);
             imageThreeView.setVisibility(View.VISIBLE);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[0])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[1])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
-            Glide.with(getApplicationContext()).load(parseImg(imgArray[2])).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageThreeView);
+            Glide.with(getApplicationContext()).load(imgArray[0].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
+            Glide.with(getApplicationContext()).load(imgArray[1].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
+            Glide.with(getApplicationContext()).load(imgArray[2].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageThreeView);
         }
     }
-
-    private String parseImg(String s) {
-        if(s==null){
-            return "";
-        }
-        return s.replace("172.17.221.115","1.181.45.82");
-    }
-
     @Override
     public void onBackPressed() {
         if (isChange){

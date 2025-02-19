@@ -91,14 +91,9 @@
         android:layout_gravity="center"
         android:layout_marginTop="1dp"
         android:layout_height="0.5dp"/>
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/swipe"
+    <ScrollView
+        android:id="@+id/sv_gridtrees"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <ScrollView
-            android:id="@+id/sv_gridtrees"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        </ScrollView>
-    </android.support.v4.widget.SwipeRefreshLayout>
+    </ScrollView>
 </LinearLayout>

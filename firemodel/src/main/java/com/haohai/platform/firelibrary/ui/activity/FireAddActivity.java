@@ -1022,15 +1022,15 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                     shiText.setText("请选择市");
                     currentChooseShi = "请选择市";
                     shiSelectIndex = 0;
-                    quText.setText("请选择区");
-                    currentChooseQu = "请选择区";
+                    quText.setText("请选择市");
+                    currentChooseQu = "请选择市";
                     quSelectIndex = 0;
                 }else if(currentChooseArea == 1){                          //选择市
                     currentChooseShi = areaWy.getSelectedItem();
                     shiSelectIndex = areaWy.getSelectedPosition();
                     shiText.setText(currentChooseShi);
-                    quText.setText("请选择区");
-                    currentChooseQu = "请选择区";
+                    quText.setText("请选择市");
+                    currentChooseQu = "请选择市";
                     quSelectIndex = 0;
                 }else {
                     currentChooseQu = areaWy.getSelectedItem();

@@ -70,10 +70,10 @@ public class LauncherActivity extends AppCompatActivity {
                             startActivity(intent);
                             finish();
                         }else {
-                            CommonData.hasMainMap = user.isHasMainMap();
-                            CommonData.hasMainVideo = user.isHasMainVideo();
-                            CommonData.hasMainApp = user.isHasMainApp();
-                            CommonData.hasMainMy = user.isHasMainMy();
+                            CommonData.hasMainMap = true;//user.isHasMainMap();
+                            CommonData.hasMainVideo = true;//user.isHasMainVideo();
+                            CommonData.hasMainApp = true;//user.isHasMainApp();
+                            CommonData.hasMainMy = true;//user.isHasMainMy();
                             if(!CommonData.hasMainMap && !CommonData.hasMainVideo && !CommonData.hasMainApp && !CommonData.hasMainMy){
                                 CommonData.hasMainMy = true;
                             }

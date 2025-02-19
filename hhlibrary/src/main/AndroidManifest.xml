@@ -9,7 +9,8 @@
         <activity android:name=".base.BaseActivity" />
         <activity android:name=".base.BaseWebActivity" />
         <activity android:name=".base.BaseFragmentActivity" />
-        <activity android:name=".base.FullBaseActivity"></activity>
+        <activity android:name=".base.FullBaseActivity"/>
+        <activity android:name=".ui.Pic1Activity"/>
         <service android:name=".service.BackgroundMp3Service"/>
     </application>
 

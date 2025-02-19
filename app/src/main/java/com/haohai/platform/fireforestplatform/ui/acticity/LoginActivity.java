@@ -432,10 +432,10 @@ public class LoginActivity extends HhBaseActivity {
                     JSONArray data = object.getJSONArray("data");
                     JSONObject obj = (JSONObject) data.get(0);
                     JSONArray dataList = obj.getJSONArray("menuDTOS");
-                    CommonData.hasMainMap = false;
+                    /*CommonData.hasMainMap = false;
                     CommonData.hasMainVideo = false;
                     CommonData.hasMainApp = false;
-                    CommonData.hasMainMy = false;
+                    CommonData.hasMainMy = false;*/
                     for (int i = 0; i < dataList.length(); i++) {
                         JSONObject o = (JSONObject) dataList.get(i);
                         String menuCode = o.getString("menuCode");

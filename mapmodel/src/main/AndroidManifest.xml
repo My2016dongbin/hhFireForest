@@ -9,6 +9,7 @@
         android:supportsRtl="true">
         <activity android:name=".activity.WeixingActivity"/>
         <activity android:name=".activity.PlayerActivity"/>
+        <activity android:name=".activity.SetActivity"/>
     </application>
 
 </manifest>

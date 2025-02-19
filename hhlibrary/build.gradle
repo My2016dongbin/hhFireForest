@@ -106,7 +106,12 @@ dependencies {
     api 'com.tencent.tpns:meizu:1.2.2.0-release'//meizu 推送
     api 'com.tencent.tpns:oppo:1.2.2.0-release'//oppo 推送
 
+    api 'org.greenrobot:eventbus:3.1.1'
+
     api 'com.rxjava.rxhttp:rxhttp:1.1.6'
     annotationProcessor 'com.rxjava.rxhttp:rxhttp-compiler:1.1.6'
+
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.github.chrisbanes:PhotoView:2.0.0'
 
 }

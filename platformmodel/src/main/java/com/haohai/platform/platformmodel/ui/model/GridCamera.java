@@ -3,22 +3,22 @@ package com.haohai.platform.platformmodel.ui.model;
 public class GridCamera {
     String name;
     String monitorId;
+    String deviceId;
     String id;
     String rtspUrl;
     String subRtspUrl;
     String state;
     String collectionState;
-    String isOnline;
     int cameraType;
 
     boolean status = false;
 
-    public String getIsOnline() {
-        return isOnline;
+    public String getDeviceId() {
+        return deviceId;
     }
 
-    public void setIsOnline(String isOnline) {
-        this.isOnline = isOnline;
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public boolean isStatus() {

@@ -31,6 +31,8 @@
 
         <activity android:name=".ui.activity.WeiXingSettingActivity" />
         <activity android:name=".ui.activity.FireMissionInfoActivity" />
+        <activity android:name=".ui.activity.FireMissionInfoJMActivity" />
+        <activity android:name=".ui.activity.PlayerActivity" />
         <activity android:name=".ui.activity.GPSNaviActivity" />
         <activity android:name=".ui.activity.FireSceneActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"/>

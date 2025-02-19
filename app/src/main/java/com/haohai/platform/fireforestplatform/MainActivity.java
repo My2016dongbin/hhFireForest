@@ -48,11 +48,16 @@ import com.haohai.platform.fireforestplatform.ui.utils.whitelistUtil;
 import com.haohai.platform.firelibrary.ui.activity.FireMissionListActivity;
 import com.haohai.platform.firelibrary.ui.service.MQTTService;
 import com.haohai.platform.mapmodel.fragment.MapNewFragment;
+import com.haohai.platform.platformmodel.ui.fragment.VideoNewFragment;
+import com.haohai.platform.platformmodel.ui.fragment.VideoTSFragment;
 import com.haohai.platform.platformmodel.ui.service.ForegroundService;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
+import com.ruyiruyi.rylibrary.bus.MapLine;
+import com.ruyiruyi.rylibrary.bus.OutLogin;
+import com.ruyiruyi.rylibrary.db.Area;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.db.User;
 import com.haohai.platform.platformmodel.ui.fragment.AppsFragment;
@@ -77,10 +82,16 @@ import com.tencent.android.tpush.XGPushManager;
 //import com.vsg.trustaccess.sdks.logic.TunnelStateManager;
 import com.xdandroid.hellodaemon.DaemonEnv;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xutils.DbManager;
 import org.xutils.common.Callback;
 import org.xutils.common.util.LogUtil;
+import org.xutils.ex.DbException;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
@@ -137,11 +148,79 @@ public class MainActivity extends BaseFragmentActivity {
     private ChangeTabReceiver changeTabReceiver;
 
 
+    /**
+     * 获取区域数据
+     */
+    private void getAreaFromService() {
+        JSONObject jsonObject = new JSONObject();
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +  "auth/api/sysArea/getAllSysArea");
+        params.setAsJsonContent(true);
+        params.setBodyContent(jsonObject.toString());
+        params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        Log.i(TAG, "getAreaFromService: "+params);
+        x.http().get(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "onSuccess:diqu -- " + result);
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(result);
+                    JSONArray data = jsonObject.getJSONArray("data");
+                    List<Area> allAreaList = new ArrayList();
+                    for (int i = 0; i < data.length(); i++) {
+                        JSONObject object = data.getJSONObject(i);
+                        String id = object.getString("id");
+                        String name = object.getString("name");
+                        String parentId = object.getString("parentId");
+                        String level = object.getString("level");
+                        String createTime = object.getString("createTime");
+                        Area area = new Area(id, name, parentId, createTime, level);
+                        allAreaList.add(area);
+                    }
+                    DbConfig dbConfig = new DbConfig(getApplicationContext());
+                    DbManager db = dbConfig.getDbManager();
+                    try {
+                        db.saveOrUpdate(allAreaList);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                EventBus.getDefault().post(new MapLine());
+                            }
+                        },2000);
+                    } catch (DbException e) {
+
+                    }
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                Log.e(TAG, "onError: 请求失败" + ex.toString());
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
 
+        getAreaFromService();
         android.os.Debug.startMethodTracing();
         setContentView(R.layout.activity_main);
         User user = new DbConfig(this).getUser();
@@ -173,10 +252,10 @@ public class MainActivity extends BaseFragmentActivity {
 
         viewPager = new NoCanSlideViewPager(this);
 
-        content.addView(viewPager, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.TOP, 0, 0, 0, AndroidUtilities.dp(HomeTabsCell.CELL_HEIGHT)));
+        content.addView(viewPager, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.TOP, 0, 0, 0, 0));
 
         tabsCell = new HomeTabsCell(this);
-        content.addView(tabsCell, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, AndroidUtilities.dp(HomeTabsCell.CELL_HEIGHT), Gravity.BOTTOM));
+        //content.addView(tabsCell, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, AndroidUtilities.dp(HomeTabsCell.CELL_HEIGHT), Gravity.BOTTOM));
         tabsCell.setViewPager(viewPager);
 
         initTitle();
@@ -285,6 +364,7 @@ public class MainActivity extends BaseFragmentActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        EventBus.getDefault().unregister(this);
         unregisterReceiver(changeTabReceiver);
         unregisterReceiver(fireWeixingReceiver);
     }
@@ -305,9 +385,9 @@ public class MainActivity extends BaseFragmentActivity {
     }
 
     private void initTitle() {
-        if(CommonData.hasMainMap) {
+//        if(CommonData.hasMainMap) {
             tabsCell.addView(R.drawable.ic_mode_map, R.drawable.ic_mode_map_selected, "地图");
-        }
+//        }
         if(CommonData.hasMainVideo) {
             tabsCell.addView(R.drawable.ic_jiankong, R.drawable.ic_jiankong_selected, "视频监控");
         }
@@ -324,11 +404,11 @@ public class MainActivity extends BaseFragmentActivity {
     private List<Fragment> initFragment() {
         List<Fragment> fragments = new ArrayList<>();
 
-        if(CommonData.hasMainMap){
+//        if(CommonData.hasMainMap){
             fragments.add(new MapNewFragment());
-        }
+//        }
         if(CommonData.hasMainVideo) {
-            fragments.add(new VideoIOSFragment());
+            fragments.add(new VideoTSFragment());
         }
         if(CommonData.hasMainApp) {
             fragments.add(new AppsFragment());
@@ -342,9 +422,9 @@ public class MainActivity extends BaseFragmentActivity {
 
     protected List<String> initPagerTitle() {
         titles = new ArrayList<>();
-        if(CommonData.hasMainMap){
+//        if(CommonData.hasMainMap){
             titles.add("地图");
-        }
+//        }
         if(CommonData.hasMainVideo){
             titles.add("视频监控");
         }
@@ -361,6 +441,12 @@ public class MainActivity extends BaseFragmentActivity {
 
         exit();
 
+    }
+
+    //退出登录
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGetMessage(OutLogin event) {
+        finish();
     }
 
     private void exit() {

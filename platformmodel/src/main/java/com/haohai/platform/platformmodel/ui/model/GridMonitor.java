@@ -8,16 +8,7 @@ public class GridMonitor {
     String gridNo;
     String gridName;
     String state;
-    String isOnline;
     Position position;
-
-    public String getIsOnline() {
-        return isOnline;
-    }
-
-    public void setIsOnline(String isOnline) {
-        this.isOnline = isOnline;
-    }
 
     public String getName() {
         return name;

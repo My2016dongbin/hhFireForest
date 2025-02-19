@@ -204,7 +204,8 @@ public class FireMissionListActivity extends HhBaseActivity implements FireMissi
      */
     @Override
     public void onFireMissionItemClickListener(FireMission fireMission) {
-        Intent intent = new Intent(getApplicationContext(), FireMissionInfoActivity.class);
+        //Intent intent = new Intent(getApplicationContext(), FireMissionInfoActivity.class);
+        Intent intent = new Intent(getApplicationContext(), FireMissionInfoJMActivity.class);
         intent.putExtra("ID",fireMission.getId());
         startActivityForResult(intent,ORDER_CHANGE);
     }

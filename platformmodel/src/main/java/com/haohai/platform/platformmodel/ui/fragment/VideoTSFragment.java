@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -27,27 +28,22 @@ import android.widget.Toast;
 
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.haohai.ledge.videolibrary.utils.OrientationUtils;
 import com.haohai.platform.platformmodel.R;
 import com.haohai.platform.platformmodel.ui.fragment.base.HhBaseFragment;
 import com.haohai.platform.platformmodel.ui.model.GridCamera;
-import com.haohai.platform.platformmodel.ui.model.GridModel;
 import com.haohai.platform.platformmodel.ui.model.GridPointModel;
 import com.haohai.platform.platformmodel.ui.model.GridTrees;
 import com.haohai.platform.platformmodel.ui.model.Organization;
-import com.haohai.platform.platformmodel.ui.model.PostStar;
 import com.haohai.platform.platformmodel.ui.model.VideoId;
 import com.haohai.platform.platformmodel.ui.model.VideoModel;
 import com.haohai.platform.platformmodel.ui.utils.tree.TreeAdapter;
 import com.haohai.platform.platformmodel.ui.utils.tree.TreePoint;
-import com.haohai.platform.platformmodel.ui.utils.tree.TreeUtils;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.db.User;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
-import com.ruyiruyi.rylibrary.utils.CommonUtils;
 import com.ywl5320.wlmedia.WlMedia;
 import com.ywl5320.wlmedia.enums.WlComplete;
 import com.ywl5320.wlmedia.listener.WlOnMediaInfoListener;
@@ -59,21 +55,22 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.xutils.common.Callback;
-import org.xutils.http.HttpMethod;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
 import rx.functions.Action1;
 
-public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPlayerItemClick {
-    private static final String TAG = VideoIOSFragment.class.getSimpleName();
+/**
+ * Created by geyang on 2020/7/1.
+ */
+
+public class VideoTSFragment extends HhBaseFragment implements TreeAdapter.OnPlayerItemClick {
+    private static final String TAG = VideoNewFragment.class.getSimpleName();
     public int currentVideo = 1;
     private ImageView yiView;
     private ImageView siView;
@@ -103,7 +100,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
     private View videoListInflater;
     private List<TreePoint> pointList = new ArrayList<>();
     private HashMap<String, TreePoint> pointMap = new HashMap<>();
-    private TreeAdapter adapter;
     private String token;
     private String aqishiToken;
     private ProgressDialog progressDialog;
@@ -143,20 +139,11 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
     private ImageView video8AddView;
     private ImageView video9AddView;
     private boolean isAddVideoViewClick = false;
-    private LinearLayout videoListLayout;
     private ImageView listDialogImage;
-    private ScrollView sv_gridtrees;
-    private LinearLayout ll_left;
-    private LinearLayout ll_right;
-    private View v_left;
-    private View v_right;
-    private TextView tv_left;
-    private TextView tv_right;
     private OrientationUtils orientationUtils;
+    private ScrollView sv_gridtrees;
     private String currentClickItemName;
     private String currentClickItemId;
-    private String currentClickMonitorId;
-    private String currentChannelId;
     private ImageView addImageView;
 
     private Dialog addDialog;
@@ -201,13 +188,12 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
     private WlCircleLoadView wlCircleLoadView7;
     private WlCircleLoadView wlCircleLoadView8;
     private WlCircleLoadView wlCircleLoadView9;
-
     private boolean rootCtrlDirection = false;
     private boolean rootCtrlFocus= false;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_video_ios, container, false);
+        return inflater.inflate(R.layout.fragment_video_ts, container, false);
     }
 
     @Override
@@ -218,35 +204,32 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         organizationList = new ArrayList<>();
         videoModelList = new ArrayList<>();
         videoIdList = new ArrayList<>();
-        if(CommonUtils.hasPermission(getActivity(),"app-video-btn-directionControl")){
-            rootCtrlDirection = true;
-        }
-        if(CommonUtils.hasPermission(getActivity(),"app-video-btn-zoomControl")){
-            rootCtrlFocus = true;
-        }
-
         intiView();
         user = new DbConfig(getContext()).getUser();
         token =  user.getToken();
         getTokenFromService();
         getDataFromService();
+
         changeTabReceiver=new ChangeTabReceiver();
         IntentFilter resourcefilter = new IntentFilter();
         resourcefilter.addAction("video_play");
         getActivity().registerReceiver(changeTabReceiver, resourcefilter);
         bingView();
 
+        rootCtrlDirection = true;
+        rootCtrlFocus = true;
+
     //    video1Player.setUpLazy("http://121.36.6.140:80/group1/M00/00/02/wKgAzF-ZLKKEL2wIAAAAADPd4yE796.mp4", false, null, null, "11");
     }
+
 
     /**
      * 获取视频树
      */
     List<GridTrees> gridTreesList = new ArrayList<>();
     private void getDataFromService() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +"resource/api/grid/listGridTreesNew");
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +"resource/api/grid/listGridNewTrees");
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         params.setConnectTimeout(10000);
         Log.e(TAG, "listGridNewTrees: ---" + params);
@@ -255,57 +238,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
             public void onSuccess(String result) {
                 Log.e(TAG, "onSuccess: bingo gridNew" + result );
                 sv_gridtrees.removeAllViews();
-                gridTreesList.clear();
-                try {
-                    JSONObject jsonObject = new JSONObject(result);
-                    if (jsonObject.getString("code").equals("200")) {
-                        JSONArray data = jsonObject.getJSONArray("data");
-                        for (int i = 0; i < data.length(); i++) {
-                            GridTrees e = new Gson().fromJson(data.get(i).toString(), GridTrees.class);
-                            if(i == data.length()-1){
-                                e.setLast(true);
-                            }
-                            gridTreesList.add(e);
-                        }
-
-                        sv_gridtrees.addView(buildGridTrees(gridTreesList));
-
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Log.e(TAG, "onError: bingo gridNew error" + ex.toString() );
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-            }
-        });
-    }
-
-    private void getDataFromServiceStar() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +"resource/api/grid/listGridTreesNew");
-        params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        params.addParameter("sheetType","collection");
-        params.setConnectTimeout(10000);
-        Log.e(TAG, "listGridNewTrees: ---" + params);
-        x.http().get(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: bingo gridNew" + result );
-                sv_gridtrees.removeAllViews();
-                gridTreesList.clear();
                 try {
                     JSONObject jsonObject = new JSONObject(result);
                     if (jsonObject.getString("code").equals("200")) {
@@ -347,22 +279,21 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridtrees_out,null);
         LinearLayout ll_big = view.findViewById(R.id.ll_big);
         for (int i = 0; i < treesList.size(); i++) {
-            GridTrees gridTrees = treesList.get(i);
+            final GridTrees gridTrees = treesList.get(i);
             View item = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridtrees,null);
             LinearLayout ll_out = item.findViewById(R.id.ll_out);
-            LinearLayout ll_in = item.findViewById(R.id.ll_in);//用于监控点-摄像头便于动态加载
-            ImageView iv_status = item.findViewById(R.id.iv_status);
-            View bottom_view = item.findViewById(R.id.view);
+            final LinearLayout ll_in = item.findViewById(R.id.ll_in);//用于监控点-摄像头便于动态加载
+            final ImageView iv_status = item.findViewById(R.id.iv_status);
             TextView tv_gridtrees = item.findViewById(R.id.tv_gridtrees);
             tv_gridtrees.setText(gridTrees.getName());
             //有Children子项(递归展示)
             if(gridTrees.getChildren()!=null && gridTrees.getChildren().size()>0){
                 List<GridTrees> itemList = new ArrayList<>();
                 for (int m = 0; m < gridTrees.getChildren().size(); m++) {
-                        itemList.add(gridTrees.getChildren().get(m));
+                    itemList.add(gridTrees.getChildren().get(m));
                 }
                 //递归
-                View childTrees = buildGridTrees(itemList);
+                final View childTrees = buildGridTrees(itemList);
                 //初始化绑定
                 if(gridTrees.isStatus()){
                     iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
@@ -371,26 +302,17 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                     iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
                     childTrees.setVisibility(View.GONE);
                 }
-                RxViewAction.clickNoDouble(ll_out).subscribe(unused -> {
-                    if(gridTrees.isStatus()){
-                        gridTrees.setStatus(false);
-                        iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
-                        childTrees.setVisibility(View.GONE);
-
-                        //隐藏/移除新View 91
-                        ll_in.setVisibility(View.GONE);
-                        ll_in.removeAllViews();
-                    }else{
-                        gridTrees.setStatus(true);
-                        iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
-                        childTrees.setVisibility(View.VISIBLE);
-
-
-                        //监控点-摄像头数据 91
-                        if(gridTrees.getMonitorDetailVOs()!=null && gridTrees.getMonitorDetailVOs().size()>0){
-                            View monitorView = buildMonitor(gridTrees.getMonitorDetailVOs(),gridTrees.getGroupId());
-                            ll_in.addView(monitorView);
-                            ll_in.setVisibility(View.VISIBLE);
+                RxViewAction.clickNoDouble(ll_out).subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        if(gridTrees.isStatus()){
+                            gridTrees.setStatus(false);
+                            iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
+                            childTrees.setVisibility(View.GONE);
+                        }else{
+                            gridTrees.setStatus(true);
+                            iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
+                            childTrees.setVisibility(View.VISIBLE);
                         }
                     }
                 });
@@ -408,24 +330,50 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                     //隐藏新View(暂无意义)
                     ll_in.setVisibility(View.GONE);
                 }
-                RxViewAction.clickNoDouble(ll_out).subscribe(unused -> {
+                RxViewAction.clickNoDouble(ll_out).subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        if(gridTrees.isStatus()){
+                            gridTrees.setStatus(false);
+                            iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
+                            //隐藏/移除新View
+                            ll_in.setVisibility(View.GONE);
+                            ll_in.removeAllViews();
+                        }else{
+                            gridTrees.setStatus(true);
+                            iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
+                            //展示/添加新View
 
-                    if(gridTrees.isStatus()){
-                        gridTrees.setStatus(false);
-                        iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
-                        //隐藏/移除新View 91
-                        ll_in.setVisibility(View.GONE);
-                        ll_in.removeAllViews();
-                    }else{
-                        gridTrees.setStatus(true);
-                        iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
-                        //展示/添加新View
+                            //加载监控点-摄像头数据
+                            getGridTreesChildren(gridTrees.getId());
 
-                        //监控点-摄像头数据
-                        if(gridTrees.getMonitorDetailVOs()!=null && gridTrees.getMonitorDetailVOs().size()>0){
-                            View monitorView = buildMonitor(gridTrees.getMonitorDetailVOs(),gridTrees.getGroupId());
-                            ll_in.addView(monitorView);
-                            ll_in.setVisibility(View.VISIBLE);
+                            BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+                                @Override
+                                public void onReceive(Context context, Intent intent) {
+                                    try {
+                                        List<GridPointModel> pointModelList = new ArrayList<>();
+                                        String result = intent.getStringExtra("result");
+                                        JSONObject jsonObject = new JSONObject(result);
+                                        JSONArray data = jsonObject.getJSONArray("data");
+                                        Log.e("LocalBroadcastManager ","receive");
+                                        Gson gson = new Gson();
+                                        for (int x = 0; x < data.length(); x++) {
+                                            pointModelList.add(gson.fromJson(data.get(x).toString(),GridPointModel.class));
+                                        }
+
+                                        //monitor子View
+                                        View monitorView = buildMonitor(pointModelList,gridTrees.getName());
+                                        ll_in.addView(monitorView);
+                                        ll_in.setVisibility(View.VISIBLE);
+                                        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(this);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            };
+                            IntentFilter intentFilter = new IntentFilter();
+                            intentFilter.addAction(gridTrees.getId());
+                            LocalBroadcastManager.getInstance(getActivity()).registerReceiver(broadcastReceiver, intentFilter);
                         }
                     }
                 });
@@ -437,19 +385,18 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         return ll_big;
     }
 
-    private String currentGroupId = "";
     /**
      * 构建监控点子View
      */
-    View buildMonitor(List<GridModel> gridPointModelList,String groupId){
+    View buildMonitor(List<GridPointModel> gridPointModelList,String name){
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridtrees_out,null);
         LinearLayout ll_big = view.findViewById(R.id.ll_big);//取一个LinearLayout
         for (int i = 0; i < gridPointModelList.size(); i++) {
-            GridModel model = gridPointModelList.get(i);
+            final GridPointModel model = gridPointModelList.get(i);
             View item = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridtrees,null);
             LinearLayout ll_out = item.findViewById(R.id.ll_out);
-            LinearLayout ll_in = item.findViewById(R.id.ll_in);
-            ImageView iv_status = item.findViewById(R.id.iv_status);
+            final LinearLayout ll_in = item.findViewById(R.id.ll_in);
+            final ImageView iv_status = item.findViewById(R.id.iv_status);
             TextView tv_gridtrees = item.findViewById(R.id.tv_gridtrees);
             tv_gridtrees.setText(model.getMonitor().getName());
             if(model.isStatus()){
@@ -457,121 +404,47 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
             }else{
                 iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
             }
-            RxViewAction.clickNoDouble(ll_out).subscribe(unused -> {
-                if(model.isStatus()){
-                    model.setStatus(false);
-                    iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
-                    //隐藏/移除新View
-                    ll_in.setVisibility(View.GONE);
-                    ll_in.removeAllViews();
-                }else{
-                    model.setStatus(true);
-                    iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
-                    //显示/添加新View
-                    for (int m = 0; m < model.getCameraList().size(); m++) {
-                        GridCamera gridCamera = model.getCameraList().get(m);
-                        //构建摄像头
-                        View cameraView = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridcamera,null);
-                        LinearLayout ll_camera = cameraView.findViewById(R.id.ll_camera);
-                        ImageView iv_star = cameraView.findViewById(R.id.iv_star);
-                        ImageView iv_camera = cameraView.findViewById(R.id.iv_camera);//isOnLine 0 离线 1 在线
-                        TextView tv_camera = cameraView.findViewById(R.id.tv_camera);
-                        tv_camera.setText(gridCamera.getName());
-                        gridCamera.setStatus(Objects.equals(gridCamera.getCollectionState(), "1"));
-                        if(gridCamera.isStatus()){
-                            iv_star.setImageDrawable(getResources().getDrawable(R.drawable.star_sl));
-                        }else{
-                            iv_star.setImageDrawable(getResources().getDrawable(R.drawable.star_un));
-                        }
-                        RxViewAction.clickNoDouble(ll_camera).subscribe(new Action1<Void>() {
-                            @Override
-                            public void call(Void unused) {
-                                currentGroupId = parseGroupId(groupId);
-
-                                RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/mediaKit/getLiveUrl");
-                                params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-                                params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-                                params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-                                Log.e(TAG, "call: gridCamera = " + gridCamera );
-                                params.addBodyParameter("cameraId",gridCamera.getId());
-                                params.addBodyParameter("manufacturer","2");
-                                params.addBodyParameter("streamType","2");
-                                params.addBodyParameter("protocolType","rtsp");
-                                Log.e(TAG, "onSuccess: params = " + params );
-                                x.http().get(params, new Callback.CommonCallback<String>() {
-                                    @Override
-                                    public void onSuccess(String result) {
-                                        try {
-                                            Log.e(TAG, "onSuccess: result = " + result );
-                                            JSONObject object = new JSONObject(result);
-                                            JSONArray data = object.getJSONArray("data");
-                                            JSONObject obj = (JSONObject) data.get(0);
-                                            String url = obj.getString("url");
-
-
-                                            currentClickItemName = gridCamera.getName();
-                                            currentClickItemId = gridCamera.getMonitorId();
-                                            currentChannelId = gridCamera.getId();
-                                            //跳转播放视频流
-                                            videoListDialog.dismiss();
-                                            Log.e(TAG, "call: gridCamera.getRtspUrl() = " + gridCamera.getRtspUrl() );
-                                            if (isAddVideoViewClick) {//直接往点击的视频播放机中添加
-                                                addVideoPlayer(url);
-                                            } else {//往列表中排序添加
-                                                getVideoPlayerState();
-                                                setVideoPlayer(url);
-                                            }
-
-
-                                        } catch (JSONException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onError(Throwable ex, boolean isOnCallback) {
-
-                                    }
-
-                                    @Override
-                                    public void onCancelled(CancelledException cex) {
-
-                                    }
-
-                                    @Override
-                                    public void onFinished() {
-
-                                    }
-                                });
-                            }
-                        });
-                        RxViewAction.clickNoDouble(iv_star).subscribe(new Action1<Void>() {
-                            @Override
-                            public void call(Void unused) {
-                                if(gridCamera.isStatus()){
-                                    gridCamera.setStatus(false);
-                                    if(gridCamera.isStatus()){
-                                        iv_star.setImageDrawable(getResources().getDrawable(R.drawable.star_sl));
+            RxViewAction.clickNoDouble(ll_out).subscribe(new Action1<Void>() {
+                @Override
+                public void call(Void aVoid) {
+                    if(model.isStatus()){
+                        model.setStatus(false);
+                        iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
+                        //隐藏/移除新View
+                        ll_in.setVisibility(View.GONE);
+                        ll_in.removeAllViews();
+                    }else{
+                        model.setStatus(true);
+                        iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
+                        //显示/添加新View
+                        for (int m = 0; m < model.getCameraList().size(); m++) {
+                            final GridCamera gridCamera = model.getCameraList().get(m);
+                            //构建摄像头
+                            View cameraView = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridcamera,null);
+                            LinearLayout ll_camera = cameraView.findViewById(R.id.ll_camera);
+                            ImageView iv_camera = cameraView.findViewById(R.id.iv_camera);//isOnLine 0 离线 1 在线
+                            TextView tv_camera = cameraView.findViewById(R.id.tv_camera);
+                            tv_camera.setText(gridCamera.getName());
+                            RxViewAction.clickNoDouble(ll_camera).subscribe(new Action1<Void>() {
+                                @Override
+                                public void call(Void unused) {
+                                    Log.e(TAG, "call: postPlayerUrl name = " + name );
+                                    if(Objects.equals(name, "泰山管委")){
+                                        postPlayerUrlGW(gridCamera.getId());
                                     }else{
-                                        iv_star.setImageDrawable(getResources().getDrawable(R.drawable.star_un));
+                                        postPlayerUrl(gridCamera.getId());
                                     }
-                                    postStar(false,new PostStar(gridCamera.getId(),gridCamera.getName(),null,gridCamera.getMonitorId()));
-                                }else{
-                                    gridCamera.setStatus(true);
-                                    if(gridCamera.isStatus()){
-                                        iv_star.setImageDrawable(getResources().getDrawable(R.drawable.star_sl));
-                                    }else{
-                                        iv_star.setImageDrawable(getResources().getDrawable(R.drawable.star_un));
-                                    }
-                                    postStar(true,new PostStar(gridCamera.getId(),gridCamera.getName(),null,gridCamera.getMonitorId()));
+
+                                    currentClickItemName = gridCamera.getName();
+                                    currentClickItemId = gridCamera.getDeviceId();//新版 需替换为id
                                 }
-                            }
-                        });
+                            });
 
-                        ll_in.addView(cameraView);
+                            ll_in.addView(cameraView);
+                        }
+
+                        ll_in.setVisibility(View.VISIBLE);
                     }
-                    
-                    ll_in.setVisibility(View.VISIBLE);
                 }
             });
             ll_big.addView(item);
@@ -580,18 +453,39 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         return ll_big;
     }
 
-    private void postStar(boolean selected, PostStar postStar) {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +"resource/api/cameraCollection");
-        params.addHeader("Authorization","bearer " + new DbConfig(getActivity()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        params.setBodyContent(new Gson().toJson(postStar));
-        Log.e(TAG, "onSuccess: star" + params );
-        Log.e(TAG, "onSuccess: star" + new Gson().toJson(postStar) );
-        x.http().request(selected ? HttpMethod.POST : HttpMethod.DELETE, params, new Callback.CommonCallback<String>() {
+    private void postPlayerUrl(String ids) {
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/mediaKit/getStreamAndroidByOut");
+        params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
+        params.addBodyParameter("cameraId",ids);
+        Log.e(TAG, "postPlayerUrl: bingo ids = " + ids );
+        x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: star" + result );
-                Toast.makeText(getActivity(), selected?"收藏成功":"取消成功", Toast.LENGTH_SHORT).show();
+                try {
+                    Log.e(TAG, "onSuccess: bingo postPlayerUrl" + result );
+                    JSONObject jsonObject = new JSONObject(result);
+                    JSONArray data = jsonObject.getJSONArray("data");
+                    if(data.length()!=0){
+                        JSONObject obj = (JSONObject) data.get(0);
+                        String url = obj.getString("url");
+                        if(url!=null && !url.isEmpty()){
+                            if(url.contains("rtmp")){
+                                url = url.replace("rtmp","rtsp").replace("19350","40554");
+                            }
+                            //跳转播放视频流
+                            videoListDialog.dismiss();
+                            if (isAddVideoViewClick) {//直接往点击的视频播放机中添加
+                                addVideoPlayer(url/*,ids*/);
+                            } else {//往列表中排序添加
+                                getVideoPlayerState();
+                                setVideoPlayer(url/*,ids*/);
+                            }
+                        }
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -609,19 +503,23 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
 
             }
         });
-    }
 
-    private void postPlayerUrl(String ids) {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/mediaKit/getLiveUrl");
+    }
+    private void postPlayerUrlGW(String ids) {//管委 type=5
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/HK/previewURLs?app=1");
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        params.addBodyParameter("cameraId",ids);
-        params.addBodyParameter("manufacturer","2");
-        params.addBodyParameter("streamType","2");
-        params.addBodyParameter("protocolType","rtsp");
-        Log.e(TAG, "postPlayerUrl: params = " + params.toString() );
-        x.http().get(params, new Callback.CommonCallback<String>() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("cameraIndexCode",ids);
+            jsonObject.put("expand","streamform=rtp");
+            jsonObject.put("streamType","1");
+            jsonObject.put("app",1);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        params.setBodyContent(jsonObject.toString());
+        Log.e(TAG, "postPlayerUrlGW: bingo jsonObject = " + jsonObject.toString() );
+        x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 try {
@@ -630,15 +528,19 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                     JSONArray data = jsonObject.getJSONArray("data");
                     if(data.length()!=0){
                         JSONObject obj = (JSONObject) data.get(0);
-                        String url = obj.getString("url");
-
-                        //跳转播放视频流
-                        videoListDialog.dismiss();
-                        if (isAddVideoViewClick) {//直接往点击的视频播放机中添加
-                            addVideoPlayer(url);
-                        } else {//往列表中排序添加
-                            getVideoPlayerState();
-                            setVideoPlayer(url);
+                        String url = obj.getString("data");
+                        if(url!=null && !url.isEmpty()){
+                            if(url.contains("rtmp")){
+                                url = url.replace("rtmp","rtsp").replace("19350","40554");
+                            }
+                            //跳转播放视频流
+                            videoListDialog.dismiss();
+                            if (isAddVideoViewClick) {//直接往点击的视频播放机中添加
+                                addVideoPlayer(url/*,ids*/);
+                            } else {//往列表中排序添加
+                                getVideoPlayerState();
+                                setVideoPlayer(url/*,ids*/);
+                            }
                         }
                     }
 
@@ -665,12 +567,12 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
 
     }
 
-    void getGridTreesChildren(String gridId){
+    //获取监控点-摄像头数据
+    void getGridTreesChildren(final String gridId){
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +"resource/api/monitor/getMonitorDetaisByGridAndType");
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         params.addBodyParameter("gridId",gridId);
-        params.addBodyParameter("monitorType","1");
+        //params.addBodyParameter("monitorType","1");
 
         params.setConnectTimeout(10000);
         Log.e(TAG, "listGridNewTrees: ---" + params);
@@ -685,7 +587,7 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                         Intent it = new Intent();
                         it.setAction(gridId);
                         it.putExtra("result",result);
-                        getActivity().sendBroadcast(it);
+                        LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(it);
 
                     }
 
@@ -709,6 +611,7 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
             }
         });
     }
+
 
     private void intiView() {
         addImageView = ((ImageView) getView().findViewById(R.id.add_view));
@@ -798,29 +701,9 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
          * 视频列表dialog
          */
         videoListDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyleLeft);
-        videoListInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_video_list_ios, null);
+        videoListInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_video_list_new, null);
         videoListInflater.setMinimumWidth(100000);
         sv_gridtrees = ((ScrollView) videoListInflater.findViewById(R.id.sv_gridtrees));
-        ll_left = ((LinearLayout) videoListInflater.findViewById(R.id.ll_left));
-        ll_right = ((LinearLayout) videoListInflater.findViewById(R.id.ll_right));
-        tv_left = ((TextView) videoListInflater.findViewById(R.id.tv_left));
-        tv_right = ((TextView) videoListInflater.findViewById(R.id.tv_right));
-        v_left = ((View) videoListInflater.findViewById(R.id.v_left));
-        v_right = ((View) videoListInflater.findViewById(R.id.v_right));
-        RxViewAction.clickNoDouble(ll_left).subscribe(new Action1<Void>() {
-            @Override
-            public void call(Void unused) {
-                tabLeft();
-            }
-        });
-        RxViewAction.clickNoDouble(ll_right).subscribe(new Action1<Void>() {
-            @Override
-            public void call(Void unused) {
-                tabRight();
-            }
-        });
-
-        videoListLayout = ((LinearLayout) videoListInflater.findViewById(R.id.video_list_layout));
         listDialogImage = ((ImageView) videoListInflater.findViewById(R.id.list_dialog_button));
         videoListDialog.setContentView(videoListInflater);
         Window videoListDialogWindow = videoListDialog.getWindow();
@@ -868,40 +751,122 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
     private void initVideoPlayer() {
 
         wlMedia1 = new WlMedia();
+        wlMedia1.setTimeOut(30);
         wlMedia1.setFFOptions("rtsp_transport", "tcp");
         wlMedia1.setFFOptions("fflags", "nobuffer");
+        /*wlMedia1.setFFOptions("probesize", "1024 * 16");
+        wlMedia1.setFFOptions("analyzeduration", "5000");
+        wlMedia1.setFFOptions("skip_loop_filter", "0");
+        wlMedia1.setFFOptions("skip_frame", "0");
+        wlMedia1.setFFOptions("reconnect", "1");
+        wlMedia1.setFFOptions("max_cached_duration", "3000");
+        wlMedia1.setFFOptions("infbuf", "1");
+        wlMedia1.setFFOptions("packet-buffering", "0");*/
+        wlMedia1.setSpeed(1.5);
         video1Player.setWlMedia(wlMedia1);
         wlMedia2 = new WlMedia();
         wlMedia2.setFFOptions("rtsp_transport", "tcp");
         wlMedia2.setFFOptions("fflags", "nobuffer");
+        /*wlMedia2.setFFOptions("probesize", "1024 * 16");
+        wlMedia2.setFFOptions("analyzeduration", "5000");
+        wlMedia2.setFFOptions("skip_loop_filter", "0");
+        wlMedia2.setFFOptions("skip_frame", "0");
+        wlMedia2.setFFOptions("reconnect", "1");
+        wlMedia2.setFFOptions("max_cached_duration", "3000");
+        wlMedia2.setFFOptions("infbuf", "1");
+        wlMedia2.setFFOptions("packet-buffering", "0");*/
+        wlMedia2.setSpeed(1.5);
         video2Player.setWlMedia(wlMedia2);
         wlMedia3 = new WlMedia();
         wlMedia3.setFFOptions("rtsp_transport", "tcp");
         wlMedia3.setFFOptions("fflags", "nobuffer");
+        /*wlMedia3.setFFOptions("probesize", "1024 * 16");
+        wlMedia3.setFFOptions("analyzeduration", "5000");
+        wlMedia3.setFFOptions("skip_loop_filter", "0");
+        wlMedia3.setFFOptions("skip_frame", "0");
+        wlMedia3.setFFOptions("reconnect", "1");
+        wlMedia3.setFFOptions("max_cached_duration", "3000");
+        wlMedia3.setFFOptions("infbuf", "1");
+        wlMedia3.setFFOptions("packet-buffering", "0");*/
+        wlMedia3.setSpeed(1.5);
         video3Player.setWlMedia(wlMedia3);
         wlMedia4 = new WlMedia();
         wlMedia4.setFFOptions("rtsp_transport", "tcp");
         wlMedia4.setFFOptions("fflags", "nobuffer");
+        /*wlMedia4.setFFOptions("probesize", "1024 * 16");
+        wlMedia4.setFFOptions("analyzeduration", "5000");
+        wlMedia4.setFFOptions("skip_loop_filter", "0");
+        wlMedia4.setFFOptions("skip_frame", "0");
+        wlMedia4.setFFOptions("reconnect", "1");
+        wlMedia4.setFFOptions("max_cached_duration", "3000");
+        wlMedia4.setFFOptions("infbuf", "1");
+        wlMedia4.setFFOptions("packet-buffering", "0");*/
+        wlMedia4.setSpeed(1.5);
         video4Player.setWlMedia(wlMedia4);
         wlMedia5 = new WlMedia();
         wlMedia5.setFFOptions("rtsp_transport", "tcp");
         wlMedia5.setFFOptions("fflags", "nobuffer");
+        /*wlMedia5.setFFOptions("probesize", "1024 * 16");
+        wlMedia5.setFFOptions("analyzeduration", "5000");
+        wlMedia5.setFFOptions("skip_loop_filter", "0");
+        wlMedia5.setFFOptions("skip_frame", "0");
+        wlMedia5.setFFOptions("reconnect", "1");
+        wlMedia5.setFFOptions("max_cached_duration", "3000");
+        wlMedia5.setFFOptions("infbuf", "1");
+        wlMedia5.setFFOptions("packet-buffering", "0");*/
+        wlMedia5.setSpeed(1.5);
         video5Player.setWlMedia(wlMedia5);
         wlMedia6 = new WlMedia();
         wlMedia6.setFFOptions("rtsp_transport", "tcp");
         wlMedia6.setFFOptions("fflags", "nobuffer");
+        /*wlMedia6.setFFOptions("probesize", "1024 * 16");
+        wlMedia6.setFFOptions("analyzeduration", "5000");
+        wlMedia6.setFFOptions("skip_loop_filter", "0");
+        wlMedia6.setFFOptions("skip_frame", "0");
+        wlMedia6.setFFOptions("reconnect", "1");
+        wlMedia6.setFFOptions("max_cached_duration", "3000");
+        wlMedia6.setFFOptions("infbuf", "1");
+        wlMedia6.setFFOptions("packet-buffering", "0");*/
+        wlMedia6.setSpeed(1.5);
         video6Player.setWlMedia(wlMedia6);
         wlMedia7 = new WlMedia();
         wlMedia7.setFFOptions("rtsp_transport", "tcp");
         wlMedia7.setFFOptions("fflags", "nobuffer");
+        /*wlMedia7.setFFOptions("probesize", "1024 * 16");
+        wlMedia7.setFFOptions("analyzeduration", "5000");
+        wlMedia7.setFFOptions("skip_loop_filter", "0");
+        wlMedia7.setFFOptions("skip_frame", "0");
+        wlMedia7.setFFOptions("reconnect", "1");
+        wlMedia7.setFFOptions("max_cached_duration", "3000");
+        wlMedia7.setFFOptions("infbuf", "1");
+        wlMedia7.setFFOptions("packet-buffering", "0");*/
+        wlMedia7.setSpeed(1.5);
         video7Player.setWlMedia(wlMedia7);
         wlMedia8 = new WlMedia();
         wlMedia8.setFFOptions("rtsp_transport", "tcp");
         wlMedia8.setFFOptions("fflags", "nobuffer");
+        /*wlMedia8.setFFOptions("probesize", "1024 * 16");
+        wlMedia8.setFFOptions("analyzeduration", "5000");
+        wlMedia8.setFFOptions("skip_loop_filter", "0");
+        wlMedia8.setFFOptions("skip_frame", "0");
+        wlMedia8.setFFOptions("reconnect", "1");
+        wlMedia8.setFFOptions("max_cached_duration", "3000");
+        wlMedia8.setFFOptions("infbuf", "1");
+        wlMedia8.setFFOptions("packet-buffering", "0");*/
+        wlMedia8.setSpeed(1.1);
         video8Player.setWlMedia(wlMedia8);
         wlMedia9 = new WlMedia();
         wlMedia9.setFFOptions("rtsp_transport", "tcp");
         wlMedia9.setFFOptions("fflags", "nobuffer");
+        /*wlMedia9.setFFOptions("probesize", "1024 * 16");
+        wlMedia9.setFFOptions("analyzeduration", "5000");
+        wlMedia9.setFFOptions("skip_loop_filter", "0");
+        wlMedia9.setFFOptions("skip_frame", "0");
+        wlMedia9.setFFOptions("reconnect", "1");
+        wlMedia9.setFFOptions("max_cached_duration", "3000");
+        wlMedia9.setFFOptions("infbuf", "1");
+        wlMedia9.setFFOptions("packet-buffering", "0");*/
+        wlMedia9.setSpeed(1.5);
         video9Player.setWlMedia(wlMedia9);
         video1Player.setOnVideoViewListener(new WlOnVideoViewListener() {
             @Override
@@ -1231,22 +1196,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
     }
 
 
-    void tabLeft(){
-        v_left.setVisibility(View.VISIBLE);
-        v_right.setVisibility(View.INVISIBLE);
-        tv_left.setTextColor(getResources().getColor(R.color.white));
-        tv_right.setTextColor(getResources().getColor(R.color.c3));
-        getDataFromService();
-    }
-
-    void tabRight(){
-        v_right.setVisibility(View.VISIBLE);
-        v_left.setVisibility(View.INVISIBLE);
-        tv_right.setTextColor(getResources().getColor(R.color.white));
-        tv_left.setTextColor(getResources().getColor(R.color.c3));
-        getDataFromServiceStar();
-    }
-
 
     private void bingView() {
         /**
@@ -1290,21 +1239,22 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                         videoListDialog.dismiss();
                     }
                 });
-            yichuButton.setOnTouchListener(buttonListener);
-            zuoshangButton.setOnTouchListener(buttonListener);
-            shangButton.setOnTouchListener(buttonListener);
-            youshangButton.setOnTouchListener(buttonListener);
-            zuoButton.setOnTouchListener(buttonListener);
-            xunhangButton.setOnTouchListener(buttonListener);
-            youButton.setOnTouchListener(buttonListener);
-            zuoxiaButton.setOnTouchListener(buttonListener);
-            xiaButton.setOnTouchListener(buttonListener);
-            youxiaButton.setOnTouchListener(buttonListener);
-            lajinButton.setOnTouchListener(buttonListener);
-            jiepingButton.setOnTouchListener(buttonListener);
-            jujiaoButton.setOnTouchListener(buttonListener);
-            layuanButton.setOnTouchListener(buttonListener);
-            luxiangButton.setOnTouchListener(buttonListener);
+        yichuButton.setOnTouchListener(buttonListener);
+        zuoshangButton.setOnTouchListener(buttonListener);
+        shangButton.setOnTouchListener(buttonListener);
+        youshangButton.setOnTouchListener(buttonListener);
+        zuoButton.setOnTouchListener(buttonListener);
+        xunhangButton.setOnTouchListener(buttonListener);
+        youButton.setOnTouchListener(buttonListener);
+        zuoxiaButton.setOnTouchListener(buttonListener);
+        xiaButton.setOnTouchListener(buttonListener);
+        youxiaButton.setOnTouchListener(buttonListener);
+        lajinButton.setOnTouchListener(buttonListener);
+        jiepingButton.setOnTouchListener(buttonListener);
+        jujiaoButton.setOnTouchListener(buttonListener);
+        layuanButton.setOnTouchListener(buttonListener);
+        luxiangButton.setOnTouchListener(buttonListener);
+
         /**
          * 顶部listdialog弹出的点击事件
          */
@@ -1316,12 +1266,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                         videoListDialog.show();
                     }
                 });
-        /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter.onItemClick(position);
-            }
-        });*/
 
         RxViewAction.clickNoDouble(yiView)
                 .subscribe(new Action1<Void>() {
@@ -1330,7 +1274,7 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                         currentVideo = 1;
                         yiView.setImageResource(R.drawable.ic_one_selected);
                         siView.setImageResource(R.drawable.ic_four);
-                        jiuView.setImageResource(R.drawable.ic_nine);
+                        jiuView.setImageResource(R.drawable.ic_sixteen);
 
                         initVideoView();
                     }
@@ -1343,7 +1287,7 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                         currentVideo = 4;
                         yiView.setImageResource(R.drawable.ic_one);
                         siView.setImageResource(R.drawable.ic_four_selected);
-                        jiuView.setImageResource(R.drawable.ic_nine);
+                        jiuView.setImageResource(R.drawable.ic_sixteen);
                         initVideoView();
                     }
                 });
@@ -1354,7 +1298,7 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                         currentVideo = 9;
                         yiView.setImageResource(R.drawable.ic_one);
                         siView.setImageResource(R.drawable.ic_four);
-                        jiuView.setImageResource(R.drawable.ic_nine_selected);
+                        jiuView.setImageResource(R.drawable.ic_sixteen_selected);
                         initVideoView();
                     }
                 });
@@ -1520,169 +1464,165 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                 });
 
     }
+
     private View.OnTouchListener buttonListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             int action = event.getAction();
-                //1：上，2：下，3：左，4：右，5：左上，6：左下，7：右上，8：右下
-                if (v.getId() == R.id.yichu_button) {
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        yichuButton.setBackgroundResource(R.drawable.ic_button_hover);
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-                        yichuButton.setBackgroundResource(R.drawable.ic_button);
-                        yichuVideo();
-                    }
-                } else if (v.getId() == R.id.zuoshang_button) {       //左上  5
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        moveType = 25;
-                        isStop = false;
-                        moveShexiangtou();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-                        moveType = 25;
-                        isStop = true;
-                        moveShexiangtou();
-                    }
-                } else if (v.getId() == R.id.shang_button) {      //上 1
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        moveType = 21;
-                        isStop = false;
-                        moveShexiangtou();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-                        moveType = 21;
-                        isStop = true;
-                        moveShexiangtou();
-                    }
-                } else if (v.getId() == R.id.youshang_button) {       //右上  7
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        moveType = 26;
-                        isStop = false;
-                        moveShexiangtou();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-                        moveType = 26;
-                        isStop = true;
-                        moveShexiangtou();
-                    }
-                } else if (v.getId() == R.id.zuo_button) {        //左  3
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        moveType = 23;
-                        isStop = false;
-                        moveShexiangtou();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-                        moveType = 23;
-                        isStop = true;
-                        moveShexiangtou();
-                    }
-                } else if (v.getId() == R.id.xunhang_button) {
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-
-                    }
-                } else if (v.getId() == R.id.you_button) {        //右  4
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        moveType = 24;
-                        isStop = false;
-                        moveShexiangtou();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-                        moveType = 24;
-                        isStop = true;
-                        moveShexiangtou();
-                    }
-                } else if (v.getId() == R.id.zuoxia_button) {    //左下  6
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        moveType = 27;
-                        isStop = false;
-                        moveShexiangtou();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-                        moveType = 27;
-                        isStop = true;
-                        moveShexiangtou();
-                    }
-                } else if (v.getId() == R.id.xia_button) {        //下 2
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        moveType = 22;
-                        isStop = false;
-                        moveShexiangtou();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-                        moveType = 22;
-                        isStop = true;
-                        moveShexiangtou();
-                    }
-                } else if (v.getId() == R.id.youxia_button) {        //右下  8
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        moveType = 28;
-                        isStop = false;
-                        moveShexiangtou();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-                        moveType = 28;
-                        isStop = true;
-                        moveShexiangtou();
-                    }
-                }  else if (v.getId() == R.id.jieping_button) {
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-
-                    }
-                } else if (v.getId() == R.id.jujiao_button) {
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-
-                    }
-                } else if (v.getId() == R.id.luxiang_button) {
-                    if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
-                    } else if (action == MotionEvent.ACTION_UP) { // 松开
-
-                    }
+            //1：上，2：下，3：左，4：右，5：左上，6：左下，7：右上，8：右下
+            if (v.getId() == R.id.yichu_button) {
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    yichuButton.setBackgroundResource(R.drawable.ic_button_hover);
+                } else if (action == MotionEvent.ACTION_UP) { // 松开
+                    yichuButton.setBackgroundResource(R.drawable.ic_button);
+                    yichuVideo();
                 }
-                    if (v.getId() == R.id.lajin_button) {
-                        if (action == MotionEvent.ACTION_DOWN) { // 按下
-                            moveType = 11;
-                            isStop = false;
-                            moveShexiangtou();
-                        } else if (action == MotionEvent.ACTION_UP) { // 松开
-                            moveType = 11;
-                            isStop = true;
-                            moveShexiangtou();
-                        }
-                } else if (v.getId() == R.id.layuan_button) {
-                        if (action == MotionEvent.ACTION_DOWN) { // 按下
-                            moveType = 12;
-                            isStop = false;
-                            moveShexiangtou();
-                        } else if (action == MotionEvent.ACTION_UP) { // 松开
-                            moveType = 12;
-                            isStop = true;
-                            moveShexiangtou();
-                        }
-                    }
+            }else if (v.getId() == R.id.zuoshang_button){       //左上  5
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    moveType = 5;
+                    isStop = false;
+                    moveShexiangtou();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+                    moveType = 5;
+                    isStop = true;
+                    moveShexiangtou();
+                }
+            }else if (v.getId() == R.id.shang_button){      //上 1
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    moveType = 1;
+                    isStop = false;
+                    moveShexiangtou();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+                    moveType = 1;
+                    isStop = true;
+                    moveShexiangtou();
+                }
+            }else if (v.getId() == R.id.youshang_button){       //右上  7
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    moveType = 7;
+                    isStop = false;
+                    moveShexiangtou();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+                    moveType = 7;
+                    isStop = true;
+                    moveShexiangtou();
+                }
+            }else if (v.getId() == R.id.zuo_button){        //左  3
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    moveType = 3;
+                    isStop = false;
+                    moveShexiangtou();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+                    moveType = 3;
+                    isStop = true;
+                    moveShexiangtou();
+                }
+            }else if (v.getId() == R.id.xunhang_button){
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+
+                }
+            }else if (v.getId() == R.id.you_button){        //右  4
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    moveType = 4;
+                    isStop = false;
+                    moveShexiangtou();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+                    moveType = 4;
+                    isStop = true;
+                    moveShexiangtou();
+                }
+            }else if (v.getId() == R.id.zuoxia_button){    //左下  6
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    moveType = 6;
+                    isStop = false;
+                    moveShexiangtou();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+                    moveType = 6;
+                    isStop = true;
+                    moveShexiangtou();
+                }
+            }else if (v.getId() == R.id.xia_button){        //下 2
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    moveType = 2;
+                    isStop = false;
+                    moveShexiangtou();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+                    moveType = 2;
+                    isStop = true;
+                    moveShexiangtou();
+                }
+            }else if (v.getId() == R.id.youxia_button){        //右下  8
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    moveType = 8;
+                    isStop = false;
+                    moveShexiangtou();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+                    moveType = 8;
+                    isStop = true;
+                    moveShexiangtou();
+                }
+            }else if (v.getId() == R.id.lajin_button){      //拉近
+                if (action == MotionEvent.ACTION_DOWN) {
+                    lajinButton.setBackgroundResource(R.drawable.ic_button_hover);
+                    moveType = 1;
+                    isStop = false;
+                    lajilayuanShexiangtou();
+                }else if (action == MotionEvent.ACTION_UP) {
+                    lajinButton.setBackgroundResource(R.drawable.ic_button);
+                    moveType = 1;
+                    isStop = true;
+                    lajilayuanShexiangtou();
+                }
+            }else if (v.getId() == R.id.layuan_button){ //拉远
+                if (action == MotionEvent.ACTION_DOWN) {
+                    layuanButton.setBackgroundResource(R.drawable.ic_button_hover);
+                    moveType = 4;
+                    isStop = false;
+                    lajilayuanShexiangtou();
+                }else if (action == MotionEvent.ACTION_UP) {
+                    layuanButton.setBackgroundResource(R.drawable.ic_button);
+                    moveType = 4;
+                    isStop = true;
+                    lajilayuanShexiangtou();
+                }
+            }else if (v.getId() == R.id.jieping_button){
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+
+                }
+            }else if (v.getId() == R.id.jujiao_button){
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+
+                }
+            }else if (v.getId() == R.id.luxiang_button){
+                if (action == MotionEvent.ACTION_DOWN) { // 按下
+                    Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
+                }else if (action == MotionEvent.ACTION_UP) { // 松开
+
+                }
+            }
+
             return false;
         }
     };
 
     private void moveShexiangtou() {
-        if(moveType == 11 || moveType == 12){
-            if(!rootCtrlFocus){
-                Toast.makeText(getActivity(), "您的账号暂无缩放权限", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }else{
-            if(!rootCtrlDirection){
-                Toast.makeText(getActivity(), "您的账号暂无控制权限", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        Log.e(TAG, "moveShexiangtou: " + rootCtrlDirection );
+        if(!rootCtrlDirection){
+            Toast.makeText(getActivity(), "您的账号暂无控制权限", Toast.LENGTH_SHORT).show();
+            return;
         }
         String id = "";
-        String channelId = "";
         boolean isHasVideo = false;
         for (int i = 0; i < videoIdList.size(); i++) {
             if (videoIdList.get(i).getVideoPlayer() == currentChooseVideo) {
-                Log.e(TAG, "moveShexiangtou: for" + videoIdList.get(i).toString() );
                 isHasVideo = true;
                 id = videoIdList.get(i).getVideoId();
-                channelId = videoIdList.get(i).getMonitorId();
             }
         }
         if (!isHasVideo){
@@ -1691,20 +1631,25 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         }
 
         JSONObject jsonObject = new JSONObject();
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/liveVideo/control");
-        params.addBodyParameter("monitorId",id);
-        params.addBodyParameter("channelId",channelId);
-        params.addBodyParameter("speed","5");
-        params.addBodyParameter("stop",isStop?"1":"0");
-        params.addBodyParameter("controlType",moveType+"");
-        params.addBodyParameter("groupId",currentGroupId);
+        try {
+            jsonObject.put("camera_id",id);
+            jsonObject.put("direction",moveType);
+            jsonObject.put("step",5);
+            jsonObject.put("stop",isStop);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/aqishi/ptzCmd");
+        params.addParameter("token",aqishiToken);
+
+        params.setBodyContent(jsonObject.toString());
+
         params.setConnectTimeout(10000);
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         Log.e(TAG, "moveShexiangtou: " + params);
         Log.e(TAG, "moveShexiangtou: " + jsonObject.toString());
-        x.http().get(params, new Callback.CommonCallback<String>() {
+        x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 Log.e(TAG, "moveShexiangtou: " + result);
@@ -1725,7 +1670,67 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
             public void onFinished() {
             }
         });
-        steptype=0;
+    }
+
+    private void lajilayuanShexiangtou() {
+        Log.e(TAG, "lajilayuanShexiangtou: " + rootCtrlFocus );
+        if(!rootCtrlFocus){
+            Toast.makeText(getActivity(), "您的账号暂无缩放权限", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String id = "";
+        boolean isHasVideo = false;
+        for (int i = 0; i < videoIdList.size(); i++) {
+            if (videoIdList.get(i).getVideoPlayer() == currentChooseVideo) {
+                isHasVideo = true;
+                id = videoIdList.get(i).getVideoId();
+            }
+        }
+        if (!isHasVideo){
+            Toast.makeText(getContext(), "当前控制器暂无摄像头", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("camera_id",id);
+            jsonObject.put("operation",moveType);
+            jsonObject.put("step",5);
+            jsonObject.put("stop",isStop);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/aqishi/zoomCmd");
+        params.addParameter("token",aqishiToken);
+
+        params.setBodyContent(jsonObject.toString());
+
+        params.setConnectTimeout(10000);
+        params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
+
+        Log.e(TAG, "moveShexiangtou: " + params);
+        Log.e(TAG, "moveShexiangtou: " + jsonObject.toString());
+        x.http().post(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "moveShexiangtou: " + result);
+
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+            }
+        });
     }
 
     /**
@@ -1940,7 +1945,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         params.setConnectTimeout(10000);
         Log.e(TAG, "getTokenFromService: " + params);
         params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -1972,136 +1976,13 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         });
     }
 
-    /**
-     * 从阿启视接口获取树
-     */
-    private void getTreeFromAQiShi() {
-
-        RequestParams params = new RequestParams("http://111.41.48.160:9800/bserver/api/v1/organization/all");
-        params.addParameter("token", token);
-        params.addParameter("org_code", "");
-        params.addParameter("search_type", 0);
-        params.addParameter("unit_type", "0,1");
-        params.addParameter("category", 0);
-
-        params.setConnectTimeout(10000);
-        Log.e(TAG, "getTreeFromAQiShi: ---" + params);
-        x.http().get(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                try {
-                    JSONObject jsonObject = new JSONObject(result);
-                    JSONArray data = jsonObject.getJSONArray("data");
-                    organizationList.clear();
-                    Gson gson = new Gson();
-                    organizationList = gson.fromJson(String.valueOf(data), new TypeToken<List<Organization>>() {
-                    }.getType());
-                    getData();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-                progressDialog.dismiss();
-            }
-        });
-    }
-
-    private void getData() {
-
-        Log.e(TAG, "getData: size==" + organizationList.size());
-
-
-        for (int i = 0; i < organizationList.size(); i++) {
-            if (organizationList.get(i).getDevice_type().equals("0")) {  //文件夹
-                if (organizationList.get(i).getOrg_code().isEmpty()) {   //最顶层
-                    Log.e(TAG, "getData: 0");
-                    num = num + 1;
-                    pointList.add(new TreePoint(organizationList.get(i).getId(), organizationList.get(i).getName(), "0", "0", num, true));
-
-                } else {
-                    Log.e(TAG, "getData: 1");
-                    num = num + 1;
-
-                    pointList.add(new TreePoint(organizationList.get(i).getId(), organizationList.get(i).getName(), organizationList.get(i).getOrg_code(), "0", num));
-
-                }
-
-            }
-        }
-
-        for (int i = 0; i < organizationList.size(); i++) {
-            if (!organizationList.get(i).getDevice_type().equals("0")) {  //不是文件夹
-                Log.e(TAG, "getData: aa");
-                num = num + 1;
-                pointList.add(new TreePoint(organizationList.get(i).getId(), organizationList.get(i).getName(), organizationList.get(i).getOrg_code(), "1", num));
-            }
-        }
-
-
-        //打乱集合中的数据
-        Collections.shuffle(pointList);
-        //对集合中的数据重新排序
-        updateData();
-
-    }
-
-    private void updateData() {
-        Log.e(TAG, "updateData: bbb");
-        for (TreePoint treePoint : pointList) {
-            pointMap.put(treePoint.getID(), treePoint);
-        }
-        Collections.sort(pointList, new Comparator<TreePoint>() {
-            @Override
-            public int compare(TreePoint lhs, TreePoint rhs) {
-                int llevel = TreeUtils.getLevel(lhs, pointMap);
-                int rlevel = TreeUtils.getLevel(rhs, pointMap);
-                if (llevel == rlevel) {
-                    if (lhs.getPARENTID().equals(rhs.getPARENTID())) {  //左边小
-                        return lhs.getDISPLAY_ORDER() > rhs.getDISPLAY_ORDER() ? 1 : -1;
-                    } else {  //如果父辈id不相等
-                        //同一级别，不同父辈
-                        TreePoint ltreePoint = TreeUtils.getTreePoint(lhs.getPARENTID(), pointMap);
-                        TreePoint rtreePoint = TreeUtils.getTreePoint(rhs.getPARENTID(), pointMap);
-                        return compare(ltreePoint, rtreePoint);  //父辈
-                    }
-                } else {  //不同级别
-                    if (llevel > rlevel) {   //左边级别大       左边小
-                        if (lhs.getPARENTID().equals(rhs.getID())) {
-                            return 1;
-                        } else {
-                            TreePoint lreasonTreePoint = TreeUtils.getTreePoint(lhs.getPARENTID(), pointMap);
-                            return compare(lreasonTreePoint, rhs);
-                        }
-                    } else {   //右边级别大   右边小
-                        if (rhs.getPARENTID().equals(lhs.getID())) {
-                            return -1;
-                        }
-                        TreePoint rreasonTreePoint = TreeUtils.getTreePoint(rhs.getPARENTID(), pointMap);
-                        return compare(lhs, rreasonTreePoint);
-                    }
-                }
-            }
-        });
-        adapter.notifyDataSetChanged();
-    }
-
 
     @Override
     public void onPlayerItemClickListener(String id, String parentid, String name, String rtspUrl) {
 
+        currentClickItemName = name;
+        currentClickItemId = id;
+        //getPlayUrlFromHaohai(id);
     }
 
     /**
@@ -2111,141 +1992,11 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
      */
     @Override
     public void onPlayerItemClickListener(String id,String name) {
-       /* currentClickItemName = name;
+        currentClickItemName = name;
         currentClickItemId = id;
-  //      getPlayUrlFromAQISHI(id);
-        getPlayUrlFromHaohai(id);*/
+        //getPlayUrlFromHaohai(id);
 
 
-    }
-
-    /**
-     * 从浩海获取视频流
-     * @param id
-     */
-    private void getPlayUrlFromHaohai(String id) {
-        showDialogProgress(progressDialog, "视频加载中...");
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("id",id);
-            jsonObject.put("enumCode",10002);
-            jsonObject.put("isAndroid","1");
-            jsonObject.put("monitoringStreamType","101");     //获取rtsp流
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/guide/getVideo");
-        params.setBodyContent(jsonObject.toString());
-        params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-
-        Log.e(TAG, "getTreeFromAQiShiUrl: ---" + params);
-        Log.e(TAG, "getTreeFromAQiShiUrl: ---" + jsonObject.toString());
-        x.http().post(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: " + result);
-                try {
-                    JSONObject jsonObject = new JSONObject(result);
-                    if (jsonObject.getString("code").equals("200")){
-                        String playerUrl = "";
-                        try {
-                            playerUrl = jsonObject.getJSONArray("data").getJSONObject(0).getJSONObject("LiveQing").getJSONObject("Body").getString("URL");
-                        }catch (Exception e){
-                            playerUrl = jsonObject.getJSONArray("data").getJSONObject(0).getJSONObject("data").getString("url");
-                        }
-
-
-
-
-                        Log.e(TAG, "onSuccess: " +playerUrl);
-                        //  String playerUrl = jsonObject.getString("data");
-                        videoListDialog.dismiss();
-                        if (isAddVideoViewClick) {       //直接往点击的视频播放机中添加
-                            addVideoPlayer(playerUrl);
-                        } else {             //往列表中排序添加
-                            getVideoPlayerState();
-                            setVideoPlayer(playerUrl);
-                        }
-                    }else {
-                        Toast.makeText(getContext(), "当前设备不在线", Toast.LENGTH_SHORT).show();
-                    }
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Toast.makeText(getContext(), "暂无播放源", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-                progressDialog.dismiss();
-            }
-        });
-    }
-
-    /**
-     * 阿奇视获取视频流
-     * @param id
-     */
-    private void getPlayUrlFromAQISHI(String id) {
-        showDialogProgress(progressDialog, "视频加载中...");
-        RequestParams params = new RequestParams("http://111.41.48.160:9800/bserver/api/v1/device/video/preview");
-        params.addParameter("token", token);
-        params.addParameter("camera_id", id);
-        params.addParameter("stream_type", 0);
-        params.addParameter("stream_mode", 2);
-        params.addParameter("is_local", 1);
-
-        params.setConnectTimeout(10000);
-        Log.e(TAG, "getTreeFromAQiShiUrl: ---" + params);
-        x.http().get(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: " + result);
-                try {
-                    JSONObject jsonObject = new JSONObject(result);
-                    String playerUrl = jsonObject.getString("data");
-                    videoListDialog.dismiss();
-                    if (isAddVideoViewClick) {       //直接往点击的视频播放机中添加
-                        addVideoPlayer(playerUrl);
-                    } else {             //往列表中排序添加
-                        getVideoPlayerState();
-                        setVideoPlayer(playerUrl);
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Toast.makeText(getContext(), "暂无播放源", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-                progressDialog.dismiss();
-            }
-        });
     }
 
     /**
@@ -2254,74 +2005,19 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
      * @param playerUrl
      */
     private void addVideoPlayer(String playerUrl) {
-
-        if (currentChooseVideo == 1) {
-            video1AddView.setVisibility(View.GONE);
-            video1Player.setVisibility(View.VISIBLE);
-            wlMedia1.setSource(playerUrl);
-            wlMedia1.prepared();
-            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,1,currentChannelId));
-        } else if (currentChooseVideo == 2) {
-            video2AddView.setVisibility(View.GONE);
-            video2Player.setVisibility(View.VISIBLE);
-            wlMedia2.setSource(playerUrl);
-            wlMedia2.prepared();
-            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,2,currentChannelId));
-        } else if (currentChooseVideo == 3) {
-            video3AddView.setVisibility(View.GONE);
-            video3Player.setVisibility(View.VISIBLE);
-            wlMedia3.setSource(playerUrl);
-            wlMedia3.prepared();
-            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,3,currentChannelId));
-        } else if (currentChooseVideo == 4) {
-            video4AddView.setVisibility(View.GONE);
-            video4Player.setVisibility(View.VISIBLE);
-            wlMedia4.setSource(playerUrl);
-            wlMedia4.prepared();
-            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,4,currentChannelId));
-        } else if (currentChooseVideo == 5) {
-            video5AddView.setVisibility(View.GONE);
-            video5Player.setVisibility(View.VISIBLE);
-            wlMedia5.setSource(playerUrl);
-            wlMedia5.prepared();
-            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,5,currentChannelId));
-        } else if (currentChooseVideo == 6) {
-            video6AddView.setVisibility(View.GONE);
-            video6Player.setVisibility(View.VISIBLE);
-            wlMedia6.setSource(playerUrl);
-            wlMedia6.prepared();
-            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,6,currentChannelId));
-        } else if (currentChooseVideo == 7) {
-            video7AddView.setVisibility(View.GONE);
-            video7Player.setVisibility(View.VISIBLE);
-            wlMedia7.setSource(playerUrl);
-            wlMedia7.prepared();
-            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,7,currentChannelId));
-        } else if (currentChooseVideo == 8) {
-            video8AddView.setVisibility(View.GONE);
-            video8Player.setVisibility(View.VISIBLE);
-            wlMedia8.setSource(playerUrl);
-            wlMedia8.prepared();
-            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,8,currentChannelId));
-        } else if (currentChooseVideo == 9) {
-            video9AddView.setVisibility(View.GONE);
-            video9Player.setVisibility(View.VISIBLE);
-            wlMedia9.setSource(playerUrl);
-            wlMedia9.prepared();
-            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,9,currentChannelId));
-        }
+        Log.e(TAG, "addVideoPlayer: qc "  );
         wlMedia1.setOnMediaInfoListener(new WlOnMediaInfoListener() {
             @Override
             public void onPrepared() {
                 //异步准备好后开始播放
                 wlMedia1.start();
-                Log.e(TAG, "onPrepared: 11111");
+                Log.e(TAG, "onPrepared: qc ");
             }
 
             @Override
             public void onError(int code, String msg) {
                 //错误回调，主要用于查看错误信息
-                Log.e(TAG, "onError: "+msg+"+"+code);
+                Log.e(TAG, "onError: qc "+msg+"+"+code);
             }
 
             @Override
@@ -2337,20 +2033,24 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
             @Override
             public void onTimeInfo(double currentTime, double bufferTime) {
                 //时间回调，当前时间和缓冲时间
+                Log.e(TAG, "onTimeInfo: qc " );
             }
 
             @Override
             public void onSeekFinish() {
                 //seek完成后回调，可用于类似iptv这种快进快退
+                Log.e(TAG, "onSeekFinish: qc " );
             }
 
             @Override
             public void onLoopPlay(int loopCount) {
                 //循环播放此时回调
+                Log.e(TAG, "onLoopPlay: qc " );
             }
 
             @Override
             public void onLoad(boolean load) {
+                Log.e(TAG, "onLoad: qc " + load );
                 //加载状态回调
                 if(load)
                 {
@@ -2363,19 +2063,77 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
 
             @Override
             public byte[] decryptBuffer(byte[] encryptBuffer) {
+                Log.e(TAG, "decryptBuffer: qc " );
                 return new byte[0];
             }
 
             @Override
             public byte[] readBuffer(int read_size) {
+                Log.e(TAG, "readBuffer: qc " );
                 return new byte[0];
             }
 
             @Override
             public void onPause(boolean pause) {
                 //暂停回调
+                Log.e(TAG, "onPause: qc " );
             }
         });
+        if (currentChooseVideo == 1) {
+            video1AddView.setVisibility(View.GONE);
+            video1Player.setVisibility(View.VISIBLE);
+            wlMedia1.setSource(playerUrl);
+            wlMedia1.prepared();
+            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,1));
+        } else if (currentChooseVideo == 2) {
+            video2AddView.setVisibility(View.GONE);
+            video2Player.setVisibility(View.VISIBLE);
+            wlMedia2.setSource(playerUrl);
+            wlMedia2.prepared();
+            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,2));
+        } else if (currentChooseVideo == 3) {
+            video3AddView.setVisibility(View.GONE);
+            video3Player.setVisibility(View.VISIBLE);
+            wlMedia3.setSource(playerUrl);
+            wlMedia3.prepared();
+            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,3));
+        } else if (currentChooseVideo == 4) {
+            video4AddView.setVisibility(View.GONE);
+            video4Player.setVisibility(View.VISIBLE);
+            wlMedia4.setSource(playerUrl);
+            wlMedia4.prepared();
+            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,4));
+        } else if (currentChooseVideo == 5) {
+            video5AddView.setVisibility(View.GONE);
+            video5Player.setVisibility(View.VISIBLE);
+            wlMedia5.setSource(playerUrl);
+            wlMedia5.prepared();
+            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,5));
+        } else if (currentChooseVideo == 6) {
+            video6AddView.setVisibility(View.GONE);
+            video6Player.setVisibility(View.VISIBLE);
+            wlMedia6.setSource(playerUrl);
+            wlMedia6.prepared();
+            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,6));
+        } else if (currentChooseVideo == 7) {
+            video7AddView.setVisibility(View.GONE);
+            video7Player.setVisibility(View.VISIBLE);
+            wlMedia7.setSource(playerUrl);
+            wlMedia7.prepared();
+            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,7));
+        } else if (currentChooseVideo == 8) {
+            video8AddView.setVisibility(View.GONE);
+            video8Player.setVisibility(View.VISIBLE);
+            wlMedia8.setSource(playerUrl);
+            wlMedia8.prepared();
+            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,8));
+        } else if (currentChooseVideo == 9) {
+            video9AddView.setVisibility(View.GONE);
+            video9Player.setVisibility(View.VISIBLE);
+            wlMedia9.setSource(playerUrl);
+            wlMedia9.prepared();
+            videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,9));
+        }
         wlMedia2.setOnMediaInfoListener(new WlOnMediaInfoListener() {
             @Override
             public void onPrepared() {
@@ -2903,7 +2661,7 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                 wlMedia1.prepared();
                 video1Player.setVisibility(View.VISIBLE);
                 video1AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,1,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,1));
             } else {
                 Toast.makeText(getContext(), "目前没有闲置播放器", Toast.LENGTH_SHORT).show();
             }
@@ -2913,25 +2671,25 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                 wlMedia1.prepared();
                 video1Player.setVisibility(View.VISIBLE);
                 video1AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,1,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,1));
             } else if (!currentVideo2PlayerState) {
                 wlMedia2.setSource(playerUrl);
                 wlMedia2.prepared();
                 video2Player.setVisibility(View.VISIBLE);
                 video2AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,2,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,2));
             } else if (!currentVideo4PlayerState) {
                 wlMedia4.setSource(playerUrl);
                 wlMedia4.prepared();
                 video4Player.setVisibility(View.VISIBLE);
                 video4AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,4,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,4));
             } else if (!currentVideo5PlayerState) {
                 wlMedia5.setSource(playerUrl);
                 wlMedia5.prepared();
                 video5Player.setVisibility(View.VISIBLE);
                 video5AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,5,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,5));
             } else {
                 Toast.makeText(getContext(), "目前没有闲置播放器", Toast.LENGTH_SHORT).show();
             }
@@ -2941,55 +2699,55 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                 wlMedia1.prepared();
                 video1Player.setVisibility(View.VISIBLE);
                 video1AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,1,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,1));
             } else if (!currentVideo2PlayerState) {
                 wlMedia2.setSource(playerUrl);
                 wlMedia2.prepared();
                 video2Player.setVisibility(View.VISIBLE);
                 video2AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,2,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,2));
             } else if (!currentVideo3PlayerState) {
                 wlMedia3.setSource(playerUrl);
                 wlMedia3.prepared();
                 video3Player.setVisibility(View.VISIBLE);
                 video3AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,3,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,3));
             } else if (!currentVideo4PlayerState) {
                 wlMedia4.setSource(playerUrl);
                 wlMedia4.prepared();
                 video4Player.setVisibility(View.VISIBLE);
                 video4AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,4,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,4));
             } else if (!currentVideo5PlayerState) {
                 wlMedia5.setSource(playerUrl);
                 wlMedia5.prepared();
                 video5Player.setVisibility(View.VISIBLE);
                 video5AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,5,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,5));
             } else if (!currentVideo6PlayerState) {
                 wlMedia6.setSource(playerUrl);
                 wlMedia6.prepared();
                 video6Player.setVisibility(View.VISIBLE);
                 video6AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,6,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,6));
             } else if (!currentVideo7PlayerState) {
                 wlMedia7.setSource(playerUrl);
                 wlMedia7.prepared();
                 video7Player.setVisibility(View.VISIBLE);
                 video7AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,7,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,7));
             } else if (!currentVideo8PlayerState) {
                 wlMedia8.setSource(playerUrl);
                 wlMedia8.prepared();
                 video8Player.setVisibility(View.VISIBLE);
                 video8AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,8,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,8));
             } else if (!currentVideo9PlayerState) {
                 wlMedia9.setSource(playerUrl);
                 wlMedia9.prepared();
                 video9Player.setVisibility(View.VISIBLE);
                 video9AddView.setVisibility(View.GONE);
-                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,9,currentChannelId));
+                videoIdList.add(new VideoId(currentClickItemId,currentClickItemName,9));
             } else {
                 Toast.makeText(getContext(), "目前没有闲置播放器", Toast.LENGTH_SHORT).show();
             }
@@ -3495,6 +3253,15 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
     @Override
     public void onResume() {
         super.onResume();
+        wlMedia1.prepared();
+        wlMedia2.prepared();
+        wlMedia3.prepared();
+        wlMedia4.prepared();
+        wlMedia5.prepared();
+        wlMedia6.prepared();
+        wlMedia7.prepared();
+        wlMedia8.prepared();
+        wlMedia9.prepared();
         getVideoPlayerState();
 
         getView().setFocusableInTouchMode(true);
@@ -3502,6 +3269,51 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         getView().setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_BACK){
+//                    if (video1Player.isIfCurrentIsFullscreen()){        //判断是否是全屏显示
+//
+//                        video1Player.clearFullscreenLayout();
+//                        return true;
+//                    }
+//                    if (video1Player.isIfCurrentIsFullscreen()){        //判断是否是全屏显示
+//                        video1Player.clearFullscreenLayout();
+//                        return true;
+//                    }
+//                    if (video2Player.isIfCurrentIsFullscreen()){        //判断是否是全屏显示
+//                        video2Player.clearFullscreenLayout();
+//                        return true;
+//                    }
+//                    if (video3Player.isIfCurrentIsFullscreen()){        //判断是否是全屏显示
+//                        video3Player.clearFullscreenLayout();
+//                        return true;
+//                    }
+//                    if (video4Player.isIfCurrentIsFullscreen()){        //判断是否是全屏显示
+//                        video4Player.clearFullscreenLayout();
+//                        return true;
+//                    }
+//                    if (video5Player.isIfCurrentIsFullscreen()){        //判断是否是全屏显示
+//                        video5Player.clearFullscreenLayout();
+//                        return true;
+//                    }
+//                    if (video6Player.isIfCurrentIsFullscreen()){        //判断是否是全屏显示
+//                        video6Player.clearFullscreenLayout();
+//                        return true;
+//                    }
+//                    if (video7Player.isIfCurrentIsFullscreen()){        //判断是否是全屏显示
+//                        video7Player.clearFullscreenLayout();
+//                        return true;
+//                    }
+//                    if (video8Player.isIfCurrentIsFullscreen()){        //判断是否是全屏显示
+//                        video8Player.clearFullscreenLayout();
+//                        return true;
+//                    }
+//                    if (video9Player.isIfCurrentIsFullscreen()){        //判断是否是全屏显示
+//                        video9Player.clearFullscreenLayout();
+//                        return true;
+//                    }
+
+                    return false;
+                }
                 return false;
             }
         });
@@ -3552,35 +3364,18 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         public void onReceive(Context context, Intent intent) {
 
             String videoId = intent.getStringExtra("id");
-            String channelId = intent.getStringExtra("channelId");
-            String monitorId = intent.getStringExtra("monitorId");
-            String groupId = intent.getStringExtra("groupId");
-            Log.i("videoOnReceive: ", videoId);
-            currentClickItemId = monitorId;
-            currentClickMonitorId = monitorId;
-            currentChannelId = channelId;
-            currentGroupId = parseGroupId(groupId);
+            String deviceId = intent.getStringExtra("deviceId");
+            Log.i("videoonReceive: ", videoId);
             postPlayerUrl(videoId);
             currentClickItemName="监控点视频";
+            currentClickItemId = deviceId;//新版 需替换为videoId
         }
-    }
-
-    private String parseGroupId(String groupId) {
-        String id = groupId;
-        if(groupId!=null && groupId.length()>9){
-            id = groupId.substring(0,9);
-        }
-        return id;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        try{
-            getActivity().unregisterReceiver(changeTabReceiver);
-        }catch(Exception e){
-
-        }
+        getActivity().unregisterReceiver(changeTabReceiver);
     }
 }
