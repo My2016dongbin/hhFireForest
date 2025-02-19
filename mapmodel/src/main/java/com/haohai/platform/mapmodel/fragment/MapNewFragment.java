@@ -302,11 +302,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     private TextView gaojiEndTimeText;
     private TextView chongzhiButton;
     private TextView findButton;
-    private Dialog resourceinfoOtherDialog;
-    private View resourceInflaterOther;
-    private TextView resourcenameviewOther;
-    private TextView resoucedizhiviewOther;
-    private TextView resourcejingweiduviewOther;
     private StringBuffer date;
     private StringBuffer endDate;
     private int year;
@@ -663,11 +658,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     public boolean onMarkerClick(Marker marker) {
                         Bundle extraInfo = marker.getExtraInfo();
                         String id = extraInfo.getString("id");
-                        String address = extraInfo.getString("address");
-                        String name = extraInfo.getString("name");
                         int type = extraInfo.getInt("type", 0);
-                        double latitude = marker.getPosition().latitude;
-                        double longitude = marker.getPosition().longitude;
                 Log.e(TAG, "onMarkerClick:id " + id);
                 Log.e(TAG, "onMarkerClick:getId " + marker.getId());
                 Log.e(TAG, "onMarkerClick:getTitle " + marker.getTitle());
@@ -696,18 +687,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
                     getinfofromid(id);
                     resourceinfoDialog.show();
-
-                } else if (type == RESOURCE_OTHER) {
-
-                    com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                            marker.getPosition().latitude, marker.getPosition().longitude);
-                    MapStatus.Builder builder = new MapStatus.Builder();
-                    builder.target(ll).zoom(15);
-                    mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-                    resourcenameviewOther.setText(name);
-                    resourcejingweiduviewOther.setText(parse9(longitude+"")+","+parse9(latitude+""));
-                    resoucedizhiviewOther.setText(address);
-                    resourceinfoOtherDialog.show();
 
                 } else if (type == WEI_XING) {
                     for (int i = 0; i < weixingModelList.size(); i++) {
@@ -820,7 +799,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     @Override
                     public void call(Void aVoid) {
                         ArrayList<String> picList = new ArrayList<>();
-                        picList.add(currentOneBodyFire.getPicPath1()!=null?currentOneBodyFire.getPicPath1().replace("172.17.221.115","1.181.45.82"):"");
+                        picList.add(currentOneBodyFire.getPicPath1().replace("10.10.2.26","218.201.180.118"));
                         ImagPagerUtil imagPagerUtil = new ImagPagerUtil(getActivity(), picList);
                         imagPagerUtil.setContentText("");
                         imagPagerUtil.show();
@@ -834,7 +813,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     @Override
                     public void call(Void aVoid) {
                         ArrayList<String> picList = new ArrayList<>();
-                        picList.add(currentOneBodyFire.getPicPath2()!=null?currentOneBodyFire.getPicPath2().replace("172.17.221.115","1.181.45.82"):"");
+                        picList.add(currentOneBodyFire.getPicPath2().replace("10.10.2.26","218.201.180.118"));
                         ImagPagerUtil imagPagerUtil = new ImagPagerUtil(getActivity(), picList);
                         imagPagerUtil.setContentText("");
                         imagPagerUtil.show();
@@ -1454,16 +1433,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     }
 
 
-    private String parse9(String str) {
-        if(str==null){
-            return "";
-        }
-        if(str.length()<9){
-            return str;
-        }
-        return str.substring(0,9);
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void initView() {
         orderWarnImageView = ((ImageView) getView().findViewById(R.id.order_warn_image));
@@ -1477,7 +1446,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         mBaiduMap.showMapPoi(true);
         //设置最大最小缩放等级
         mBaiduMap.setMaxAndMinZoomLevel(16, 5);
-        flyBaiduMapZoom(50.733786,123.412188,10);//阿里河
+        flyBaiduMapZoom(40.007734,124.182751,10);//丹东
 
         //定位初始化
         mLocationClient = new LocationClient(getContext());
@@ -1801,22 +1770,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         WindowManager.LayoutParams resourceLpFire = resourceDialogWindow.getAttributes();
         resourceDialogWindow.setAttributes(resourceLpFire);
         resourceinfoDialog.setCanceledOnTouchOutside(true);
-        /**
-         *  其它类型资源点详细信息
-         */
-        resourceinfoOtherDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyle);
-        resourceInflaterOther = LayoutInflater.from(getContext()).inflate(R.layout.dialog_resource_info_other, null);
-        resourceInflaterOther.setMinimumWidth(10000);
-        resourcenameviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resourcename_view));
-        resoucedizhiviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resoucedizhi_view));
-        resourcejingweiduviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resourcejingweidu_view));
-
-        resourceinfoOtherDialog.setContentView(resourceInflaterOther);
-        Window resourceDialogWindowOther = resourceinfoOtherDialog.getWindow();
-        resourceDialogWindowOther.setGravity(Gravity.BOTTOM);
-        WindowManager.LayoutParams resourceLpFireOther = resourceDialogWindowOther.getAttributes();
-        resourceDialogWindowOther.setAttributes(resourceLpFireOther);
-        resourceinfoOtherDialog.setCanceledOnTouchOutside(true);
         /** 高级查询
          */
         gaojiDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyle);
@@ -1900,7 +1853,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     /**
      * 绘制区域边界
      */
-    private void initQuyuBianjie() {
+    private void initQuyuBianjieOld() {
         //网格数据json解析
         try {
             JSONObject jsonObject = new JSONObject(new GetJsonDataUtil().getJson(getActivity(),"xianjie.json"));
@@ -1930,13 +1883,13 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     /**
      * 绘制区域边界
      */
-    private void initQuyuBianjieOld() {
+    private void initQuyuBianjie() {
         if(singleTag){
             return;
         }
         singleTag = true;
         DistrictSearchOption districtSearchOption = new DistrictSearchOption();
-        districtSearchOption.cityName("鄂伦春自治旗");//检索城市名称
+        districtSearchOption.cityName("丹东市");//检索城市名称
         mDistrictSearch.searchDistrict(districtSearchOption);//请求行政区数据
 
     }
@@ -2177,9 +2130,9 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Calendar c = Calendar.getInstance();
 
-//        if (isShowSearchDialog) {
+        if (isShowSearchDialog) {
             showDialogProgress(progressDialog, "查询中...");
-//        }
+        }
         final JSONObject jsonObject = new JSONObject();
         try {
             JSONObject dto = new JSONObject();
@@ -2281,9 +2234,9 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
             @Override
             public void onFinished() {
-//                if (isShowSearchDialog) {
+                if (isShowSearchDialog) {
                     progressDialog.dismiss();
-//                }
+                }
 
             }
         });
@@ -2930,10 +2883,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             Log.e(TAG, "shijianView.setText: " + e + "：" + currentOneBodyFire.getAlarmDatetime());
         }
         jingweiduView.setText(currentOneBodyFire.getAlarmLongitude() +"、" + currentOneBodyFire.getAlarmLatitude());
-        Glide.with(getContext()).load(currentOneBodyFire.getPicPath1()!=null?currentOneBodyFire.getPicPath1().replace("172.17.221.115","1.181.45.82"):"")
+        Glide.with(getContext()).load(currentOneBodyFire.getPicPath1().replace("10.10.2.26","218.201.180.118"))
                 .error(R.drawable.ic_no_pic)
                 .placeholder(R.drawable.ic_jaizai).into(yitijiOneView);
-        Glide.with(getContext()).load(currentOneBodyFire.getPicPath2()!=null?currentOneBodyFire.getPicPath2().replace("172.17.221.115","1.181.45.82"):"")
+        Glide.with(getContext()).load(currentOneBodyFire.getPicPath2().replace("10.10.2.26","218.201.180.118"))
                 .error(R.drawable.ic_no_pic)
                 .placeholder(R.drawable.ic_jaizai).into(yitijiTwoView);
     /*    Glide.with(getContext()).load("http://10.135.49.201:81/snap/a54dbc0a-eb21-0ab6-8de5-55acda985571/938a02f2-b7fa-472e-8ddb-eeeaeb9604ae_2.jpg")
@@ -2955,7 +2908,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 zhenshiTextView.setText("真实火情");
             }
         }
-        Log.e(TAG, "initOneBodyFireModelData: " + currentOneBodyFire.toString() );
         oneBodyFireDialog.show();
     }
 
@@ -3129,8 +3081,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             Bundle bundle = new Bundle();
             bundle.putString("id", teamDTOList.get(i).getId());
             bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", teamDTOList.get(i).getAddress());
-            bundle.putString("name", teamDTOList.get(i).getName());
             OverlayOptions option = new MarkerOptions()
                     .position(point)
                     .extraInfo(bundle)
@@ -3153,8 +3103,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             Bundle bundle = new Bundle();
             bundle.putString("id", zhihuiDTOList.get(i).getId());
             bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", zhihuiDTOList.get(i).getAddress());
-            bundle.putString("name", zhihuiDTOList.get(i).getName());
             OverlayOptions option = new MarkerOptions()
                     .position(point)
                     .extraInfo(bundle)
@@ -3176,8 +3124,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             Bundle bundle = new Bundle();
             bundle.putString("id", kkDTOList.get(i).getId());
             bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", kkDTOList.get(i).getAddress());
-            bundle.putString("name", kkDTOList.get(i).getName());
             OverlayOptions option = new MarkerOptions()
                     .position(point)
                     .extraInfo(bundle)
@@ -3200,8 +3146,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             Bundle bundle = new Bundle();
             bundle.putString("id", lwtDTOList.get(i).getId());
             bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", lwtDTOList.get(i).getAddress());
-            bundle.putString("name", lwtDTOList.get(i).getName());
             OverlayOptions option = new MarkerOptions()
                     .position(point)
                     .extraInfo(bundle)
@@ -3223,8 +3167,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             Bundle bundle = new Bundle();
             bundle.putString("id", wuziDTOList.get(i).getId());
             bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", wuziDTOList.get(i).getAddress());
-            bundle.putString("name", wuziDTOList.get(i).getName());
             OverlayOptions option = new MarkerOptions()
                     .position(point)
                     .extraInfo(bundle)
@@ -3246,8 +3188,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             Bundle bundle = new Bundle();
             bundle.putString("id", dangerDTOList.get(i).getId());
             bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", dangerDTOList.get(i).getAddress());
-            bundle.putString("name", dangerDTOList.get(i).getName());
             OverlayOptions option = new MarkerOptions()
                     .position(point)
                     .extraInfo(bundle)
@@ -3269,8 +3209,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             Bundle bundle = new Bundle();
             bundle.putString("id", checkStationDTOList.get(i).getId());
             bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", checkStationDTOList.get(i).getAddress());
-            bundle.putString("name", checkStationDTOList.get(i).getName());
             OverlayOptions option = new MarkerOptions()
                     .position(point)
                     .extraInfo(bundle)
@@ -3292,8 +3230,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             Bundle bundle = new Bundle();
             bundle.putString("id", waterSourceDTOList.get(i).getId());
             bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", waterSourceDTOList.get(i).getAddress());
-            bundle.putString("name", waterSourceDTOList.get(i).getName());
             OverlayOptions option = new MarkerOptions()
                     .position(point)
                     .extraInfo(bundle)
@@ -3315,8 +3251,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             Bundle bundle = new Bundle();
             bundle.putString("id", cemeteryDTOList.get(i).getId());
             bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", cemeteryDTOList.get(i).getAddress());
-            bundle.putString("name", cemeteryDTOList.get(i).getName());
             OverlayOptions option = new MarkerOptions()
                     .position(point)
                     .extraInfo(bundle)

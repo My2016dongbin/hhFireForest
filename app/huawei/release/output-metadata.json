@@ -10,9 +10,9 @@
     {
       "type": "SINGLE",
       "filters": [],
-      "versionCode": 202,
-      "versionName": "2.0.2",
-      "outputFile": "haohai-2.0.2.apk"
+      "versionCode": 201,
+      "versionName": "2.0.1",
+      "outputFile": "haohai-2.0.1.apk"
     }
   ]
 }

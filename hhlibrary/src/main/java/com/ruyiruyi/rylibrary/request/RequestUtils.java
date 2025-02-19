@@ -5,7 +5,7 @@ package com.ruyiruyi.rylibrary.request;
  */
 
 public class RequestUtils {
-    public static String REQUEST__URL_HLJ = "http://1.181.45.82:8011/";//release
+    public static String REQUEST__URL_HLJ = "http://42.180.210.78:8011/";//release
 
     public static String REQUEST_UPLOAD = REQUEST__URL_HLJ + "oa/api/workReport/fileUploadAnByNotToken" ;
     public static String REQUEST_URL = REQUEST__URL_HLJ ;

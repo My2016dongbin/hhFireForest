@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -146,7 +145,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
     private boolean isAddVideoViewClick = false;
     private LinearLayout videoListLayout;
     private ImageView listDialogImage;
-    private SwipeRefreshLayout swipe;
     private ScrollView sv_gridtrees;
     private LinearLayout ll_left;
     private LinearLayout ll_right;
@@ -352,20 +350,11 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
             GridTrees gridTrees = treesList.get(i);
             View item = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridtrees,null);
             LinearLayout ll_out = item.findViewById(R.id.ll_out);
-            View view_bottom = item.findViewById(R.id.view_bottom);
-            if(gridTrees.isLast()){
-                view_bottom.setVisibility(View.VISIBLE);
-            }else{
-                view_bottom.setVisibility(View.GONE);
-            }
-            view_bottom.setOnClickListener(v -> {
-
-            });
             LinearLayout ll_in = item.findViewById(R.id.ll_in);//用于监控点-摄像头便于动态加载
             ImageView iv_status = item.findViewById(R.id.iv_status);
+            View bottom_view = item.findViewById(R.id.view);
             TextView tv_gridtrees = item.findViewById(R.id.tv_gridtrees);
             tv_gridtrees.setText(gridTrees.getName());
-
             //有Children子项(递归展示)
             if(gridTrees.getChildren()!=null && gridTrees.getChildren().size()>0){
                 List<GridTrees> itemList = new ArrayList<>();
@@ -463,11 +452,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
             ImageView iv_status = item.findViewById(R.id.iv_status);
             TextView tv_gridtrees = item.findViewById(R.id.tv_gridtrees);
             tv_gridtrees.setText(model.getMonitor().getName());
-            Log.e("model.getMonitor() ",model.getMonitor().getName() + model.getMonitor().getIsOnline());
-            //不在线
-            if(Objects.equals(model.getMonitor().getIsOnline(), "0")){
-                continue;
-            }
             if(model.isStatus()){
                 iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
             }else{
@@ -486,7 +470,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                     //显示/添加新View
                     for (int m = 0; m < model.getCameraList().size(); m++) {
                         GridCamera gridCamera = model.getCameraList().get(m);
-
                         //构建摄像头
                         View cameraView = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridcamera,null);
                         LinearLayout ll_camera = cameraView.findViewById(R.id.ll_camera);
@@ -584,6 +567,7 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                                 }
                             }
                         });
+
                         ll_in.addView(cameraView);
                     }
                     
@@ -816,7 +800,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         videoListDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyleLeft);
         videoListInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_video_list_ios, null);
         videoListInflater.setMinimumWidth(100000);
-        swipe = ((SwipeRefreshLayout) videoListInflater.findViewById(R.id.swipe));
         sv_gridtrees = ((ScrollView) videoListInflater.findViewById(R.id.sv_gridtrees));
         ll_left = ((LinearLayout) videoListInflater.findViewById(R.id.ll_left));
         ll_right = ((LinearLayout) videoListInflater.findViewById(R.id.ll_right));
@@ -824,14 +807,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         tv_right = ((TextView) videoListInflater.findViewById(R.id.tv_right));
         v_left = ((View) videoListInflater.findViewById(R.id.v_left));
         v_right = ((View) videoListInflater.findViewById(R.id.v_right));
-        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                swipe.setRefreshing(false);
-                sv_gridtrees.removeAllViews();
-                tabLeft();
-            }
-        });
         RxViewAction.clickNoDouble(ll_left).subscribe(new Action1<Void>() {
             @Override
             public void call(Void unused) {
@@ -1645,19 +1620,19 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                     }
                 }  else if (v.getId() == R.id.jieping_button) {
                     if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
                     } else if (action == MotionEvent.ACTION_UP) { // 松开
 
                     }
                 } else if (v.getId() == R.id.jujiao_button) {
                     if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
                     } else if (action == MotionEvent.ACTION_UP) { // 松开
 
                     }
                 } else if (v.getId() == R.id.luxiang_button) {
                     if (action == MotionEvent.ACTION_DOWN) { // 按下
-                        Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getContext(), "暂无控制权限", Toast.LENGTH_SHORT).show();
                     } else if (action == MotionEvent.ACTION_UP) { // 松开
 
                     }
@@ -1688,7 +1663,7 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
     };
 
     private void moveShexiangtou() {
-        if(moveType == 11 || moveType == 12){
+        /*if(moveType == 11 || moveType == 12){
             if(!rootCtrlFocus){
                 Toast.makeText(getActivity(), "您的账号暂无缩放权限", Toast.LENGTH_SHORT).show();
                 return;
@@ -1698,7 +1673,7 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                 Toast.makeText(getActivity(), "您的账号暂无控制权限", Toast.LENGTH_SHORT).show();
                 return;
             }
-        }
+        }*/
         String id = "";
         String channelId = "";
         boolean isHasVideo = false;
