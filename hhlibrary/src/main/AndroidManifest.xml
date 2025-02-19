@@ -10,7 +10,6 @@
         <activity android:name=".base.BaseWebActivity" />
         <activity android:name=".base.BaseFragmentActivity" />
         <activity android:name=".base.FullBaseActivity"></activity>
-        <service android:name=".service.BackgroundMp3Service"/>
     </application>
 
 </manifest>

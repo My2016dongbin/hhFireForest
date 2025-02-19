@@ -58,7 +58,6 @@ import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
 import com.ruyiruyi.rylibrary.ui.cell.WheelView;
 import com.ruyiruyi.rylibrary.utils.GifSizeFilter;
-import com.ruyiruyi.rylibrary.utils.LatLngChangeNew;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
@@ -84,7 +83,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
@@ -272,9 +270,8 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                     @Override
                     public void call(Void aVoid) {
                         Intent intent = new Intent(getApplicationContext(), FireMapActivity.class);
-                        double[] doubles = LatLngChangeNew.calWGS84toBD09(currentLatitude, currentLongitude);
-                        intent.putExtra("longitude_double", doubles[1]);
-                        intent.putExtra("latitude_double", doubles[0]);
+                        intent.putExtra("longitude_double", currentLongitude);
+                        intent.putExtra("latitude_double", currentLatitude);
                         startActivityForResult(intent, MAP_REUEST_CODE);
                     }
                 });
@@ -760,36 +757,42 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.e(TAG, "onActivityResult:resultCode " + resultCode + "requestcode" + requestCode);
+//        Log.e(TAG, "onActivityResult:data ",data);
         if (requestCode == MAP_REUEST_CODE && resultCode == MAP_REUEST_CODE) {
             longitude = data.getStringExtra("longitude");
             latitude = data.getStringExtra("latitude");
             cityAddress = data.getStringExtra("cityAddress");
             currentCity = data.getStringExtra("city");
             if (!currentCity.isEmpty()){
-                String p = data.getStringExtra("PROVINCE");
-                String c = data.getStringExtra("CITY");
-                String s = data.getStringExtra("DISTRICT");
-                initAreaById(p);
-                String c_id = "";
-                String s_id = "";
-                for (int i = 0; i < allAreaList.size(); i++) {
-                    if(Objects.equals(allAreaList.get(i).getName(), c)){
-                        c_id = allAreaList.get(i).getId();
-                    }
-                }
-                for (int i = 0; i < allAreaList.size(); i++) {
-                    if(Objects.equals(allAreaList.get(i).getName(), s)){
-                        s_id = allAreaList.get(i).getId();
-                    }
-                }
-                initShiByShiId(shengList.get(shengSelectIndex-1).getId(),c_id);
-                initquByQuId(shiList.get(shiSelectIndex-1).getId(),s_id);
+                String currentCiryParentId = "";
+                String currentCiryId = "";
 
-                shengText.setText(p);
-                shiText.setText(c);
-                quText.setText(s);
+                String currentPro = "";
+                String currentProId = "";
+                for (int i = 0; i < allAreaList.size(); i++) {
+                    if (allAreaList.get(i).getName().equals(currentCity)) {
+                        currentCiryParentId = allAreaList.get(i).getParentId();
+                        currentCiryId = allAreaList.get(i).getId();
+                    }
+                }
+
+                for (int i = 0; i < allAreaList.size(); i++) {
+                    if (allAreaList.get(i).getId().equals(currentCiryParentId)){
+                        currentPro = allAreaList.get(i).getName();
+                        currentProId = allAreaList.get(i).getId();
+                    }
+                }
+                shengStrList.add(currentPro);
+                shiStrList.add(currentCity);
+                isChooseSheng = true;
+
+                shengText.setText(currentPro);
+                shiText.setText(currentCity);
 
                 fromMap = true;
+                initAreaById(currentPro);
+                initShiByShiId(currentProId,currentCiryId);
+                initquByQuId(currentCiryId);
 
             }
 
@@ -840,7 +843,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         }
 
     }
-    private void initquByQuId(String currentShiId,String quId) {
+    private void initquByQuId(String currentShiId) {
         quList.clear();
         quStrList.clear();
         quStrList.add("请选择区");
@@ -850,11 +853,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                 quStrList.add(allAreaList.get(i).getName());
             }
         }
-        for (int i = 0; i < quList.size(); i++) {
-            if (quList.get(i).getId().equals(quId)) {
-                quSelectIndex = i + 1;
-            }
-        }
+        //  showAreaDialog(shiStrList);
     }
     private void initShiByShiId(String currentShengId,String currentShiId) {
         shiList.clear();
@@ -872,6 +871,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
             }
         }
 
+        //  showAreaDialog(shiStrList);
     }
 
     private void initAreaById(String shengName) {
@@ -1022,15 +1022,15 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                     shiText.setText("请选择市");
                     currentChooseShi = "请选择市";
                     shiSelectIndex = 0;
-                    quText.setText("请选择区");
-                    currentChooseQu = "请选择区";
+                    quText.setText("请选择市");
+                    currentChooseQu = "请选择市";
                     quSelectIndex = 0;
                 }else if(currentChooseArea == 1){                          //选择市
                     currentChooseShi = areaWy.getSelectedItem();
                     shiSelectIndex = areaWy.getSelectedPosition();
                     shiText.setText(currentChooseShi);
-                    quText.setText("请选择区");
-                    currentChooseQu = "请选择区";
+                    quText.setText("请选择市");
+                    currentChooseQu = "请选择市";
                     quSelectIndex = 0;
                 }else {
                     currentChooseQu = areaWy.getSelectedItem();

@@ -310,6 +310,11 @@ dsBridge.register('showPoint', function (resourcetype1,data,dist1) {
     console.log(resourselist);
         showPointBillbordDataOnMap(resourcetype1, resourselist, dist1, type2);
 });
+dsBridge.register('showPointNoJump', function (resourcetype1,data,dist1) {
+    console.log(JSON.stringify(data));
+    console.log(data);
+    showPointBillbordDataOnMapNoJump(resourcetype1, data, dist1, type2);
+});
 dsBridge.register('showPointforresource', function (resourcetype1,data,dist1) {
     console.log(JSON.stringify(data));
     console.log(data);
@@ -337,6 +342,85 @@ dsBridge.register('setBoards', function (data) {
         setBoards(item);
     }
 });
+ //地图打点
+ function showPointBillbordDataOnMapNoJump(resourcetype, list, dist, type2) {
+     console.log(JSON.stringify(list))
+    // https://cesiumjs.org/Cesium/Build/Documentation/EntityCollection.html#EntityCollection
+    return new Promise((resolve, reject) => {
+         console.profile('showPointBillbordDataOnMap')
+        try {
+            var sourceName = resourcetype + dist + type2
+            console.log(sourceName)
+            sourceNameArray.push(sourceName)
+            var dataSource_ = viewer.dataSources.getByName(sourceName)
+            console.log(dataSource_, dataSource_.length)
+            if (dataSource_!=null&&dataSource_.length >= 1) {
+                viewer.flyTo(dataSource_.entities, { duration: 3 })
+                resolve()
+                return
+            }
+            var dataSource = new Cesium.CustomDataSource(sourceName)
+
+            if (arrPoint[sourceName]) {
+                setTimeout(() => _hideDivPoint(sourceName, true), 3000)
+            }
+            let lastEntity = null
+            viewer.entities.suspendEvents()
+            console.log(list)
+            for (const item of list) {
+                console.log(item)
+                // 添加实体
+                if (!item.position) {
+                    console.log('position为空：', item)
+                    continue
+                }
+                // console.log(item.position.z)
+                lastEntity = dataSource.entities.add({
+                    id: item.id,
+                    name: item.name,
+                    position: Cesium.Cartesian3.fromDegrees(item.position.lng, item.position.lat, item.position.z),
+                    billboard:{
+                        image: `img/marker/resource/${resourcetype}.png`,
+                        ...billboardConfig()
+                    },
+                    label: {
+                        text: item.name,
+                        ...labelConfig()
+                    },
+                    data: item,
+                    tooltip: {
+                        html: item.name,
+                        anchor: [0, -12]
+                    }
+                    ,
+                    click: clickcallback(resourcetype,item.id)
+                })
+                // if (resourcetype === 'monitor') {
+                //     lastEntity.ellipse = {
+                //         height: 0.0,
+                //         semiMinorAxis: 3000.0,
+                //         semiMajorAxis: 3000.0,
+                //         outline: true,
+                //         outlineColor: Cesium.Color.WHITE,
+                //         outlineWidth: 3.0,
+                //         distanceDisplayCondition: Cesium.DistanceDisplayCondition(100, 10000),
+                //         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, // 贴地
+                //         fill: false
+                //     }
+                //     setInterval(forpolygon, 1000, item, lastEntity, Cesium.DistanceDisplayCondition(100, 10000))
+                // }
+            }
+            viewer.entities.resumeEvents()
+            viewer.dataSources.add(dataSource)
+            //flyTo(lastEntity)
+            lastEntity = null
+            resolve()
+        } catch (e) {
+            reject(e)
+        }
+        // console.profileEnd()
+    })
+}
  //地图打点
  function showPointBillbordDataOnMap(resourcetype, list, dist, type2) {
      console.log(JSON.stringify(list))

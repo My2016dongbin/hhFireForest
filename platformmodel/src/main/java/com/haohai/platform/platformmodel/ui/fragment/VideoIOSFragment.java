@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -146,7 +145,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
     private boolean isAddVideoViewClick = false;
     private LinearLayout videoListLayout;
     private ImageView listDialogImage;
-    private SwipeRefreshLayout swipe;
     private ScrollView sv_gridtrees;
     private LinearLayout ll_left;
     private LinearLayout ll_right;
@@ -263,11 +261,7 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                     if (jsonObject.getString("code").equals("200")) {
                         JSONArray data = jsonObject.getJSONArray("data");
                         for (int i = 0; i < data.length(); i++) {
-                            GridTrees e = new Gson().fromJson(data.get(i).toString(), GridTrees.class);
-                            if(i == data.length()-1){
-                                e.setLast(true);
-                            }
-                            gridTreesList.add(e);
+                            gridTreesList.add(new Gson().fromJson(data.get(i).toString(),GridTrees.class));
                         }
 
                         sv_gridtrees.addView(buildGridTrees(gridTreesList));
@@ -352,20 +346,10 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
             GridTrees gridTrees = treesList.get(i);
             View item = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridtrees,null);
             LinearLayout ll_out = item.findViewById(R.id.ll_out);
-            View view_bottom = item.findViewById(R.id.view_bottom);
-            if(gridTrees.isLast()){
-                view_bottom.setVisibility(View.VISIBLE);
-            }else{
-                view_bottom.setVisibility(View.GONE);
-            }
-            view_bottom.setOnClickListener(v -> {
-
-            });
             LinearLayout ll_in = item.findViewById(R.id.ll_in);//用于监控点-摄像头便于动态加载
             ImageView iv_status = item.findViewById(R.id.iv_status);
             TextView tv_gridtrees = item.findViewById(R.id.tv_gridtrees);
             tv_gridtrees.setText(gridTrees.getName());
-
             //有Children子项(递归展示)
             if(gridTrees.getChildren()!=null && gridTrees.getChildren().size()>0){
                 List<GridTrees> itemList = new ArrayList<>();
@@ -463,11 +447,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
             ImageView iv_status = item.findViewById(R.id.iv_status);
             TextView tv_gridtrees = item.findViewById(R.id.tv_gridtrees);
             tv_gridtrees.setText(model.getMonitor().getName());
-            Log.e("model.getMonitor() ",model.getMonitor().getName() + model.getMonitor().getIsOnline());
-            //不在线
-            if(Objects.equals(model.getMonitor().getIsOnline(), "0")){
-                continue;
-            }
             if(model.isStatus()){
                 iv_status.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
             }else{
@@ -486,7 +465,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                     //显示/添加新View
                     for (int m = 0; m < model.getCameraList().size(); m++) {
                         GridCamera gridCamera = model.getCameraList().get(m);
-
                         //构建摄像头
                         View cameraView = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridcamera,null);
                         LinearLayout ll_camera = cameraView.findViewById(R.id.ll_camera);
@@ -584,6 +562,7 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
                                 }
                             }
                         });
+
                         ll_in.addView(cameraView);
                     }
                     
@@ -816,7 +795,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         videoListDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyleLeft);
         videoListInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_video_list_ios, null);
         videoListInflater.setMinimumWidth(100000);
-        swipe = ((SwipeRefreshLayout) videoListInflater.findViewById(R.id.swipe));
         sv_gridtrees = ((ScrollView) videoListInflater.findViewById(R.id.sv_gridtrees));
         ll_left = ((LinearLayout) videoListInflater.findViewById(R.id.ll_left));
         ll_right = ((LinearLayout) videoListInflater.findViewById(R.id.ll_right));
@@ -824,14 +802,6 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
         tv_right = ((TextView) videoListInflater.findViewById(R.id.tv_right));
         v_left = ((View) videoListInflater.findViewById(R.id.v_left));
         v_right = ((View) videoListInflater.findViewById(R.id.v_right));
-        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                swipe.setRefreshing(false);
-                sv_gridtrees.removeAllViews();
-                tabLeft();
-            }
-        });
         RxViewAction.clickNoDouble(ll_left).subscribe(new Action1<Void>() {
             @Override
             public void call(Void unused) {
@@ -1714,25 +1684,71 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
             Toast.makeText(getContext(), "当前控制器暂无摄像头", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        JSONObject jsonObject = new JSONObject();
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/liveVideo/control");
-        params.addBodyParameter("monitorId",id);
-        params.addBodyParameter("channelId",channelId);
-        params.addBodyParameter("speed","5");
-        params.addBodyParameter("stop",isStop?"1":"0");
-        params.addBodyParameter("controlType",moveType+"");
-        params.addBodyParameter("groupId",currentGroupId);
-        params.setConnectTimeout(10000);
-        params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-
-        Log.e(TAG, "moveShexiangtou: " + params);
-        Log.e(TAG, "moveShexiangtou: " + jsonObject.toString());
-        x.http().get(params, new Callback.CommonCallback<String>() {
+        RequestParams requestParams = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/bd/control/selectRoleDeviceControl");
+        requestParams.addParameter("deviceId",channelId);
+        requestParams.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
+        requestParams.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        String finalId = id;
+        String finalChannelId = channelId;
+        Log.e(TAG, "moveShexiangtou: permission requestParams " + requestParams.toString() );
+     x.http().get(requestParams, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                Log.e(TAG, "moveShexiangtou: " + result);
+                Log.e(TAG, "moveShexiangtou: permission result " + result );
+                try {
+                    JSONObject object = new JSONObject(result);
+                    JSONArray data = object.getJSONArray("data");
+                    if(data!=null && data.length()>0){
+                        for (int m = 0; m < data.length(); m++) {
+                            JSONObject mo = (JSONObject) data.get(m);
+                            if(Objects.equals(mo.getString("name"), "云台控制")){
+                                String controlId = mo.getString("id");
+
+                                JSONObject jsonObject = new JSONObject();
+                                RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/liveVideo/control");
+                                params.addBodyParameter("monitorId", finalId);
+                                params.addBodyParameter("channelId", finalChannelId);
+                                params.addBodyParameter("speed","5");
+                                params.addBodyParameter("stop",isStop?"1":"0");
+                                params.addBodyParameter("controlType",moveType+"");
+                                //params.addBodyParameter("groupId",currentGroupId);
+                                params.addParameter("gridNo","150000");
+                                params.addParameter("groupId","001");
+                                params.addParameter("controlId",controlId);
+                                params.setConnectTimeout(10000);
+                                params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
+                                params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+
+                                Log.e(TAG, "moveShexiangtou: " + params);
+                                Log.e(TAG, "moveShexiangtou: " + jsonObject.toString());
+                                x.http().get(params, new Callback.CommonCallback<String>() {
+                                    @Override
+                                    public void onSuccess(String result) {
+                                        Log.e(TAG, "moveShexiangtou: " + result);
+
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable ex, boolean isOnCallback) {
+
+                                    }
+
+                                    @Override
+                                    public void onCancelled(CancelledException cex) {
+
+                                    }
+
+                                    @Override
+                                    public void onFinished() {
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
             }
 
@@ -1748,8 +1764,10 @@ public class VideoIOSFragment extends HhBaseFragment implements TreeAdapter.OnPl
 
             @Override
             public void onFinished() {
+
             }
         });
+
         steptype=0;
     }
 

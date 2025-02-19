@@ -51,7 +51,6 @@ import com.ruyiruyi.rylibrary.cell.ActionBar;
 import com.ruyiruyi.rylibrary.db.Area;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.ui.cell.WheelView;
-import com.ruyiruyi.rylibrary.utils.LatLngChangeNew;
 import com.ruyiruyi.rylibrary.utils.image.ImagPagerUtil;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.cell.MessagePicturesLayout;
@@ -299,9 +298,10 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                     @Override
                     public void call(Void aVoid) {
                         Intent intent = new Intent(getApplicationContext(), FireMapActivity.class);
-                        double[] doubles = LatLngChangeNew.calWGS84toBD09(currentLatitude, currentLongitude);
-                        intent.putExtra("longitude_double", doubles[1]);
-                        intent.putExtra("latitude_double", doubles[0]);
+                        Log.e(TAG, "call: " +currentLongitude );
+                        Log.e(TAG, "call: " + currentLatitude);
+                        intent.putExtra("longitude_double", currentLongitude);
+                        intent.putExtra("latitude_double", currentLatitude);
                         startActivityForResult(intent, MAP_REUEST_CODE);
                     }
                 });

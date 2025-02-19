@@ -8,18 +8,9 @@ public class GridCamera {
     String subRtspUrl;
     String state;
     String collectionState;
-    String isOnline;
     int cameraType;
 
     boolean status = false;
-
-    public String getIsOnline() {
-        return isOnline;
-    }
-
-    public void setIsOnline(String isOnline) {
-        this.isOnline = isOnline;
-    }
 
     public boolean isStatus() {
         return status;

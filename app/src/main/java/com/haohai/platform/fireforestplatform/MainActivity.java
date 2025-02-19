@@ -47,7 +47,7 @@ import com.haohai.platform.fireforestplatform.ui.utils.TraceServiceImpl;
 import com.haohai.platform.fireforestplatform.ui.utils.whitelistUtil;
 import com.haohai.platform.firelibrary.ui.activity.FireMissionListActivity;
 import com.haohai.platform.firelibrary.ui.service.MQTTService;
-import com.haohai.platform.mapmodel.fragment.MapNewFragment;
+import com.haohai.platform.mapmodel.fragment.MapFragment;
 import com.haohai.platform.platformmodel.ui.service.ForegroundService;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -325,7 +325,7 @@ public class MainActivity extends BaseFragmentActivity {
         List<Fragment> fragments = new ArrayList<>();
 
         if(CommonData.hasMainMap){
-            fragments.add(new MapNewFragment());
+            fragments.add(new MapFragment());
         }
         if(CommonData.hasMainVideo) {
             fragments.add(new VideoIOSFragment());
@@ -722,7 +722,7 @@ public class MainActivity extends BaseFragmentActivity {
         startActivity(intent);*/
         if (Build.VERSION.SDK_INT >= 24) {
             File file = new File(fileName);
-            tempUri = FileProvider.getUriForFile(MainActivity.this, "com.haohai.platform.fireforestplatform.fileProvider", file);
+            tempUri = FileProvider.getUriForFile(MainActivity.this, "com.haohai.platform.fireforestplatform", file);
             Intent install = new Intent(Intent.ACTION_VIEW);
             install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);//添加这一句表示对目标应用临时授权该Uri所代表的文件

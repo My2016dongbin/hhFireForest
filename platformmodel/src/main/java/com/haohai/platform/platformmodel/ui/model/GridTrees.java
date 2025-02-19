@@ -13,25 +13,7 @@ public class GridTrees {
     String cameraCount;
     String cameraOnlineCount;
     String level;
-    String isOnline;
-    boolean last;
     List<GridModel> monitorDetailVOs;
-
-    public String getIsOnline() {
-        return isOnline;
-    }
-
-    public void setIsOnline(String isOnline) {
-        this.isOnline = isOnline;
-    }
-
-    public boolean isLast() {
-        return last;
-    }
-
-    public void setLast(boolean last) {
-        this.last = last;
-    }
 
     boolean status = false;
 

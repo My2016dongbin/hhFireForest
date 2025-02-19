@@ -1,7 +1,6 @@
 package com.haohai.platform.mapmodel.fragment;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -10,15 +9,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -26,6 +26,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.LogPrinter;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,14 +34,18 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
 
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.amap.api.maps.model.Poi;
@@ -50,47 +55,29 @@ import com.amap.api.navi.AmapNaviType;
 import com.amap.api.navi.AmapPageType;
 import com.amap.api.navi.INaviInfoCallback;
 import com.amap.api.navi.model.AMapNaviLocation;
-import com.baidu.location.BDAbstractLocationListener;
-import com.baidu.location.BDLocation;
-import com.baidu.location.LocationClient;
-import com.baidu.location.LocationClientOption;
-import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.BitmapDescriptor;
-import com.baidu.mapapi.map.BitmapDescriptorFactory;
-import com.baidu.mapapi.map.MapStatus;
-import com.baidu.mapapi.map.MapStatusUpdateFactory;
-import com.baidu.mapapi.map.Marker;
-import com.baidu.mapapi.map.MarkerOptions;
-import com.baidu.mapapi.map.MyLocationData;
-import com.baidu.mapapi.map.OverlayOptions;
-import com.baidu.mapapi.map.PolylineOptions;
-import com.baidu.mapapi.map.TextureMapView;
-import com.baidu.mapapi.model.LatLngBounds;
-import com.baidu.mapapi.search.district.DistrictResult;
-import com.baidu.mapapi.search.district.DistrictSearch;
-import com.baidu.mapapi.search.district.DistrictSearchOption;
-import com.baidu.mapapi.search.district.OnGetDistricSearchResultListener;
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.haohai.platform.firelibrary.ui.activity.FireMissionListActivity;
+import com.haohai.platform.firelibrary.ui.activity.FireMissionInfoActivity;
 import com.haohai.platform.firelibrary.ui.model.LatLng;
 import com.haohai.platform.firelibrary.ui.multitype.FireMission;
+import com.haohai.platform.firelibrary.ui.presenter.ipresenter.IFirePresenter;
 import com.haohai.platform.firelibrary.utils.LatLngChange;
 import com.haohai.platform.mapmodel.R;
-import com.haohai.platform.mapmodel.Utils.GetJsonDataUtil;
+import com.haohai.platform.mapmodel.Utils.JsApi;
 import com.haohai.platform.mapmodel.activity.PlayerActivity;
 import com.haohai.platform.mapmodel.activity.WeixingActivity;
 import com.haohai.platform.mapmodel.fragment.base.HhBaseFragment;
 import com.haohai.platform.mapmodel.listener.OnLoadMoreListener;
-import com.haohai.platform.mapmodel.model.CemeteryDTO;
-import com.haohai.platform.mapmodel.model.CheckStationDTO;
+import com.haohai.platform.mapmodel.model.Grid;
 import com.haohai.platform.mapmodel.model.MapModel;
-import com.haohai.platform.mapmodel.model.MapPosition;
-import com.haohai.platform.mapmodel.model.MonitorDTO;
-import com.haohai.platform.mapmodel.model.ResourceDTO;
-import com.haohai.platform.mapmodel.model.WaterSourceDTO;
+import com.haohai.platform.mapmodel.model.ResMap;
+import com.haohai.platform.mapmodel.model.ResModel;
+import com.haohai.platform.mapmodel.model.Resource;
 import com.haohai.platform.mapmodel.model.WeixingModel;
+import com.haohai.platform.mapmodel.model.MapPosition;
 import com.haohai.platform.mapmodel.multitype.Empty;
 import com.haohai.platform.mapmodel.multitype.EmptyViewBinder;
 import com.haohai.platform.mapmodel.multitype.OneBodyFire;
@@ -100,25 +87,27 @@ import com.haohai.platform.mapmodel.multitype.ResourceListViewBinder;
 import com.haohai.platform.mapmodel.multitype.WeixingModelViewBinder;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.db.DbConfig;
-import com.ruyiruyi.rylibrary.db.Requestaddress;
 import com.ruyiruyi.rylibrary.db.Setting;
 import com.ruyiruyi.rylibrary.db.User;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
-import com.ruyiruyi.rylibrary.service.BackgroundMp3Service;
-import com.ruyiruyi.rylibrary.utils.CommonData;
-import com.ruyiruyi.rylibrary.utils.LatLngChangeNew;
+import com.ruyiruyi.rylibrary.utils.CommonUtils;
+import com.ruyiruyi.rylibrary.utils.GetAngleAndDistance;
 import com.ruyiruyi.rylibrary.utils.NumberUtils;
 import com.ruyiruyi.rylibrary.utils.image.ImagPagerUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xutils.DbManager;
 import org.xutils.common.Callback;
+import org.xutils.ex.DbException;
 import org.xutils.http.HttpMethod;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -128,23 +117,23 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Random;
 
 import me.drakeet.multitype.MultiTypeAdapter;
 import rx.functions.Action1;
 import wendu.dsbridge.DWebView;
+import wendu.dsbridge.OnReturnValue;
 
-import static android.content.Context.MODE_PRIVATE;
 import static me.drakeet.multitype.MultiTypeAsserts.assertAllRegistered;
 import static me.drakeet.multitype.MultiTypeAsserts.assertHasTheSameAdapter;
 
+/**
+ * Created by geyang on 2020/7/21.
+ */
 
-public class MapNewFragment extends HhBaseFragment implements ResourceListViewBinder.OnResourceLsitItemClick, WeixingModelViewBinder.OnWeixingInfoItemClick, OneBodyFireViewBinder.OnOneBodyItemClick, DatePicker.OnDateChangedListener, INaviInfoCallback {
+public class MapFragment extends HhBaseFragment implements JsApi.OnJsClickListener, ResourceListViewBinder.OnResourceLsitItemClick, WeixingModelViewBinder.OnWeixingInfoItemClick, OneBodyFireViewBinder.OnOneBodyItemClick, DatePicker.OnDateChangedListener, INaviInfoCallback {
 
     private static final String TAG = "MapFragment";
-    public static final double LATITUDE_DEF = 36.3908; //即墨中心点
-    public static final double LONGTITUDE_DEF = 120.447;
     private DWebView dWebView;
     private Button jiaButton;
     private Button jianButton;
@@ -187,6 +176,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     private static final int DIALOG_FIRE_SHOW = 6;
     private static final int DIALOG_ONEBODY_FIRE_SHOW = 20;
     private static final int DIALOG_MOINTOR_SHOW = 22;
+    private static final int DIALOG_RESOURCE_SHOW = 26;
     private static final int MAP_ERROR_SHOW = 8;
     private static final int FIRE_ERROR_SHOW = 9;
     private static final int TWO_D = 10;
@@ -215,32 +205,9 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     private ProgressDialog progressDialog;
     private User user;
     private List<WeixingModel> weixingModelList;
-    private List<OneBodyFire.Dto> oneBodyFireList;
-    private List<OneBodyFire.Dto> oneBodyFireFenleiList;
-    public boolean isShowWeixing = true;
-    public boolean isShowYitiji = true;
-
+    private List<OneBodyFire> oneBodyFireList;
+    private List<OneBodyFire> oneBodyFireFenleiList;
     private List<ResourceList> resourceListList;
-    public boolean isShowMonitor = false;
-    public boolean isShowWaterSource = false;
-    public boolean isShowCemetery = false;
-    public boolean isShowCheckStation = false;
-    public boolean isShowTeam = false;
-    public boolean isShowDanger = false;
-    public boolean isShowWuzi = false;
-    public boolean isShowLwt = false;
-    public boolean isShowKk = false;
-    public boolean isShowZhihui = false;
-    private List<MonitorDTO> monitorDTOList;
-    private List<WaterSourceDTO> waterSourceDTOList;
-    private List<CemeteryDTO> cemeteryDTOList;
-    private List<CheckStationDTO> checkStationDTOList;
-    private List<ResourceDTO> teamDTOList;
-    private List<ResourceDTO> dangerDTOList;
-    private List<ResourceDTO> wuziDTOList;
-    private List<ResourceDTO> lwtDTOList;
-    private List<ResourceDTO> kkDTOList;
-    private List<ResourceDTO> zhihuiDTOList;
 
     private Dialog fireInfoListDialog;
     private Dialog onebodyListDialog;
@@ -248,9 +215,8 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     private View onebodyListInflater;
     private TextView fireCountText;
     private RecyclerView weixingListView;
-    private SwipeRefreshLayout weixingSwipe;
+    private SwipeRefreshLayout refresh_onebody;
     private RecyclerView onebodyListView;
-    private SwipeRefreshLayout onebodySwipe;
     private LinearLayout onebodyLayout;
     private TextView fenleiView;
     private List<Object> weixingItems = new ArrayList<>();
@@ -264,10 +230,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
     private int currentFireListType = 1;  //1是时间排序  2是编号分类
     private int choose1 = 1;
-    private int shipinChoose1 = 0;
     private AlertDialog.Builder builder;
     private WeixingModel currentWeixingModel;
-    private OneBodyFire.Dto currentOneBodyFire;
+    private OneBodyFire currentOneBodyFire;
+    private Resource currentResource;
     private ResourceList currentResourceList;
     private Dialog weixingFireDialog;
     private View weixingFireInflater;
@@ -288,6 +254,8 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     private TextView retypeView;
     private boolean isShowSearchDialog = false;
     private LinearLayout ziyuanLayout;
+    private LinearLayout onebady_layout;
+    private LinearLayout ddrw_layout;
     private TextView ziyuanButton;
     private TextView onebodyButton;
     private LinearLayout ziyuanButtonLayout;
@@ -302,11 +270,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     private TextView gaojiEndTimeText;
     private TextView chongzhiButton;
     private TextView findButton;
-    private Dialog resourceinfoOtherDialog;
-    private View resourceInflaterOther;
-    private TextView resourcenameviewOther;
-    private TextView resoucedizhiviewOther;
-    private TextView resourcejingweiduviewOther;
     private StringBuffer date;
     private StringBuffer endDate;
     private int year;
@@ -314,97 +277,173 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     private int day;
     public int chooseHour;
     public int chooseMinute;
-    public boolean isChooseStarTime;
+    public boolean isChooseStarTime ;
     private ProgressDialog gaojiFindDialog;
     private Dialog resourceinfoDialog;
+    private Dialog resourceOtherDialog;
     private View resourceInflater;
+    private View resourceOtherInflater;
     String resorcetype = "";
     String kejianguangUrl = "";
     String kejianguangMId = "";
-    String kejianguangDId = "";
+    String kejianguangCId = "";
+    String kejianguangGId = "";
     String rechengxiangUrl = "";
-    String rechengxiangMId = "";
-    String groupId = "";
+    String rechengxiangMId= "";
+    String rechengxiangCId= "";
+    String rechengxiangGId= "";
     private int currentPage = 1;
     private int totalSize;
     private int lastPage;
     private TextView shaixuanbutton;
-    private LinearLayout ll_signlist;
-    private Dialog oneBodyFireDialog;
-    private View oneBodyFireInflater;
-    private TextView mingchengView;
-    private TextView dizhiView;
-    private TextView shijianView;
-    private TextView jingweiduView;
-    private TextView kjgView;
-    private TextView rcxView;
-    private ImageView yitijiOneView;
-    private ImageView yitijiTwoView;
-    private boolean isGaojiFind = false;
-    private TextView resourcenameview;
-    private TextView resoucedizhiview;
-    private TextView resourcejingweiduview;
-    private Button kejianguangbutton;
-    private Button rechengxiangbutton;
-    private Dialog resourceListDialog;
-    private View resourceListInflater;
-    private RecyclerView resourceListView;
-    private LinearLayout zhenshiLayout;
-    private TextView zhenshiButton;
-    private TextView wubaoButton;
-    private TextView zhenshiTextView;
-    public int isReleas = 2;  //0疑似火情  1是真实火情  2是未处理
-    public int isReleasList = 2;  //0疑似火情  1是真实火情  2是未处理 3是全部
-    public int shipinState = 0;  //2：森林防火4：海域监控5：砂石盗采 0全部
-    private TextView fenleiTextView;
-    private LinearLayout fenleiLayout;
-    private LinearLayout oneBodyFenleiLayout;
-    private TextView weixingShijianView;
-    private LinearLayout daohangLayout;
-    private TextureMapView baiduMapView;
-    private BaiduMap mBaiduMap;
-    private LocationClient mLocationClient;
-
-    public int markerType = 0;
-    public static final int ONE_BODY = 0;
-    public static final int WEI_XING = 1;
-    public static final int RESOURCE_MONITOR = 2;
-    public static final int RESOURCE_OTHER = 888;
-    private TextView resourceTypeView;
-    private List<OverlayOptions> optionsAllList;
-    private DistrictSearch mDistrictSearch;
-    private SwipeRefreshLayout oneBodyRefreshLayout;
-    public boolean isOneBodyShuaxin = false;
-    private Requestaddress requestaddress;
-    private ImageView orderWarnImageView;
-    private List<FireMission> fireMissionList;
-    private TextView tv_sign;
-    private TextView tv_sign_out;
-    private TextView tv_walk;
-    private LinearLayout im_layout;
-
-    @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             Bundle data = msg.getData();
             int what = data.getInt("what");
             switch (what){
-                case TIME_CHANGE:
-                    Log.e(TAG, "handleMessage: 报警查询");
-                    getOrderBaojingFromService();
+                case DIALOG_FIRE_SHOW:
+                    String id = data.getString("id");
+                    for (int i = 0; i < weixingModelList.size(); i++) {
+                        if (weixingModelList.get(i).getId().equals(id)) {
+                            currentWeixingModel = weixingModelList.get(i);
+                        }
+                    }
+
+                    //飞到精确点上
+                    initWeixingFlyMap();
+                    //加载卫星详细数据
+                    initWeixinModelData();
+                    break;
+                case DIALOG_ONEBODY_FIRE_SHOW:
+                    String oneBodyid = data.getString("id");
+                    for (int i = 0; i < oneBodyFireList.size(); i++) {
+                        if (oneBodyFireList.get(i).getId().equals(oneBodyid)) {
+                            currentOneBodyFire = oneBodyFireList.get(i);
+                        }
+                    }
+
+                    //飞到精确点上
+                    initOneBodyFlyMap();
+                    //加载卫星详细数据
+                    initOneBodyFireModelData() ;
+                    break;
+                case DIALOG_MOINTOR_SHOW:
+                    String resourceid = data.getString("id");
+                    if(resourceid.contains("&")){
+                        int i = resourceid.indexOf("&");
+                        resourceid = resourceid.substring(0,i);
+                    }
+                    resourceinfoDialog.show();
+                    getinfofromid(resourceid);
+                    break;
+                case DIALOG_RESOURCE_SHOW:
+                    String resid = data.getString("id");
+                    Log.e(TAG, "handleMessage: resid = " + resid );
+                    for (int i = 0; i < resourceList.size(); i++) {
+                        if (resid.contains(resourceList.get(i).getId())) { //TODO 新增类型未添加
+                            currentResource = resourceList.get(i);
+                            Log.e(TAG, "handleMessage: resid" );
+                            initResOtherFlyMap();
+                            initResourceOtherData();
+                            break;
+                        }
+                    }
                     break;
             }
 
         }
     };
-    private Timer timer;
+
+    private boolean monitorTag = false;
+    private void fireMonitorMarker(double lng,double lat) {
+        dWebView.callHandler("removeDataSource", new Object[]{"monitor"}, new OnReturnValue<String>() {
+            @Override
+            public void onValue(String retValue) {
+                Log.e(TAG, "onValue:  qingchu" + retValue);
+            }
+        });
+        monitorTag = true;
+        //currentOneBodyFire
+        Resource resource = new Resource();
+        resource.setName(currentOneBodyFire.getName());
+        resource.setAddress(currentOneBodyFire.getAddress());
+        resource.setId(currentOneBodyFire.getId());
+        resource.setResourceName(currentOneBodyFire.getName());
+        resource.setPosition(new Resource.Position(lng,lat));
+        currentResource = resource;
+        JSONArray jsonArray = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        JSONObject position = new JSONObject();
+        try {
+            jsonObject.put("name",currentOneBodyFire.getName());
+            jsonObject.put("address",currentOneBodyFire.getAddress());
+            jsonObject.put("id",currentOneBodyFire.getId());
+            jsonObject.put("resourceName",currentOneBodyFire.getName());
+            position.put("lng",lng);
+            position.put("lat",lat);
+            jsonObject.put("position",position);
+            jsonArray.put(jsonObject);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        dWebView.callHandler("showPointNoJump", new Object[]{"monitor", jsonArray, ""}, new OnReturnValue<String>() {
+            @Override
+            public void onValue(String retValue) {
+                Log.d("jsbridge", "call succeed,return value is " + retValue);
+            }
+        });
+    }
+
+    private Dialog oneBodyFireDialog;
+    private View oneBodyFireInflater;
+    private TextView mingchengView;
+    private TextView jiaoduView;
+    private TextView juliView;
+    private TextView dizhiView;
+    private TextView shijianView;
+    private TextView jingweiduView;
+    private TextView monitor_jingweidu_view;
+    private ImageView yitijiOneView;
+    private ImageView yitijiTwoView;
+    private boolean isGaojiFind = false;
+    private TextView resourcenameview;
+    private TextView resoucedizhiview;
+    private TextView resourcejingweiduview;
+    private LinearLayout resourceOtherguideview;
+    private TextView resourceOthernameview;
+    private TextView resoucedizhiOtherview;
+    private TextView resourcejingweiduOtherview;
+    private Button kejianguangbutton;
+    private Button rechengxiangbutton;
+    private Dialog resourceListDialog;
+    private View resourceListInflater;
+    private TextView tv_grid;
+    private TextView tv_type;
+    private ScrollView sv_grid;
+    private LinearLayout ll_grid;
+    private RecyclerView resourceListView;
+    private LinearLayout zhenshiLayout;
+    private TextView zhenshiButton;
+    private TextView wubaoButton;
+    private TextView zhenshiTextView;
+    public int isReleas = 2;  //0疑似火情  1是真实火情  2是未处理
+    public int isReleasList = 3;  //0疑似火情  1是真实火情  2是未处理 3是全部
+    private TextView fenleiTextView;
+    private LinearLayout fenleiLayout;
+    private LinearLayout oneBodyFenleiLayout;
+    private TextView weixingShijianView;
+    private LinearLayout daohangLayout;
+    private LinearLayout onebody_shipin_layout;
+    private TextView oneBodyKJGButton;
+    private TextView oneBodyRCXButton;
 
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_map_new2, container, false);
+        return inflater.inflate(R.layout.fragment_map_new, container, false);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -412,43 +451,16 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         setUserVisibleHint(true);
         super.onActivityCreated(savedInstanceState);
-        fireMissionList = new ArrayList<>();
         progressDialog = new ProgressDialog(getContext());
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                // (1) 使用handler发送消息
-                Log.e(TAG, "service: 过了10秒" );
-
-                Message message = mHandler.obtainMessage();
-                Bundle b = new Bundle();
-                b.putInt("what", TIME_CHANGE);
-                message.setData(b);
-                mHandler.sendMessage(message);
-            }
-        },0, 10000);//每隔一秒使用handler发送一下消息,也就是每隔一秒执行一次,一直重复执行
 
         user = new DbConfig(getContext()).getUser();
         weixingModelList = new ArrayList<>();
         oneBodyFireList = new ArrayList<>();
         oneBodyFireFenleiList = new ArrayList<>();
-        monitorDTOList = new ArrayList<>();
-        waterSourceDTOList = new ArrayList<>();
-        cemeteryDTOList = new ArrayList<>();
-        checkStationDTOList = new ArrayList<>();
-        teamDTOList = new ArrayList<>();
-        dangerDTOList = new ArrayList<>();
-        wuziDTOList = new ArrayList<>();
-        lwtDTOList = new ArrayList<>();
-        kkDTOList = new ArrayList<>();
-        zhihuiDTOList = new ArrayList<>();
         resourceListList = new ArrayList<>();
-        optionsAllList = new ArrayList<>();
-        currentWeixingModel = new WeixingModel();
         currentWeixingModel = new WeixingModel();
 
-
+        getBroads();
         getLocation();
         initDateTime();
         initView();
@@ -458,7 +470,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         IntentFilter filter = new IntentFilter();
         filter.addAction("zcd.voicerobot");
         getActivity().registerReceiver(Receiver, filter);
-        requestaddress = new Requestaddress();
 
         //实例化IntentFilter对象
         IntentFilter fireFilter = new IntentFilter();
@@ -472,93 +483,65 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         isTuisong = false;
         currentFireFindTime = 3;
 
+        flyInitMap();
+
         getWeixingDataFromSetvice();
         getonebodyDataFromSetvice();
         getResourcesListFromService();
-
     }
 
-
-    @Override
-    public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        this.year = year;
-        this.month = monthOfYear;
-        this.day = dayOfMonth;
-    }
-
-
-
-    /**
-     * 从服务器轮训任务单数据
-     */
-    private void getOrderBaojingFromService() {
+    private void flyInitMap() {
         final JSONObject jsonObject = new JSONObject();
+        JSONObject posObj = new JSONObject();
         try {
-            JSONObject dto = new JSONObject();
-            dto.put("groupId",user.getGroupId());
-            dto.put("taskType", null);
-            jsonObject.put("limit", 10);
-            jsonObject.put("dto", dto);
-            jsonObject.put("page", 1);
-
+            posObj.put("lat", 36.821396);
+            posObj.put("lng", 118.056281);
+            jsonObject.put("position", posObj);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        /**
-         * oa/api/taskManagement/page  {"page":1,"limit":20,"dto":{}} post
-         * 分页功能接口
-         */
-        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "oa/api/taskManagement/page");
-        params.setAsJsonContent(true);
-        params.setBodyContent(jsonObject.toString());
+        Log.i("GPSposition", jsonObject.toString());
+        dWebView.callHandler("GPSflyto", new Object[]{new Gson().toJson(jsonObject.toString())}, new OnReturnValue<String>() {
+            @Override
+            public void onValue(String retValue) {
+                Log.d("jsbridge", "call succeed,return value is " + retValue);
+            }
+        });
+    }
 
-        Log.e(TAG, "getDataFromService: " + params);
-        Log.e(TAG, "getDataFromService: " + jsonObject.toString());
-        params.addHeader("Authorization", "bearer " + user.getToken());
-
-        params.setConnectTimeout(10000);
-        x.http().post(params, new Callback.CommonCallback<String>() {
+    private void getBroads() {
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL+"/auth/api/auth/user/get/userAreaNew");
+        params.addHeader("Authorization","bearer " + user.getToken());
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: 任务单" + result);
+                JSONObject object = new JSONObject();
+                JSONArray array = new JSONArray();
                 try {
-                    JSONObject jsonObject1 = new JSONObject(result);
-                    if (jsonObject1.getString("code").equals("200")) {
-                        JSONObject data = jsonObject1.getJSONObject("data");
-
-                        JSONArray dataList = data.getJSONArray("dataList");
-                        Gson gson = new Gson();
-                        if (fireMissionList.size()>0){  //已经有数据
-                            JSONObject object = dataList.getJSONObject(0);
-                            String id = object.getString("id");
-                            if (!id.equals(fireMissionList.get(0).getId())){ //有新的报警数据
-
-
-                                orderWarnImageView.setVisibility(View.VISIBLE);
-                                fireMissionList.clear();
-                                fireMissionList = gson.fromJson(String.valueOf(dataList), new TypeToken<List<FireMission>>() {
-                                }.getType());
-                                Log.e(TAG, "onSuccess: 任务单" + fireMissionList.size());
-                                Log.e(TAG, "onSuccess: 任务单" + fireMissionList.size());
-                                Intent intenta = new Intent(getContext(), BackgroundMp3Service.class);
-                                intenta.putExtra("type",fireMissionList.get(0).getTaskType());
-                                getContext().startService(intenta);
-                            }
-                        }else {     //没有数据第一次获取
-                            fireMissionList = gson.fromJson(String.valueOf(dataList), new TypeToken<List<FireMission>>() {
-                            }.getType());
-                        }
-
-
-                    }
+                    object = new JSONObject(result);
+                    array.put(object);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                Log.e(TAG, "onSuccess: setBoards = " + result );
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e(TAG, "run: setBoards？" );
+                        dWebView.callHandler("setBoards", new Object[]{array}, new OnReturnValue<String>() {
+                            @Override
+                            public void onValue(String retValue) {
+                                Log.e(TAG, "onValue:  setBoards" + retValue);
+                            }
+                        });
+                    }
+                },10000);
             }
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
-                Log.e(TAG, "onError: " + ex.toString());
+
             }
 
             @Override
@@ -572,6 +555,531 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             }
         });
     }
+
+    private boolean resLoading = true;
+    private List<Grid> gridList = new ArrayList<>();
+    private void getGrid() {
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/grid/listSecondLevelGridTrees");
+        params.setConnectTimeout(20000);
+        params.addHeader("Authorization","bearer " + user.getToken());
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        x.http().get(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "onSuccess13------ " + result);
+                try {
+                    JSONObject jsonObject1 = new JSONObject(result);
+                    String code = jsonObject1.getString("code");
+                    if (code.equals("200")){
+                        JSONArray data = jsonObject1.getJSONArray("data");
+                        gridList.clear();
+                        Gson gson = new Gson();
+                        gridList = gson.fromJson(String.valueOf(data), new TypeToken<List<Grid>>(){}.getType());
+                        Log.e(TAG, "onSuccess: " +gridList.size() );
+                        initResGridView();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                Log.e(TAG, "onError: materialRepository请求失败" + ex.toString());
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+            }
+        });
+    }
+
+
+    private void initResGridView() {
+        /**
+         * 资源点列表 dialog
+         */
+        ll_grid.removeAllViews();
+        RxViewAction.clickNoDouble(tv_type).subscribe(new Action1<Void>() {
+            @Override
+            public void call(Void unused) {
+                tv_type.setTextColor(getResources().getColor(R.color.white_tr));
+                tv_type.setBackgroundResource(R.drawable.resource_choosed);
+                tv_grid.setTextColor(getResources().getColor(R.color.c5));
+                tv_grid.setBackgroundResource(R.drawable.resource);
+                resourceListView.setVisibility(View.VISIBLE);
+                sv_grid.setVisibility(View.GONE);
+            }
+        });
+        RxViewAction.clickNoDouble(tv_grid).subscribe(new Action1<Void>() {
+            @Override
+            public void call(Void unused) {
+                tv_grid.setTextColor(getResources().getColor(R.color.white_tr));
+                tv_grid.setBackgroundResource(R.drawable.resource_choosed);
+                tv_type.setTextColor(getResources().getColor(R.color.c5));
+                tv_type.setBackgroundResource(R.drawable.resource);
+                sv_grid.setVisibility(View.VISIBLE);
+                resourceListView.setVisibility(View.GONE);
+            }
+        });
+        //构建网格
+        ll_grid.addView(buildGridView(gridList,"$"));
+        resourceListDialog.setContentView(resourceListInflater);
+        Window resourceListWindow = resourceListDialog.getWindow();
+        resourceListWindow.setGravity(Gravity.BOTTOM);
+        WindowManager.LayoutParams resourceListLp = resourceListWindow.getAttributes();
+
+        WindowManager resourcewm = (WindowManager) getContext()
+                .getSystemService(Context.WINDOW_SERVICE);
+        int resourceheight = resourcewm.getDefaultDisplay().getHeight();
+        resourceListLp.height = (int) (resourceheight * 0.8);
+        resourceListWindow.setAttributes(resourceListLp);
+        resourceListDialog.setCanceledOnTouchOutside(true);
+
+        LinearLayoutManager resourcelinearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+        resourceListView.setLayoutManager(resourcelinearLayoutManager);
+        resourceAdapter = new MultiTypeAdapter(resourceItems);
+
+
+        ResourceListViewBinder resourceListViewBinder = new ResourceListViewBinder();
+        resourceListViewBinder.setListener(this);
+        resourceAdapter.register(ResourceList.class, resourceListViewBinder);
+
+        resourceListView.setAdapter(resourceAdapter);
+        assertHasTheSameAdapter(resourceListView, resourceAdapter);
+    }
+
+    public interface CheckEvent{
+        void onCheckChangeListener(String nos, boolean check);
+    }
+    private View buildGridView(List<Grid> gridList,String parentNo) {
+
+        View itemOut = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridoutli,null);
+        LinearLayout ll_out = itemOut.findViewById(R.id.ll_out);
+        for (int i = 0; i < gridList.size(); i++) {
+            Grid grid = gridList.get(i);
+            View item = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridtrees,null);
+            LinearLayout ll_outOut = item.findViewById(R.id.ll_out);
+            LinearLayout ll_inOut = item.findViewById(R.id.ll_in);
+            ImageView iv_statusOut = item.findViewById(R.id.iv_status);
+            ImageView iv_statusOut2 = item.findViewById(R.id.iv_status2);
+            iv_statusOut.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
+            iv_statusOut2.setImageDrawable(getResources().getDrawable(R.drawable.square));
+            iv_statusOut2.setVisibility(View.VISIBLE);
+            TextView tv_gridtreesOut = item.findViewById(R.id.tv_gridtrees);
+            tv_gridtreesOut.setText(grid.getName());
+            final boolean[] cityTag = {false};
+            ll_inOut.setVisibility(View.GONE);
+            iv_statusOut.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
+            RxViewAction.clickNoDouble(iv_statusOut2).subscribe(new Action1<Void>() {
+                @Override
+                public void call(Void unused) {
+                    grid.setSelected(!grid.isSelected());
+                    //透传调用
+                    for (int j = 0; j < checkEventList.size(); j++) {
+                        CheckEvent checkEvent = checkEventList.get(j);
+                        checkEvent.onCheckChangeListener(grid.getNo(),grid.isSelected());
+                    }
+                    if(grid.isSelected()){
+                        resLoading = true;
+                        iv_statusOut2.setImageDrawable(getResources().getDrawable(R.drawable.square_check));
+                        showMapResQueue();
+                        //选择全部资源类型
+                        for (int j = 0; j < resourceListList.size(); j++) {
+                            ResourceList res = resourceListList.get(j);
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if(res.isNew()){
+                                        getResourceDataNewFromService(res.getApiUrl(),res.getName(),res.getIconFile(),grid.getNo());
+                                    }else{
+                                        getResourceDataFromService(res.getApiUrl(),res.getName(),grid.getNo());
+                                    }
+                                }
+                            },2*j);
+                        }
+                    }else{
+                        resLoading = false;
+                        iv_statusOut2.setImageDrawable(getResources().getDrawable(R.drawable.square));
+                        //清除全部资源类型
+                        for (int j = 0; j < resourceListList.size(); j++) {
+                            ResourceList res = resourceListList.get(j);
+                            if(res.isNew()){
+                                //清除旧的卫星定位
+                                dWebView.callHandler("removeDataSource", new Object[]{res.getCode()}, new OnReturnValue<String>() {
+                                    @Override
+                                    public void onValue(String retValue) {
+                                        Log.e(TAG, "onValue:  qingchu" + retValue);
+                                    }
+                                });
+                            }else{
+                                if (res.getName().equals("视频监控点")) {
+                                    resorcetype = "monitor";
+                                }else if (res.getName().equals("消防专业队")){
+                                    resorcetype = "team";
+                                }else if (res.getName().equals("危险源")){
+                                    resorcetype = "dangerSource";
+                                }else if (res.getName().equals("物资储备库")){
+                                    resorcetype = "materialRepository";
+                                }else if (res.getName().equals("水源地")){
+                                    resorcetype = "waterSource";
+                                }else if (res.getName().equals("墓地")){
+                                    resorcetype = "cemetery";
+                                }else if (res.getName().equals("瞭望塔")){
+                                    resorcetype = "watchTower";
+                                }else if (res.getName().equals("护林检查站")){
+                                    resorcetype = "checkStation";
+                                }else if (res.getName().equals("森林防火监测中心")){
+                                    resorcetype = "fireCommand";
+                                }
+                                //清除旧的卫星定位
+                                dWebView.callHandler("removeDataSource", new Object[]{resorcetype}, new OnReturnValue<String>() {
+                                    @Override
+                                    public void onValue(String retValue) {
+                                        Log.e(TAG, "onValue:  qingchu" + retValue);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            });
+            RxViewAction.clickNoDouble(ll_outOut).subscribe(new Action1<Void>() {
+                @Override
+                public void call(Void unused) {
+                    cityTag[0] = !cityTag[0];
+                    if(cityTag[0]){
+                        iv_statusOut.setImageDrawable(getResources().getDrawable(R.drawable.ic_open));
+                        ll_inOut.setVisibility(View.VISIBLE);
+                    }else{
+                        iv_statusOut.setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
+                        ll_inOut.setVisibility(View.GONE);
+                    }
+                }
+            });
+            if(grid.getChildren()!=null && grid.getChildren().size()>0){
+                //有子项 --> 递归
+                ll_inOut.addView(buildGridView(grid.getChildren(),parentNo+","+grid.getNo()));
+            }else{
+                //无子项 --> 类型选择
+                ll_inOut.addView(buildGridTypeView(grid,resourceListList,parentNo+","+grid.getNo()));
+            }
+            //接口透传
+            CheckEvent checkEvent = new CheckEvent() {
+                @Override
+                public void onCheckChangeListener(String no, boolean check) {
+                    if(no!=null && parentNo.contains(no)){
+                        if(check){
+                            iv_statusOut2.setImageDrawable(getResources().getDrawable(R.drawable.square_check));
+                            //选择全部资源类型
+                            for (int j = 0; j < resourceListList.size(); j++) {
+                                ResourceList res = resourceListList.get(j);
+                                new Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if(res.isNew()){
+                                            getResourceDataNewFromService(res.getApiUrl(),res.getName(),res.getIconFile(),grid.getNo());
+                                        }else{
+                                            getResourceDataFromService(res.getApiUrl(),res.getName(),grid.getNo());
+                                        }
+                                    }
+                                },2*j);
+                            }
+                        }else{
+                            iv_statusOut2.setImageDrawable(getResources().getDrawable(R.drawable.square));
+                            //清除全部资源类型
+                            for (int j = 0; j < resourceListList.size(); j++) {
+                                ResourceList res = resourceListList.get(j);
+                                if(res.isNew()){
+                                    //清除旧的卫星定位
+                                    dWebView.callHandler("removeDataSource", new Object[]{res.getCode()}, new OnReturnValue<String>() {
+                                        @Override
+                                        public void onValue(String retValue) {
+                                            Log.e(TAG, "onValue:  qingchu" + retValue);
+                                        }
+                                    });
+                                }else{
+                                    if (res.getName().equals("视频监控点")) {
+                                        resorcetype = "monitor";
+                                    }else if (res.getName().equals("消防专业队")){
+                                        resorcetype = "team";
+                                    }else if (res.getName().equals("危险源")){
+                                        resorcetype = "dangerSource";
+                                    }else if (res.getName().equals("物资储备库")){
+                                        resorcetype = "materialRepository";
+                                    }else if (res.getName().equals("水源地")){
+                                        resorcetype = "waterSource";
+                                    }else if (res.getName().equals("墓地")){
+                                        resorcetype = "cemetery";
+                                    }else if (res.getName().equals("瞭望塔")){
+                                        resorcetype = "watchTower";
+                                    }else if (res.getName().equals("护林检查站")){
+                                        resorcetype = "checkStation";
+                                    }else if (res.getName().equals("森林防火监测中心")){
+                                        resorcetype = "fireCommand";
+                                    }
+                                    //清除旧的卫星定位
+                                    dWebView.callHandler("removeDataSource", new Object[]{resorcetype}, new OnReturnValue<String>() {
+                                        @Override
+                                        public void onValue(String retValue) {
+                                            Log.e(TAG, "onValue:  qingchu" + retValue);
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            checkEventList.add(checkEvent);
+            ll_out.addView(item);
+        }
+        return itemOut;
+    }
+
+    private void showMapResQueue() {
+        resModelList.clear();
+        resModelListReal.clear();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < resModelList.size(); i++) {
+                    ResModel resModel = resModelList.get(i);
+
+                    Log.e(TAG, "run: resModel odelList.size()= " + resModelList.size() );
+                    Log.e(TAG, "run: resModel = " + resModel );
+                    Object[] args = resModel.getArgs();
+                    JSONArray array = (JSONArray) args[1];
+
+                    if(resModelListReal.size()==0){
+                        resModelListReal.add(resModel);
+                    }else{
+                        for (int m = 0; m < resModelListReal.size(); m++) {
+                            ResModel resModelReal = resModelListReal.get(m);
+                            //类型相同 合并
+                            if(Objects.equals(resModelReal.getArgs()[0],resModel.getArgs()[0])){
+                                JSONArray arrayReal = (JSONArray) resModelReal.getArgs()[1];
+                                Log.e(TAG, "run: bingo array.length()" + array.length() +'m'+m);
+                                Log.e(TAG, "run: bingo arrayReal.length()" + arrayReal.length() );
+                                Gson gson = new Gson();
+                                Log.e(TAG, "run: array = " + array );
+                                List<ResMap> arrayList = gson.fromJson(String.valueOf(array),new TypeToken<List<ResMap>>() {
+                                }.getType());
+                                List<ResMap> arrayRealList = gson.fromJson(String.valueOf(arrayReal),new TypeToken<List<ResMap>>() {
+                                }.getType());
+                                //arrayRealList.addAll(arrayList);
+                                Random random = new Random();
+                                //地图bug 1.同类型先清除再添加 2.list中含有相同id异常不显示
+                                for (int j = 0; j < arrayList.size(); j++) {
+                                    ResMap resMap = arrayList.get(j);
+                                    resMap.setId(resMap.getId()+"&" + random.nextInt(10000) + "%");
+                                    arrayRealList.add(resMap);
+                                }
+                                String toJson = gson.toJson(arrayRealList);
+                                JSONArray jsonArray = null;
+                                try {
+                                    jsonArray = new JSONArray(toJson);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                args[1] = jsonArray;
+                                resModelListReal.get(m).setArgs(args);
+
+
+                                break;
+                            }
+                            if(m == resModelListReal.size()-1){
+                                //最后一个 直接添加
+                                resModelListReal.add(resModel);
+                            }
+                        }
+                    }
+                }
+
+                for (int i = 0; i < resModelListReal.size(); i++) {
+                    ResModel resModel = resModelListReal.get(i);
+                    Log.e(TAG, "run: resModel-->" + resModelListReal.size() + ","+ i + ":" + resModel.toString() );
+                    int finalI = i;
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(!resLoading){
+                                return;
+                            }
+                            Log.e(TAG, "run: go" + finalI);
+                            //清除旧的卫星定位
+                            dWebView.callHandler("removeDataSource", new Object[]{resModel.getArgs()[0]}, new OnReturnValue<String>() {
+                                @Override
+                                public void onValue(String retValue) {
+                                    Log.e(TAG, "onValue go :  qingchu " + finalI);
+                                    Log.e(TAG, "onValue go :  qingchu " + resModel.getArgs()[0]);
+                                }
+                            });
+                            dWebView.callHandler(resModel.getMethod(), resModel.getArgs(), new OnReturnValue<String>() {
+                                @Override
+                                public void onValue(String retValue) {
+                                    Log.e("jsbridge", "call succeed,return value is  go " + resModel.getMethod());
+                                    Log.e("jsbridge", "call succeed,return value is  go " + resModel.getArgs()[0]);
+                                    Log.e("jsbridge", "call succeed,return value is  go " + resModel.getArgs()[1]);
+                                }
+                            });
+                        }
+                    },5000*i);
+                }
+            }
+        },3000);
+    }
+
+    private List<CheckEvent> checkEventList = new ArrayList<>();
+
+    private View buildGridTypeView(Grid grid, List<ResourceList> list,String parentNo) {
+        View itemOut = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridoutli,null);
+        LinearLayout ll_out = itemOut.findViewById(R.id.ll_out);
+        for (int i = 0; i < list.size(); i++) {
+            ResourceList resource = list.get(i);
+            View cameraView = LayoutInflater.from(getActivity()).inflate(R.layout.item_gridcameras,null);
+            LinearLayout ll_camera = cameraView.findViewById(R.id.ll_camera);
+            View view = cameraView.findViewById(R.id.view);
+            view.setVisibility(View.VISIBLE);
+            ImageView iv_camera = cameraView.findViewById(R.id.iv_camera);//isOnLine 0 离线 1 在线
+            iv_camera.setImageDrawable(getResources().getDrawable(R.drawable.square));
+            TextView tv_camera = cameraView.findViewById(R.id.tv_camera);
+            tv_camera.setText(list.get(i).getName());
+
+            RxViewAction.clickNoDouble(ll_camera).subscribe(new Action1<Void>() {
+                @Override
+                public void call(Void unused) {
+                    resource.setStatus(!resource.isStatus());
+                    if (resource.isStatus()) {
+                        resLoading = true;
+                        iv_camera.setImageDrawable(getResources().getDrawable(R.drawable.square_check));
+                        showMapResQueue();
+                        if(resource.isNew()){
+                            getResourceDataNewFromService(resource.getApiUrl(),resource.getName(),resource.getIconFile(),grid.getNo());
+                        }else{
+                            getResourceDataFromService(resource.getApiUrl(),resource.getName(),grid.getNo());
+                        }
+                    } else {
+                        resLoading = false;
+                        iv_camera.setImageDrawable(getResources().getDrawable(R.drawable.square));
+                        if(resource.isNew()){
+                            //清除旧的卫星定位
+                            dWebView.callHandler("removeDataSource", new Object[]{resource.getCode()}, new OnReturnValue<String>() {
+                                @Override
+                                public void onValue(String retValue) {
+                                    Log.e(TAG, "onValue:  qingchu" + retValue);
+                                }
+                            });
+                        }else{
+                            if (resource.getName().equals("视频监控点")) {
+                                resorcetype = "monitor";
+                            }else if (resource.getName().equals("消防专业队")){
+                                resorcetype = "team";
+                            }else if (resource.getName().equals("危险源")){
+                                resorcetype = "dangerSource";
+                            }else if (resource.getName().equals("物资储备库")){
+                                resorcetype = "materialRepository";
+                            }else if (resource.getName().equals("水源地")){
+                                resorcetype = "waterSource";
+                            }else if (resource.getName().equals("墓地")){
+                                resorcetype = "cemetery";
+                            }else if (resource.getName().equals("瞭望塔")){
+                                resorcetype = "watchTower";
+                            }else if (resource.getName().equals("护林检查站")){
+                                resorcetype = "checkStation";
+                            }else if (resource.getName().equals("森林防火监测中心")){
+                                resorcetype = "fireCommand";
+                            }
+                            //清除旧的卫星定位
+                            dWebView.callHandler("removeDataSource", new Object[]{resorcetype}, new OnReturnValue<String>() {
+                                @Override
+                                public void onValue(String retValue) {
+                                    Log.e(TAG, "onValue:  qingchu" + retValue);
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+            //接口透传
+            CheckEvent checkEvent = new CheckEvent() {
+                @Override
+                public void onCheckChangeListener(String no ,boolean check) {
+                    if(no!=null && parentNo.contains(no)){
+                        if (check) {
+                            iv_camera.setImageDrawable(getResources().getDrawable(R.drawable.square_check));
+                            if(resource.isNew()){
+                                getResourceDataNewFromService(resource.getApiUrl(),resource.getName(),resource.getIconFile(),grid.getNo());
+                            }else{
+                                getResourceDataFromService(resource.getApiUrl(),resource.getName(),grid.getNo());
+                            }
+                        } else {
+                            iv_camera.setImageDrawable(getResources().getDrawable(R.drawable.square));
+                            if(resource.isNew()){
+                                //清除旧的卫星定位
+                                dWebView.callHandler("removeDataSource", new Object[]{resource.getCode()}, new OnReturnValue<String>() {
+                                    @Override
+                                    public void onValue(String retValue) {
+                                        Log.e(TAG, "onValue:  qingchu" + retValue);
+                                    }
+                                });
+                            }else{
+                                if (resource.getName().equals("视频监控点")) {
+                                    resorcetype = "monitor";
+                                }else if (resource.getName().equals("消防专业队")){
+                                    resorcetype = "team";
+                                }else if (resource.getName().equals("危险源")){
+                                    resorcetype = "dangerSource";
+                                }else if (resource.getName().equals("物资储备库")){
+                                    resorcetype = "materialRepository";
+                                }else if (resource.getName().equals("水源地")){
+                                    resorcetype = "waterSource";
+                                }else if (resource.getName().equals("墓地")){
+                                    resorcetype = "cemetery";
+                                }else if (resource.getName().equals("瞭望塔")){
+                                    resorcetype = "watchTower";
+                                }else if (resource.getName().equals("护林检查站")){
+                                    resorcetype = "checkStation";
+                                }else if (resource.getName().equals("森林防火监测中心")){
+                                    resorcetype = "fireCommand";
+                                }
+                                //清除旧的卫星定位
+                                dWebView.callHandler("removeDataSource", new Object[]{resorcetype}, new OnReturnValue<String>() {
+                                    @Override
+                                    public void onValue(String retValue) {
+                                        Log.e(TAG, "onValue:  qingchu" + retValue);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            };
+            checkEventList.add(checkEvent);
+            ll_out.addView(cameraView);
+        }
+        return itemOut;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        getActivity().unregisterReceiver(Receiver);
+        getActivity().unregisterReceiver(fireWeixingReceiver);
+    }
+
+    @Override
+    public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        this.year = year;
+        this.month = monthOfYear;
+        this.day = dayOfMonth;
+    }
+
 
     /**
      * 卫星推送消息点击广播
@@ -591,140 +1099,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     }
 
     private void bindView() {
-        RxViewAction.clickNoDouble(kjgView).subscribe(new Action1<Void>() {
-            @Override
-            public void call(Void unused) {
-                Intent intent = new Intent(getActivity(), PlayerActivity.class);
-                intent.putExtra("PLAYER_URL",currentOneBodyFire.getVideoPath1());
-                startActivity(intent);
-            }
-        });
-        RxViewAction.clickNoDouble(rcxView).subscribe(new Action1<Void>() {
-            @Override
-            public void call(Void unused) {
-                Intent intent = new Intent(getActivity(), PlayerActivity.class);
-                intent.putExtra("PLAYER_URL",currentOneBodyFire.getVideoPath2());
-                startActivity(intent);
-            }
-        });
-
-        /**
-         * 报警点击
-         */
-        RxViewAction.clickNoDouble(orderWarnImageView)
-                .subscribe(new Action1<Void>() {
-                    @Override
-                    public void call(Void aVoid) {
-                        orderWarnImageView.setVisibility(View.GONE);
-                        startActivity(new Intent(getContext(), FireMissionListActivity.class));
-                    }
-                });
-
-        RxViewAction.clickNoDouble(kejianguangbutton)
-                .subscribe(new Action1<Void>() {
-                    @Override
-                    public void call(Void aVoid) {
-                        String urlcode = kejianguangUrl;
-                        if (urlcode.equals("")){
-                            Toast.makeText(getContext(), "暂无可见光摄像头", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        Intent intent=new Intent();
-                        intent.putExtra("id",urlcode);
-                        intent.putExtra("monitorId",kejianguangMId);
-                        intent.putExtra("deviceId",kejianguangMId);
-                        intent.setAction("video_play");
-                        getContext().sendBroadcast(intent);
-                        resourceinfoDialog.dismiss();
-                    }
-                });
-        RxViewAction.clickNoDouble(rechengxiangbutton)
-                .subscribe(new Action1<Void>() {
-                    @Override
-                    public void call(Void aVoid) {
-                        String urlcode = rechengxiangUrl;
-                        if (urlcode.equals("")){
-                            Toast.makeText(getContext(), "暂无热成像摄像头", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        Intent intent=new Intent();
-                        intent.putExtra("id",urlcode);
-                        intent.putExtra("monitorId",rechengxiangMId);
-                        intent.setAction("video_play");
-                        getContext().sendBroadcast(intent);
-                        resourceinfoDialog.dismiss();
-                    }
-                });
-        /**
-         * 百度地图点marker的点击事件
-         */
-                mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker) {
-                        Bundle extraInfo = marker.getExtraInfo();
-                        String id = extraInfo.getString("id");
-                        String address = extraInfo.getString("address");
-                        String name = extraInfo.getString("name");
-                        int type = extraInfo.getInt("type", 0);
-                        double latitude = marker.getPosition().latitude;
-                        double longitude = marker.getPosition().longitude;
-                Log.e(TAG, "onMarkerClick:id " + id);
-                Log.e(TAG, "onMarkerClick:getId " + marker.getId());
-                Log.e(TAG, "onMarkerClick:getTitle " + marker.getTitle());
-                Log.e(TAG, "onMarkerClick:latitude " + marker.getPosition().latitude);
-                Log.e(TAG, "onMarkerClick:latitudeE6 " + marker.getPosition().latitudeE6);
-                Log.e(TAG, "onMarkerClick:longitude " + marker.getPosition().longitude);
-                Log.e(TAG, "onMarkerClick:longitudeE6 " + marker.getPosition().longitudeE6);
-                if (type == ONE_BODY) {      //一体机火警点击
-                    for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
-                        if (oneBodyFireFenleiList.get(i).getId().equals(id)) {
-                            currentOneBodyFire = oneBodyFireFenleiList.get(i);
-                        }
-                    }
-                    onebodyListDialog.dismiss();
-                    //飞到一体机精确点上
-                    initOneBodyFlyBaiduMap();
-                    //加载一体机详细数据
-                    initOneBodyFireModelData();
-                } else if (type == RESOURCE_MONITOR) {
-
-                    com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                            marker.getPosition().latitude, marker.getPosition().longitude);
-                    MapStatus.Builder builder = new MapStatus.Builder();
-                    builder.target(ll).zoom(15);
-                    mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-
-                    getinfofromid(id);
-                    resourceinfoDialog.show();
-
-                } else if (type == RESOURCE_OTHER) {
-
-                    com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                            marker.getPosition().latitude, marker.getPosition().longitude);
-                    MapStatus.Builder builder = new MapStatus.Builder();
-                    builder.target(ll).zoom(15);
-                    mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-                    resourcenameviewOther.setText(name);
-                    resourcejingweiduviewOther.setText(parse9(longitude+"")+","+parse9(latitude+""));
-                    resoucedizhiviewOther.setText(address);
-                    resourceinfoOtherDialog.show();
-
-                } else if (type == WEI_XING) {
-                    for (int i = 0; i < weixingModelList.size(); i++) {
-                        if (weixingModelList.get(i).getId().equals(id)) {
-                            currentWeixingModel = weixingModelList.get(i);
-                        }
-                    }
-
-                    //飞到精确点上
-                    flyBaiduMap(Double.parseDouble(currentWeixingModel.getLatitude()), Double.parseDouble(currentWeixingModel.getLongitude()));
-                    //加载卫星详细数据
-                    initWeixinModelData();
-                }
-
-                return false;
-            }
-        });
         /**
          * 导航
          */
@@ -739,6 +1113,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                         String jingweiStr = getLocation();
                         String starweidu = "";
                         String starjingdu = "";
+                        Log.e(TAG, "jingweiStr: "+jingweiStr );
                         if (!jingweiStr.isEmpty()) {
                             List<String> jingweiList = Arrays.asList(jingweiStr.split(","));
                             starweidu = jingweiList.get(1);
@@ -747,16 +1122,16 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
                         LatLng latLng = new LatLngChange().transformFromWGSToGCJ(new LatLng(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude()));
 
-                        Log.e(TAG, "call: starweidu=" + starweidu);
-                        Log.e(TAG, "call:starjingdu= " + starjingdu);
+                        Log.e(TAG, "call: starweidu=" + starweidu );
+                        Log.e(TAG, "call:starjingdu= " + starjingdu );
 
                         Poi start = new Poi("", new com.amap.api.maps.model.LatLng(Double.parseDouble(starweidu), Double.parseDouble(starjingdu)), "");
                         Poi end = new Poi(currentOneBodyFire.getName(), new com.amap.api.maps.model.LatLng(latLng.latitude, latLng.longitude), "");
                         AmapNaviParams params = new AmapNaviParams(start, null, end, AmapNaviType.DRIVER, AmapPageType.ROUTE);
                         params.setUseInnerVoice(true);
-                        Log.e(TAG, "call: start" + starweidu);
-                        Log.e(TAG, "call: end" + latLng.latitude);
-                        AmapNaviPage.getInstance().showRouteActivity(getContext(), params, MapNewFragment.this);
+                        Log.e(TAG, "call: start" + starweidu );
+                        Log.e(TAG, "call: end" + latLng.latitude );
+                        AmapNaviPage.getInstance().showRouteActivity(getContext(), params, MapFragment.this);
                     }
                 });
         /**
@@ -820,7 +1195,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     @Override
                     public void call(Void aVoid) {
                         ArrayList<String> picList = new ArrayList<>();
-                        picList.add(currentOneBodyFire.getPicPath1()!=null?currentOneBodyFire.getPicPath1().replace("172.17.221.115","1.181.45.82"):"");
+                        picList.add(currentOneBodyFire.getPicPath1());
                         ImagPagerUtil imagPagerUtil = new ImagPagerUtil(getActivity(), picList);
                         imagPagerUtil.setContentText("");
                         imagPagerUtil.show();
@@ -834,7 +1209,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     @Override
                     public void call(Void aVoid) {
                         ArrayList<String> picList = new ArrayList<>();
-                        picList.add(currentOneBodyFire.getPicPath2()!=null?currentOneBodyFire.getPicPath2().replace("172.17.221.115","1.181.45.82"):"");
+                        picList.add(currentOneBodyFire.getPicPath2());
                         ImagPagerUtil imagPagerUtil = new ImagPagerUtil(getActivity(), picList);
                         imagPagerUtil.setContentText("");
                         imagPagerUtil.show();
@@ -850,11 +1225,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     public void call(Void aVoid) {
                         isGaojiFind = true;
                         //findFirePost();
-                        if (gaojiStartimeText.getText().toString().equals("请输入开始时间")) {
-                            Toast.makeText(getContext(), "请选择开始时间", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        gaojiDialog.dismiss();
                         getWeixingDataFromSetvice();
                     }
                 });
@@ -889,7 +1259,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     @Override
                     public void call(Void aVoid) {
                         ArrayList<String> picList = new ArrayList<>();
-                        picList.add("http://web.ehaohai.com:2018" + currentWeixingModel.getIrImageAddress());
+                        picList.add("http://web.ehaohai.com:2018" +  currentWeixingModel.getIrImageAddress());
                         ImagPagerUtil imagPagerUtil = new ImagPagerUtil(getActivity(), picList);
                         imagPagerUtil.setContentText("");
                         imagPagerUtil.show();
@@ -913,6 +1283,31 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                         mapChooseDialog.show();
                     }
                 });
+        //切换谷歌高程地图
+/*        RxViewAction.clickNoDouble(gugeGaochengMap)
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+//                        gugeGaochengImage.setImageResource(R.drawable.ic_google_gc_select);
+//                        gugeGaochengText.setTextColor(getResources().getColor(R.color.theme_primary));
+
+                        gugeYingxiangImage.setImageResource(R.drawable.ic_google_sl);
+                        gugeYingxiangText.setTextColor(getResources().getColor(R.color.c7));
+
+                        tiandiShiliangImage.setImageResource(R.drawable.ic_tdt_sl);
+                        tiandiShiliangText.setTextColor(getResources().getColor(R.color.c7));
+
+                        tiandiYingxiangImage.setImageResource(R.drawable.ic_tdt_yx);
+                        tiandiYingxiangText.setTextColor(getResources().getColor(R.color.c7));
+
+                        dWebView.callHandler("google_gaocheng", new OnReturnValue<String>() {
+                            @Override
+                            public void onValue(String retValue) {
+                                mapChooseDialog.hide();
+                            }
+                        });
+                    }
+                });*/
         //本地地图
         RxViewAction.clickNoDouble(gugeYingxiangMap)
                 .subscribe(new Action1<Void>() {
@@ -930,13 +1325,13 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                         tiandiYingxiangImage.setImageResource(R.drawable.ic_tdt_yx);
                         tiandiYingxiangText.setTextColor(getResources().getColor(R.color.c12));
 
-                        /*dWebView.callHandler("google_yingxiang", new OnReturnValue<String>() {
+                        dWebView.callHandler("google_yingxiang", new OnReturnValue<String>() {
                             @Override
                             public void onValue(String retValue) {
                                 Log.e(TAG, "onValue:  fanhiu2" + retValue);
                                 mapChooseDialog.hide();
                             }
-                        });*/
+                        });
 
                     }
                 });
@@ -956,13 +1351,13 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
                         tiandiYingxiangImage.setImageResource(R.drawable.ic_tdt_yx);
                         tiandiYingxiangText.setTextColor(getResources().getColor(R.color.c12));
-                        /*dWebView.callHandler("tianditu_shiliang", new OnReturnValue<String>() {
+                        dWebView.callHandler("tianditu_shiliang", new OnReturnValue<String>() {
                             @Override
                             public void onValue(String retValue) {
                                 Log.e(TAG, "onValue:  fanhiu3" + retValue);
                                 mapChooseDialog.hide();
                             }
-                        });*/
+                        });
                     }
                 });
         //天地图影像地图  天地图中文标记
@@ -983,13 +1378,13 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                         tiandiYingxiangImage.setImageResource(R.drawable.ic_tdt_yx_select);
                         tiandiYingxiangText.setTextColor(getResources().getColor(R.color.map));
 
-                   /*     dWebView.callHandler("tianditu_yingxiang", new OnReturnValue<String>() {
+                        dWebView.callHandler("tianditu_yingxiang", new OnReturnValue<String>() {
                             @Override
                             public void onValue(String retValue) {
                                 Log.e(TAG, "onValue:  fanhiu4" + retValue);
                                 mapChooseDialog.hide();
                             }
-                        });*/
+                        });
                     }
                 });
         /*卫星按钮点击*/
@@ -1153,6 +1548,13 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 .subscribe(new Action1<Void>() {
                     @Override
                     public void call(Void aVoid) {
+                        /*if(CommonUtils.hasPermission(getActivity(),"app-map-btn-resource-type")*//*资源类型*//* && (!isZiyuanButtonShow)){
+                            isZiyuanButtonShow = true;
+                            ziyuanButtonLayout.setVisibility(View.VISIBLE);
+                        }else{
+                            isZiyuanButtonShow = false;
+                            ziyuanButtonLayout.setVisibility(View.GONE);
+                        }*/
                         if (isZiyuanButtonShow) {
                             isZiyuanButtonShow = false;
                             ziyuanButtonLayout.setVisibility(View.GONE);
@@ -1180,7 +1582,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 .subscribe(new Action1<Void>() {
                     @Override
                     public void call(Void aVoid) {
-                        // removeMarkerBaiduMap();
                         initOneBodyFireData();
                         onebodyListDialog.show();
                     }
@@ -1190,35 +1591,34 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     @Override
                     public void call(Void aVoid) {
                         String urlcode = kejianguangUrl;
-                        if (urlcode.equals("")) {
+                        if (urlcode.equals("")){
                             Toast.makeText(getContext(), "暂无可见光摄像头", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        Intent intent = new Intent();
-                        /*intent.putExtra("id", urlcode);
-                        intent.putExtra("monitorId", kejianguangMId);
-                        intent.putExtra("deviceId",kejianguangDId);*/
-                        intent.putExtra("deviceId",kejianguangDId);
+                        Intent intent=new Intent();
                         intent.putExtra("id",urlcode);
-                        intent.putExtra("channelId",urlcode);
                         intent.putExtra("monitorId",kejianguangMId);
-                        intent.putExtra("groupId",groupId);
+                        intent.putExtra("channelId",kejianguangCId);
+                        intent.putExtra("groupId",kejianguangGId);
                         intent.setAction("video_play");
                         getContext().sendBroadcast(intent);
                         resourceinfoDialog.dismiss();
                     }
-                });        RxViewAction.clickNoDouble(rechengxiangbutton)
+                });
+        RxViewAction.clickNoDouble(rechengxiangbutton)
                 .subscribe(new Action1<Void>() {
                     @Override
                     public void call(Void aVoid) {
                         String urlcode = rechengxiangUrl;
-                        if (urlcode.equals("")) {
+                        if (urlcode.equals("")){
                             Toast.makeText(getContext(), "暂无热成像摄像头", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        Intent intent = new Intent();
-                        intent.putExtra("id", urlcode);
-                        intent.putExtra("monitorId", rechengxiangMId);
+                        Intent intent=new Intent();
+                        intent.putExtra("id",urlcode);
+                        intent.putExtra("monitorId",rechengxiangMId);
+                        intent.putExtra("channelId",rechengxiangCId);
+                        intent.putExtra("groupId",rechengxiangGId);
                         intent.setAction("video_play");
                         getContext().sendBroadcast(intent);
                         resourceinfoDialog.dismiss();
@@ -1229,7 +1629,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     @Override
                     public void call(Void aVoid) {
                         ARouter.getInstance().build(RouteUtils.FireMissionList)
-                                .withString("token", new DbConfig(getContext()).getUser().getToken())
+                                .withString("token",new DbConfig(getContext()).getUser().getToken())
                                 .navigation();
                     }
                 });
@@ -1240,15 +1640,43 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
                     }
                 });*/
-    }
 
-    private void initOneBodyFlyBaiduMap() {
-        double[] position = LatLngChangeNew.calWGS84toBD09(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
-        com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                position[0], position[1]);
-        MapStatus.Builder builder = new MapStatus.Builder();
-        builder.target(ll).zoom(15);
-        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+        RxViewAction.clickNoDouble(oneBodyRCXButton)
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        Log.e(TAG, "call: rechengxiangbutton" );
+                        String rtspurl = currentOneBodyFire.getVideoPath2();
+                        if (rtspurl == null) {
+                            Toast.makeText(getContext(), "暂无热成像视频", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        Intent intent = new Intent(getContext(), PlayerActivity.class);
+                        //     intent.putExtra("PLAYER_URL", "rtmp://10.135.49.202:1935/playBack/af7ae7cb-d637-66cb-c1cc-ab86af9cc9af-main/1616382481/1616381276.flv?streamType=1&manufacturer=1&startTime=1616381246&endTime=1616381276");
+                        intent.putExtra("PLAYER_URL", rtspurl);
+                        intent.putExtra("PLAYER_NAME", currentOneBodyFire.getName());
+                        startActivity(intent);
+                        resourceinfoDialog.dismiss();
+                    }
+                });
+        RxViewAction.clickNoDouble(oneBodyKJGButton)
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        Log.e(TAG, "call: oneBodyKJGButton" );
+                        String rtspurl = currentOneBodyFire.getVideoPath1();
+                        if (rtspurl == null) {
+                            Toast.makeText(getContext(), "暂无可见光视频", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        Intent intent = new Intent(getContext(), PlayerActivity.class);
+                        //     intent.putExtra("PLAYER_URL", "rtmp://10.135.49.202:1935/playBack/af7ae7cb-d637-66cb-c1cc-ab86af9cc9af-main/1616382481/1616381276.flv?streamType=1&manufacturer=1&startTime=1616381246&endTime=1616381276");
+                        intent.putExtra("PLAYER_URL", rtspurl);
+                        intent.putExtra("PLAYER_NAME", currentOneBodyFire.getName());
+                        startActivity(intent);
+                        resourceinfoDialog.dismiss();
+                    }
+                });
     }
 
     private void showOneBodyFenleiChangeDailog() {
@@ -1256,7 +1684,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         final String[] items = {"全部", "未处理", "真实火点"};
         isReleasList = 3;
         builder = new AlertDialog.Builder(getContext()).setIcon(R.mipmap.ic_launcher).setTitle("火情分类")
-                .setSingleChoiceItems(items, choose1, new DialogInterface.OnClickListener() {
+                .setSingleChoiceItems(items,choose1 , new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Log.e(TAG, "onClick: 类别choose---" + i);
@@ -1265,7 +1693,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 }).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        Log.e(TAG, "onClick: choose1=" + choose1);
+                        Log.e(TAG, "onClick: choose1=" +choose1);
                         oneBodyFireFenleiList.clear();
                         /*if (choose1 == 3) {
                             isReleasList = 0;
@@ -1280,36 +1708,35 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                             }
                           //  currentPage = 1;
                             initOneBodyFireData();
-                        } else */
-                        if (choose1 == 2) {
+                        } else */if (choose1 == 2){
                             isReleasList = 1;
                             fenleiTextView.setText("真实火点");
                             for (int j = 0; j < oneBodyFireList.size(); j++) {
-                                if (oneBodyFireList.get(j).getIsReal() != null) {
-                                    if (oneBodyFireList.get(j).getIsReal() == 1) {
+                                if (oneBodyFireList.get(j).getIsReal()!=null) {
+                                    if (oneBodyFireList.get(j).getIsReal()== 1) {
                                         oneBodyFireFenleiList.add(oneBodyFireList.get(j));
                                     }
 
                                 }
                             }
                             //   currentPage = 1;
-                            removeMarkerBaiduMap();
-                        } else if (choose1 == 1) {
+                            initOneBodyFireData();
+                        } else if (choose1 == 1){
                             isReleasList = 2;
                             fenleiTextView.setText("未处理");
                             for (int j = 0; j < oneBodyFireList.size(); j++) {
-                                if (oneBodyFireList.get(j).getIsReal() == null) {
+                                if (oneBodyFireList.get(j).getIsReal()==null) {
                                     oneBodyFireFenleiList.add(oneBodyFireList.get(j));
                                 }
                             }
                             //   currentPage = 1;
-                            removeMarkerBaiduMap();
+                            initOneBodyFireData();
                         } else {
                             isReleasList = 3;
                             fenleiTextView.setText("全部");
                             oneBodyFireFenleiList.addAll(oneBodyFireList);
-
-                            removeMarkerBaiduMap();
+                            //    currentPage = 1;
+                            initOneBodyFireData();
                         }
                         //initWeixingData();
                     }
@@ -1332,24 +1759,27 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         }
         RequestParams params = null;
         if (currentOneBodyFire.getType() == 2) {
-            params = new RequestParams(requestaddress.getRequstUrl() + "fire/api/monitorFirealarm/realOrError");
-        } else if (currentOneBodyFire.getType() == 4) {
-            params = new RequestParams(requestaddress.getRequstUrl() + "fire/api/StealingFirealarm/realOrError");
-        } else if (currentOneBodyFire.getType() == 5) {
-            params = new RequestParams(requestaddress.getRequstUrl() + "fire/api/BuildingFirealarm/realOrError");
+            params = new RequestParams(RequestUtils.REQUEST_URL + "fire/api/monitorFirealarm/realOrError");
+        }else if (currentOneBodyFire.getType() == 4) {
+            params = new RequestParams(RequestUtils.REQUEST_URL + "fire/api/BuildingFirealarm/realOrError");
+        }else if (currentOneBodyFire.getType() == 5) {
+            params = new RequestParams(RequestUtils.REQUEST_URL + "fire/api/StealingFirealarm/realOrError");
         }
 
         // params.setBodyContent(jsonObject.toString());
         params.addParameter("id", currentOneBodyFire.getId());
         params.addParameter("type", isReleas);
+        params.addParameter("trueAlarmType", 7);//真实报警类型 1 农事用火、2生活用火、3垃圾焚烧、4民俗用火、5施工用火、6吸烟、7林火 8草原火；
+        params.addParameter("isAutoDelegate", 1);//0,1,2
         params.addParameter("isAndroid", 2);
         Log.e(TAG, "getDataFromService: " + jsonObject.toString());
         params.addHeader("Authorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
-        Log.e(TAG, "resource: --" + params);
-        x.http().request(HttpMethod.GET, params, new Callback.CommonCallback<String>() {
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        Log.e(TAG, "resource: --"  + params);
+        x.http().request(HttpMethod.GET,params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: 真实火点:" + result);
+                Log.e(TAG, "onSuccess: 真实火点:" + result );
                 try {
                     JSONObject jsonObject1 = new JSONObject(result);
                     if (jsonObject1.getString("code").equals("200")) {
@@ -1368,7 +1798,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                                 break;
                             }
                         }
-                        if (isReleas == 0) {//0疑似火情  1是真实火情  2是未处理
+                        if (isReleas == 0){//0疑似火情  1是真实火情  2是未处理
                             //处理之后从移除该火情
 
                             for (int i = 0; i < oneBodyFireList.size(); i++) {
@@ -1379,6 +1809,13 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                             }
                         }
 
+                        Message message = mHandler.obtainMessage();
+                        Bundle b = new Bundle();
+                        b.putString("id", oneBodyFireFenleiList.get(0).getId());
+                        b.putInt("what",DIALOG_ONEBODY_FIRE_SHOW);
+                        message.setData(b);
+                        mHandler.sendMessage(message);
+
                     } else {
                         Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
                     }
@@ -1387,7 +1824,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 }
 
             }
-
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 Log.e(TAG, "onError: " + ex.toString());
@@ -1411,161 +1847,95 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         super.onStart();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        //在activity执行onResume时必须调用mMapView. onResume ()
-        baiduMapView.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        baiduMapView.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        getActivity().unregisterReceiver(Receiver);
-        getActivity().unregisterReceiver(fireWeixingReceiver);
-        mLocationClient.stop();
-        mLocationClient = null;
-        baiduMapView.onDestroy();
-    }
-
-
-    public class MyLocationListener extends BDAbstractLocationListener {
-        @Override
-        public void onReceiveLocation(BDLocation location) {
-            //mapView 销毁后不在处理新接收的位置
-            if (location == null || baiduMapView == null) {
-                return;
-            }
-            MyLocationData locData = new MyLocationData.Builder()
-                    .accuracy(location.getRadius())
-                    // 此处设置开发者获取到的方向信息，顺时针0-360
-                    .direction(location.getDirection())
-                    .latitude(location.getLatitude())
-                    .longitude(location.getLongitude())
-                    .build();
-            mBaiduMap.setMyLocationData(locData);
-        }
-    }
-
-
-    private String parse9(String str) {
-        if(str==null){
-            return "";
-        }
-        if(str.length()<9){
-            return str;
-        }
-        return str.substring(0,9);
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void initView() {
-        orderWarnImageView = ((ImageView) getView().findViewById(R.id.order_warn_image));
-        baiduMapView = ((TextureMapView) getView().findViewById(R.id.baidu_mapview));   //baidu_mapview
-        mBaiduMap = baiduMapView.getMap();
-        //显示卫星图层
-        mBaiduMap.setMapType(BaiduMap.MAP_TYPE_SATELLITE);
-        mBaiduMap.setMyLocationEnabled(true);
+        dWebView = ((DWebView) getView().findViewById(R.id.dwebview));
+        dWebView.getSettings().setJavaScriptEnabled(true);
 
-        //只显示道路 不显示其他标注
-        mBaiduMap.showMapPoi(true);
-        //设置最大最小缩放等级
-        mBaiduMap.setMaxAndMinZoomLevel(16, 5);
-        flyBaiduMapZoom(50.733786,123.412188,10);//阿里河
-
-        //定位初始化
-        mLocationClient = new LocationClient(getContext());
-
-        //通过LocationClientOption设置LocationClient相关参数
-        LocationClientOption option = new LocationClientOption();
-        option.setOpenGps(true); // 打开gps
-        option.setCoorType("bd09"); // 设置坐标类型
-        option.setScanSpan(1000);
-
-        //设置locationClientOption
-        mLocationClient.setLocOption(option);
-
-        //注册LocationListener监听器
-        MyLocationListener myLocationListener = new MyLocationListener();
-        mLocationClient.registerLocationListener(myLocationListener);
-        //开启地图定位图层
-        mLocationClient.start();
-
-        //绘制区域边界
-        OnGetDistricSearchResultListener listener = new OnGetDistricSearchResultListener() {
-
+        String url = "file:///android_asset/map/mars_demo.html";
+        //url：网页地址；name/pwd:cookie信息
+        // String isUser = SPUtils.getInstance().getString("userContent");
+        dWebView.loadUrl(url);
+        dWebView.setWebViewClient(new WebViewClient() {
             @Override
-            public void onGetDistrictResult(DistrictResult districtResult) {
-                districtResult.getCenterPt();//获取行政区中心坐标点
-                districtResult.getCityName();//获取行政区域名称
-                List<List<com.baidu.mapapi.model.LatLng>> polyLines = districtResult.getPolylines();//获取行政区域边界坐标点
-                //边界就是坐标点的集合，在地图上画出来就是多边形图层。有的行政区可能有多个区域，所以会有多个点集合。
-                if (polyLines == null) {
-                    return;
-                }
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
 
-                if(cityTag){
-                    for (List<com.baidu.mapapi.model.LatLng> polyline : polyLines) {
-                        OverlayOptions ooPolyline11 = new PolylineOptions().width(10)
-                                .points(polyline).dottedLine(false).color(Color.BLUE);
-                        mBaiduMap.addOverlay(ooPolyline11);
-                        for (com.baidu.mapapi.model.LatLng latLng : polyline) {
-                            builder.include(latLng);
-                        }
-                    }
-                    singleTag = false;
-
-                    cityTag = false;
-                    //initBianjie();
-                }else{
-                    for (List<com.baidu.mapapi.model.LatLng> polyline : polyLines) {
-                        OverlayOptions ooPolyline11 = new PolylineOptions().width(5)
-                                .points(polyline).dottedLine(false).color(Color.BLUE);
-                        mBaiduMap.addOverlay(ooPolyline11);
-                        for (com.baidu.mapapi.model.LatLng latLng : polyline) {
-                            builder.include(latLng);
-                        }
-                    }
-                    singleTag2 = false;
-                }
+                return super.shouldOverrideUrlLoading(view, request);
             }
 
-        };
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                //加载逃生出口资源点
+                // getDataFromService();
+                //加载道路
+                // getRoadDataFromService();
+            }
+        });
 
-        mDistrictSearch = DistrictSearch.newInstance();
-        mDistrictSearch.setOnDistrictSearchListener(listener);//设置回调监听
 
+        dWebView.addJavascriptInterface(this, "jk");
+        JsApi jsApi = new JsApi(getContext());
+        jsApi.setListener(this);
+        dWebView.addJavascriptObject(jsApi, null);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            dWebView.setWebContentsDebuggingEnabled(true);
+        }
+        //添加跨域支持
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            dWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+            dWebView.getSettings().setAllowFileAccessFromFileURLs(true);
+        } else {
+            try {
+                Class<?> clazz = dWebView.getSettings().getClass();
+                Method method = clazz.getMethod("setAllowUniversalAccessFromFileURLs", boolean.class);
+                if (method != null) {
+                    method.invoke(dWebView.getSettings(), true);
+                }
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // String mapUrl = "http://www.google.cn/maps/vt?lyrs=y@189&gl=cn&x={x}&y={y}&z={z}http://www.google.cn/maps/vt?lyrs=y@189&gl=cn&x={x}&y={y}&z={z}"; // 瓦片路径
+        String mapUrl = "assets/qds_2005261619/{z}/{x}/{y}.png"; // 瓦片路径
+        dWebView.callHandler("initMap", new Object[]{mapUrl}, new OnReturnValue<String>() {
+            @Override
+            public void onValue(String retValue) {
+                Log.d("jsbridge", "call succeed,return value is " + retValue);
+            }
+        });
         gaojiFindDialog = new ProgressDialog(getContext());
         date = new StringBuffer();
         endDate = new StringBuffer();
+        /*一体机*/
+        onebody_view=((TextView) getView().findViewById(R.id.onebody_view));
          /*资源类型*/
         retypeView = ((TextView) getView().findViewById(R.id.retype_view));
         ziyuanLayout = ((LinearLayout) getView().findViewById(R.id.ziyuan_layout));
+        onebady_layout = ((LinearLayout) getView().findViewById(R.id.onebady_layout));
+        ddrw_layout = ((LinearLayout) getView().findViewById(R.id.ddrw_layout));
         ziyuanButton = ((TextView) getView().findViewById(R.id.ziyuan_button));
         onebodyButtonLayout = ((LinearLayout) getView().findViewById(R.id.onebody_button_layout));
         if (isonebodyButtonShow) {
             onebodyButtonLayout.setVisibility(View.VISIBLE);
         } else {
-            onebodyButtonLayout.setVisibility(View.VISIBLE);
+            onebodyButtonLayout.setVisibility(View.GONE);
         }
         ziyuanButtonLayout = ((LinearLayout) getView().findViewById(R.id.ziyuan_button_layout));
         if (isZiyuanButtonShow) {
             ziyuanButtonLayout.setVisibility(View.VISIBLE);
         } else {
-            ziyuanButtonLayout.setVisibility(View.VISIBLE);
+            ziyuanButtonLayout.setVisibility(View.GONE);
         }
-        /*一体机*/
-        onebody_view = ((TextView) getView().findViewById(R.id.onebody_view));
         /*调度任务*/
-        ddrw_view = ((TextView) getView().findViewById(R.id.ddrw_button));
+        ddrw_view=((TextView) getView().findViewById(R.id.ddrw_button));
         /*卫星布局加载*/
         weixingButton = ((TextView) getView().findViewById(R.id.weixing_button));
         weixingButtonLayout = ((LinearLayout) getView().findViewById(R.id.weixing_button_layout));
@@ -1606,18 +1976,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         fireInfoListInflater.setMinimumWidth(10000);
         fireCountText = ((TextView) fireInfoListInflater.findViewById(R.id.fire_count_textview));
         weixingListView = ((RecyclerView) fireInfoListInflater.findViewById(R.id.fire_info_listview));
-        weixingSwipe = ((SwipeRefreshLayout) fireInfoListInflater.findViewById(R.id.warn_swipe));
         fenleiLayout = ((LinearLayout) fireInfoListInflater.findViewById(R.id.fenlei_layout));
         fenleiView = ((TextView) fireInfoListInflater.findViewById(R.id.fenlei_View));
         weixingShijianView = ((TextView) fireInfoListInflater.findViewById(R.id.weixing_shijian_view));
         weixingShijianView.setText("3小时内");
-        weixingSwipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                getWeixingDataFromSetvice();
-                weixingSwipe.setRefreshing(false);
-            }
-        });
         fireInfoListDialog.setContentView(fireInfoListInflater);
         Window fireListWindow = fireInfoListDialog.getWindow();
         fireListWindow.setGravity(Gravity.BOTTOM);
@@ -1670,8 +2032,8 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         onebodyListDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyle);
         onebodyListInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_onebody_list, null);
         onebodyListInflater.setMinimumWidth(10000);
+        refresh_onebody = ((SwipeRefreshLayout) onebodyListInflater.findViewById(R.id.refresh_onebody));
         onebodyListView = ((RecyclerView) onebodyListInflater.findViewById(R.id.onebody_info_listview));
-        onebodySwipe = ((SwipeRefreshLayout) onebodyListInflater.findViewById(R.id.swipe));
         //shaixuanbutton=((TextView) onebodyListInflater.findViewById(R.id.shaixuan));
         onebodyListDialog.setContentView(onebodyListInflater);
         onebodyButton = ((TextView) getView().findViewById(R.id.onebody_button));
@@ -1694,9 +2056,24 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
         OneBodyFireViewBinder oneBodyFireViewBinder = new OneBodyFireViewBinder();
         oneBodyFireViewBinder.setListener(this);
-        onebodyAdapter.register(OneBodyFire.Dto.class, oneBodyFireViewBinder);
+        onebodyAdapter.register(OneBodyFire.class, oneBodyFireViewBinder);
         onebodyAdapter.register(Empty.class,new EmptyViewBinder());
         onebodyListView.setAdapter(onebodyAdapter);
+        refresh_onebody.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getonebodyDataFromSetvice();
+                refresh_onebody.setRefreshing(false);
+                //去除监控点位置marker
+                dWebView.callHandler("removeDataSource", new Object[]{"monitor"}, new OnReturnValue<String>() {
+                    @Override
+                    public void onValue(String retValue) {
+                        Log.e(TAG, "onValue:  qingchu" + retValue);
+                    }
+                });
+                monitorTag = false;
+            }
+        });
         assertHasTheSameAdapter(onebodyListView, onebodyAdapter);
         //加载更多
         onebodyListView.setOnScrollListener(new OnLoadMoreListener() {
@@ -1714,16 +2091,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
             }
         });
-        onebodySwipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                oneBodyFireList.clear();
-                oneBodyFireFenleiList.clear();
-                removeMarkerBaiduMap();
-                getonebodyDataFromSetvice();
-                onebodySwipe.setRefreshing(false);
-            }
-        });
         /**
          *  一体机火点详细信息
          */
@@ -1731,11 +2098,12 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         oneBodyFireInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_fire_onebody, null);
         oneBodyFireInflater.setMinimumWidth(10000);
         mingchengView = ((TextView) oneBodyFireInflater.findViewById(R.id.mingcheng_view));
+        jiaoduView = ((TextView) oneBodyFireInflater.findViewById(R.id.jiaodu_view));
+        juliView = ((TextView) oneBodyFireInflater.findViewById(R.id.juli_view));
         dizhiView = ((TextView) oneBodyFireInflater.findViewById(R.id.dizhi_view));
         shijianView = ((TextView) oneBodyFireInflater.findViewById(R.id.shijian_view));
         jingweiduView = ((TextView) oneBodyFireInflater.findViewById(R.id.jingweidu_view));
-        kjgView = ((TextView) oneBodyFireInflater.findViewById(R.id.kejianguang_button));
-        rcxView = ((TextView) oneBodyFireInflater.findViewById(R.id.rechengxiang_button));
+        monitor_jingweidu_view = ((TextView) oneBodyFireInflater.findViewById(R.id.monitor_jingweidu_view));
         yitijiOneView = ((ImageView) oneBodyFireInflater.findViewById(R.id.yitiji_one_image));
         yitijiTwoView = ((ImageView) oneBodyFireInflater.findViewById(R.id.yitiji_two_image));
         zhenshiLayout = ((LinearLayout) oneBodyFireInflater.findViewById(R.id.zhenshi_layout));
@@ -1743,6 +2111,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         wubaoButton = ((TextView) oneBodyFireInflater.findViewById(R.id.wubao_button));
         zhenshiTextView = ((TextView) oneBodyFireInflater.findViewById(R.id.zhenshi_text_view));
         daohangLayout = ((LinearLayout) oneBodyFireInflater.findViewById(R.id.daohang_layout));
+        onebody_shipin_layout = ((LinearLayout) oneBodyFireInflater.findViewById(R.id.onebody_shipin_layout));
+        oneBodyKJGButton = ((TextView) oneBodyFireInflater.findViewById(R.id.kejianguang_button));
+        oneBodyRCXButton = ((TextView) oneBodyFireInflater.findViewById(R.id.rechengxiang_button));
+        onebody_shipin_layout.setVisibility(View.VISIBLE);
 
         oneBodyFireDialog.setContentView(oneBodyFireInflater);
         Window oneBodyfireDialogWindow = oneBodyFireDialog.getWindow();
@@ -1759,6 +2131,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         resourceListInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_resource_list, null);
         resourceListInflater.setMinimumWidth(10000);
         resourceListView = ((RecyclerView) resourceListInflater.findViewById(R.id.resource_listview));
+        tv_type = resourceListInflater.findViewById(R.id.tv_type);
+        tv_grid = resourceListInflater.findViewById(R.id.tv_grid);
+        sv_grid = resourceListInflater.findViewById(R.id.sv_grid);
+        ll_grid = resourceListInflater.findViewById(R.id.ll_grid);
         resourceListDialog.setContentView(resourceListInflater);
         Window resourceListWindow = resourceListDialog.getWindow();
         resourceListWindow.setGravity(Gravity.BOTTOM);
@@ -1784,7 +2160,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         assertHasTheSameAdapter(resourceListView, resourceAdapter);
 
         /**
-         *  资源点详细信息
+         *  资源点详细信息 摄像头
          */
         resourceinfoDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyle);
         resourceInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_resource_info, null);
@@ -1802,25 +2178,26 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         resourceDialogWindow.setAttributes(resourceLpFire);
         resourceinfoDialog.setCanceledOnTouchOutside(true);
         /**
-         *  其它类型资源点详细信息
+         *  资源点详细信息 其它
          */
-        resourceinfoOtherDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyle);
-        resourceInflaterOther = LayoutInflater.from(getContext()).inflate(R.layout.dialog_resource_info_other, null);
-        resourceInflaterOther.setMinimumWidth(10000);
-        resourcenameviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resourcename_view));
-        resoucedizhiviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resoucedizhi_view));
-        resourcejingweiduviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resourcejingweidu_view));
+        resourceOtherDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyle);
+        resourceOtherInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_resource_other_info, null);
+        resourceOtherInflater.setMinimumWidth(10000);
+        resourceOtherguideview = ((LinearLayout) resourceOtherInflater.findViewById(R.id.ll_guide));
+        resourceOthernameview = ((TextView) resourceOtherInflater.findViewById(R.id.resourcename_view));
+        resoucedizhiOtherview = ((TextView) resourceOtherInflater.findViewById(R.id.resoucedizhi_view));
+        resourcejingweiduOtherview = ((TextView) resourceOtherInflater.findViewById(R.id.resourcejingweidu_view));
 
-        resourceinfoOtherDialog.setContentView(resourceInflaterOther);
-        Window resourceDialogWindowOther = resourceinfoOtherDialog.getWindow();
-        resourceDialogWindowOther.setGravity(Gravity.BOTTOM);
-        WindowManager.LayoutParams resourceLpFireOther = resourceDialogWindowOther.getAttributes();
-        resourceDialogWindowOther.setAttributes(resourceLpFireOther);
-        resourceinfoOtherDialog.setCanceledOnTouchOutside(true);
+        resourceOtherDialog.setContentView(resourceOtherInflater);
+        Window resourceOtherDialogWindow = resourceOtherDialog.getWindow();
+        resourceOtherDialogWindow.setGravity(Gravity.BOTTOM);
+        WindowManager.LayoutParams resourceOtherLpFire = resourceDialogWindow.getAttributes();
+        resourceOtherDialogWindow.setAttributes(resourceOtherLpFire);
+        resourceOtherDialog.setCanceledOnTouchOutside(true);
         /** 高级查询
          */
         gaojiDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyle);
-        gaojiInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_gaoji, null);
+        gaojiInflater = LayoutInflater.from(getContext()).inflate(R.layout.dialog_gaoji,null);
         gaojiInflater.setMinimumWidth(10000);
         gaojiDialog.setContentView(gaojiInflater);
         Window gaojiDialogWindow = gaojiDialog.getWindow();
@@ -1892,75 +2269,39 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 //                Log.d("jsbridge", "call succeed,return value is " + retValue);
 //            }
 //        });
-    }
 
-    private boolean cityTag = true;
-    private boolean singleTag = false;
-    private boolean singleTag2 = false;
-    /**
-     * 绘制区域边界
-     */
-    private void initQuyuBianjie() {
-        //网格数据json解析
-        try {
-            JSONObject jsonObject = new JSONObject(new GetJsonDataUtil().getJson(getActivity(),"xianjie.json"));
-                JSONArray coordinates = jsonObject.getJSONArray("coordinates");
-                if(coordinates!=null && coordinates.length()>0){
-                    for (int q = 0; q < coordinates.length(); q++) {
-                        JSONArray array = (JSONArray) coordinates.get(q);
-                        if(array!=null && array.length()>0){
-                            List<com.baidu.mapapi.model.LatLng> polyline = new ArrayList<>();
-                            for (int m = 0; m < array.length(); m++) {
-                                JSONArray list = (JSONArray) array.get(m);
-                                polyline.add(new com.baidu.mapapi.model.LatLng(Double.parseDouble(list.get(1).toString()),Double.parseDouble(list.get(0).toString())));
-                            }
-                            OverlayOptions ooPolyline1 = new PolylineOptions().width(10)
-                                    .points(polyline).dottedLine(false).color(Color.BLUE);
-                            mBaiduMap.addOverlay(ooPolyline1);
-                        }
-                    }
-                }
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Log.e(TAG, "initQuyuBianjie: error " + e.getMessage() );
-            Log.e(TAG, "initQuyuBianjie: error " + e.toString() );
+        if (CommonUtils.hasPermission(getActivity(),"app-map-btn-resource") || CommonUtils.hasPermission(getActivity(),"app-map-btn-resource-type")/*资源*/) {
+            ziyuanLayout.setVisibility(View.VISIBLE);
+        } else {
+            ziyuanLayout.setVisibility(View.GONE);
         }
-    }
-    /**
-     * 绘制区域边界
-     */
-    private void initQuyuBianjieOld() {
-        if(singleTag){
-            return;
+        if (CommonUtils.hasPermission(getActivity(),"app-map-btn-resource-type")/*资源类型*/) {
+            retypeView.setVisibility(View.VISIBLE);
+        } else {
+            retypeView.setVisibility(View.GONE);
         }
-        singleTag = true;
-        DistrictSearchOption districtSearchOption = new DistrictSearchOption();
-        districtSearchOption.cityName("鄂伦春自治旗");//检索城市名称
-        mDistrictSearch.searchDistrict(districtSearchOption);//请求行政区数据
-
-    }
-    /**
-     * 绘制区县边界
-     */
-    private void initBianjie() {
-        if(singleTag2){
-            return;
+        if(!CommonUtils.hasPermission(getActivity(),"app-map-btn-firealarm")){//地图-报警列表
+            onebady_layout.setVisibility(View.GONE);
         }
-        singleTag2 = true;
-        List<String> list = new ArrayList<>();
-        list.add("泰山区");
-        list.add("岱岳区");
-        list.add("宁阳县");
-        list.add("东平县");
-        list.add("新泰市");
-        list.add("肥城市");
-        for (int i = 0; i < list.size(); i++) {
-            DistrictSearchOption districtSearchOption = new DistrictSearchOption();
-            districtSearchOption.cityName(list.get(i));//检索城市名称
-            mDistrictSearch.searchDistrict(districtSearchOption);//请求行政区数据
+        if(!CommonUtils.hasPermission(getActivity(),"app-map-btn-task")){//TODO 地图-调度任务
+            ddrw_layout.setVisibility(View.GONE);
         }
-
+        if((!CommonUtils.hasPermission(getActivity(),"app-map-btn-satelliteFirealarm"))//地图-卫星权限
+                &&(!CommonUtils.hasPermission(getActivity(),"app-satelliteFirealarm-btn-list"))
+                &&(!CommonUtils.hasPermission(getActivity(),"app-satelliteFirealarm-btn-query"))
+                &&(!CommonUtils.hasPermission(getActivity(),"app-satelliteFirealarm-btn-setting"))){
+            weixinLayout.setVisibility(View.GONE);
+        }
+        if(!CommonUtils.hasPermission(getActivity(),"app-satelliteFirealarm-btn-list")){//地图-卫星-火情列表
+            weixingLiebiaoView.setVisibility(View.GONE);
+        }
+        if(!CommonUtils.hasPermission(getActivity(),"app-satelliteFirealarm-btn-query")){//地图-卫星-火情查询
+            weixingChaxunView.setVisibility(View.GONE);
+        }
+        if(!CommonUtils.hasPermission(getActivity(),"app-satelliteFirealarm-btn-setting")){//地图-卫星-卫星设置
+            weixingShezhiView.setVisibility(View.GONE);
+        }
     }
 
     private void showLeibieChangeDailog() {
@@ -1972,7 +2313,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         } else {
             choose1 = 1;
         }
-        builder = new AlertDialog.Builder(getContext()).setIcon(R.mipmap.ic_launcher).setTitle("卫星分类")
+        builder = new AlertDialog.Builder(getContext()).setIcon(R.mipmap.ic_launcher).setTitle("单选列表")
                 .setSingleChoiceItems(items, choose1, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -2022,22 +2363,22 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 jsonObject.put("endTime", format.format(c.getTime()).replace(" ", "T"));
                 jsonObject.put("startTime", obTime);
             } else {     //不是推送查询
-                if (isGaojiFind) {       //gaoji
+                if (isGaojiFind){       //gaoji
                     String startTimeStr = "";
                     if (!gaojiStartimeText.getText().toString().equals("请输入开始时间")) {
                         startTimeStr = gaojiStartimeText.getText().toString();
                     }
                     String endTimeStr = "";
-                    if (!gaojiEndTimeText.getText().toString().equals("请输入结束时间")) {
+                    if (!gaojiEndTimeText.getText().toString().equals("请输入结束时间")){
                         endTimeStr = gaojiEndTimeText.getText().toString();
                     }
                     jsonObject.put("endTime", endTimeStr);
-                    jsonObject.put("startTime", startTimeStr);
-                } else {
-                    jsonObject.put("endTime", format.format(c.getTime()).replace(" ", " "));
+                    jsonObject.put("startTime",startTimeStr);
+                }else {
+                    jsonObject.put("endTime", format.format(c.getTime()).replace(" ", "T"));
                     c.add(Calendar.HOUR, -currentFireFindTime);    //获取currentFireFindTime小时之前的时间
                     //jsonObject.put("startTime","2020-11-08T10:00:00");   //测试用 上线要改过来
-                    jsonObject.put("startTime", format.format(c.getTime()).replace(" ", " "));
+                    jsonObject.put("startTime", format.format(c.getTime()).replace(" ", "T"));
                 }
 
             }
@@ -2060,10 +2401,11 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "fire/api/satelliteFirealarm/list");
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "fire/api/satelliteFirealarm/list");
 
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization", "bearer " + user.getToken());
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "getWeixingDataFromSetvice: " + params);
         Log.e(TAG, "getWeixingDataFromSetvice: " + jsonObject.toString());
         Log.e(TAG, "getWeixingDataFromSetvice: " + user.getToken());
@@ -2083,7 +2425,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
                         initWeixingData();
                     } else {
-                        Toast.makeText(getContext(), jsonObject1.getString("message"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -2120,16 +2462,17 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             jsonObject.put("isDisplay", "1");
         } catch (JSONException e) {
         }
-        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "resource/api/resourceList/list");
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/resourceList/list");
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         Log.e(TAG, "getDataFromService: " + jsonObject.toString());
         params.addHeader("Authorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
-        Log.e(TAG, "resource: --" + params);
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        Log.e(TAG, "resource: --"  + params);
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: --1-" + result);
+                Log.e(TAG, "onSuccess: --1-" + result );
                 try {
                     JSONObject jsonObject1 = new JSONObject(result);
                     if (jsonObject1.getString("code").equals("200")) {
@@ -2142,7 +2485,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                         for (int i = 0; i < resourceListList.size(); i++) {
                             resourceListList.get(i).setCheck(false);
                         }
-                        initResourceListData();
+                        getResourcesListNewFromService();
                     } else {
                         Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
                     }
@@ -2151,7 +2494,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 }
 
             }
-
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 Log.e(TAG, "onError: " + ex.toString());
@@ -2171,41 +2513,95 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
 
     /**
+     * 从服务器获取资源列表 后端新增（合并。。。）
+     */
+    private void getResourcesListNewFromService() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("groupId", new DbConfig(getActivity()).getUser().getGroupId());
+            jsonObject.put("isDisplay", "1");
+        } catch (JSONException e) {
+        }
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/resourceType/list");
+        params.setAsJsonContent(true);
+        params.setBodyContent(jsonObject.toString());
+        Log.e(TAG, "getDataFromService: " + jsonObject.toString());
+        params.addHeader("Authorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        Log.e(TAG, "resource: --"  + params);
+        x.http().post(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "onSuccess: --new-" + result );
+                try {
+                    JSONObject jsonObject1 = new JSONObject(result);
+                    if (jsonObject1.getString("code").equals("200")) {
+                        JSONArray data = jsonObject1.getJSONArray("data");
+                        Gson gson = new Gson();
+                        List<ResourceList> listS = gson.fromJson(String.valueOf(data), new TypeToken<List<ResourceList>>() {
+                        }.getType());
+                        for (int i = 0; i < listS.size(); i++) {
+                            listS.get(i).setNew(true);
+                        }
+                        resourceListList.addAll(listS);
+
+                        for (int i = 0; i < resourceListList.size(); i++) {
+                            resourceListList.get(i).setCheck(false);
+                        }
+                        initResourceListData();
+                        getGrid();
+                    } else {
+                        Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                Log.e(TAG, "onError: " + ex.toString());
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
+            }
+        });
+    }
+
+
+
+    /**
      * 从服务器获取一体机数据
      */
     private void getonebodyDataFromSetvice() {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Calendar c = Calendar.getInstance();
 
-//        if (isShowSearchDialog) {
+        if (isShowSearchDialog) {
             showDialogProgress(progressDialog, "查询中...");
-//        }
+        }
         final JSONObject jsonObject = new JSONObject();
         try {
             JSONObject dto = new JSONObject();
             jsonObject.put("dto", dto);
-            jsonObject.put("limit", 50);
+            jsonObject.put("limit", 200);
             jsonObject.put("page", currentPage);
-            /*jsonObject.put("isReal", null);
-            jsonObject.put("groupId", new DbConfig(getContext()).getUser().getGroupId());
-            jsonObject.put("isHandle", 0);
-            if (shipinState == 0) {
-                jsonObject.put("type", null);
-            } else {
-                jsonObject.put("type", shipinState);
-            }*/
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
-           RequestParams params = new RequestParams( requestaddress.getRequstUrl() +"fire/api/monitorFirealarm/page");
-       // RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "/fire/api/Statistic/getAlarmList");
-        /*RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "/fire/api/Statistic/getAlarmList");*/
+        RequestParams params = new RequestParams( RequestUtils.REQUEST_URL +"fire/api/monitorFirealarm/page");
 
 
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization", "bearer " + user.getToken());
-        params.addHeader("NetworkType","Internet");
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "getonebodyDataFromSetvice: " + params);
         Log.e(TAG, "getonebodyDataFromSetvice: " + jsonObject.toString());
         Log.e(TAG, "getonebodyDataFromSetvice: " + user.getToken());
@@ -2221,32 +2617,25 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                         //totalSize=data.getInt("totalSize");
                         JSONObject getJsonObj = data.getJSONObject(0);//获取json数组中的第一项
                         JSONArray dataList = getJsonObj.getJSONArray("dataList");
-                        Log.e(TAG, "dataList: "+dataList);
+                        Log.i(TAG, "dataList: "+dataList);
                         totalSize=getJsonObj.getInt("totalSize");
-                        Log.e(TAG, "getonebodyDataonSuccess: "+totalSize);
+                        Log.i(TAG, "getonebodyDataonSuccess: "+totalSize);
                         lastPage= (totalSize + 50 -1) / 50;     //计算最大分页数
-                        Log.e(TAG, "getonebodyDataonSuccess: "+lastPage);
+                        Log.i(TAG, "getonebodyDataonSuccess: "+lastPage);
                         Gson gson = new Gson();
                         oneBodyFireList.clear();
-                        List<OneBodyFire.Dto> oneBodyFireAllList = gson.fromJson(String.valueOf(dataList), new TypeToken<List<OneBodyFire.Dto>>() {
+                        List<OneBodyFire> oneBodyFireAllList = gson.fromJson(String.valueOf(dataList), new TypeToken<List<OneBodyFire>>() {
                         }.getType());
-
-                        Log.e(TAG, "onSuccess: getonebodyDataonSuccess oneBodyFireAllList.size() = " + oneBodyFireAllList.size() );
                         //将所有疑似火情剔除
                         for (int i = 0; i < oneBodyFireAllList.size(); i++) {
                             if (oneBodyFireAllList.get(i).getIsReal()!=null) {
                                 if (oneBodyFireAllList.get(i).getIsReal() == 1){
-                                    if(oneBodyFireAllList.get(i).getId()!=null){
-                                        oneBodyFireList.add(oneBodyFireAllList.get(i));
-                                    }
-                                }
-                            }else {
-                                if(oneBodyFireAllList.get(i).getId()!=null && oneBodyFireAllList.get(i).getIsHandle()!=1){
                                     oneBodyFireList.add(oneBodyFireAllList.get(i));
                                 }
+                            }else {
+                                oneBodyFireList.add(oneBodyFireAllList.get(i));
                             }
                         }
-                        Log.e(TAG, "onSuccess: getonebodyDataonSuccess oneBodyFireList.size() = " + oneBodyFireList.size() );
                         isReleasList = 3;
                         oneBodyFireFenleiList.clear();
 
@@ -2256,22 +2645,19 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                                 oneBodyFireFenleiList.add(oneBodyFireList.get(j));
                             }
                         }
-                        Log.e(TAG, "onSuccess: getonebodyDataonSuccess oneBodyFireFenleiList.size() = " + oneBodyFireFenleiList.size() );
                         initOneBodyFireData();
-
                     } else {
-                        //Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    Log.e(TAG, "onSuccess:  getonebodyDataonSuccess error " + e );
                 }
 
             }
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
-                Log.e(TAG, "getonebodyDataonSuccess onError: " + ex.toString());
+                Log.e(TAG, "onError: onbody" + ex.toString());
             }
 
             @Override
@@ -2281,9 +2667,9 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
             @Override
             public void onFinished() {
-//                if (isShowSearchDialog) {
+                if (isShowSearchDialog) {
                     progressDialog.dismiss();
-//                }
+                }
 
             }
         });
@@ -2295,11 +2681,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
      */
     private void initOneBodyFireData() {
         //往地图上打一体机火点
-        // initYitijiFireMap();  超图的方法
-        initYitijiFireBiaduMap();
+        initYitijiFireMap();
         //往列表上展示数据
 
-        Log.e(TAG, "initOneBodyFireData:size== " + oneBodyFireFenleiList.size());
+        Log.e(TAG, "initOneBodyFireData:size== " + oneBodyFireFenleiList.size() );
        /* if (oneBodyFireFenleiList.size()==0&&currentPage==1){
             onebodyItems.clear();
         }else {
@@ -2308,9 +2693,9 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             }
         }*/
         onebodyItems.clear();
-        if (oneBodyFireFenleiList.size() == 0) {
+        if (oneBodyFireFenleiList.size() == 0){
             onebodyItems.add(new Empty("暂无数据"));
-        } else {
+        }else {
             for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
                 onebodyItems.add(oneBodyFireFenleiList.get(i));
             }
@@ -2319,42 +2704,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
         assertAllRegistered(onebodyAdapter, onebodyItems);
         onebodyAdapter.notifyDataSetChanged();
-    }
-
-    /**
-     * 往百度地图上打点
-     */
-    private void initYitijiFireBiaduMap() {
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_red_fire);//默认森林防火
-        for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
-            if(oneBodyFireFenleiList.get(i).getType() == null){
-                continue;
-            }
-            switch (oneBodyFireFenleiList.get(i).getType()){
-                case 2:
-                    btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_red_fire);//森林防火
-                    break;
-                case 4:
-                    btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_blue_fire);//海域监控
-                    break;
-                case 5:
-                    btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_yellow_fire);//国土报警
-                    break;
-            }
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(oneBodyFireFenleiList.get(i).getAlarmLatitude(), oneBodyFireFenleiList.get(i).getAlarmLongitude());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", oneBodyFireFenleiList.get(i).getId());
-            bundle.putInt("type", ONE_BODY);
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
-        }
-        optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
     }
 
 
@@ -2367,34 +2716,33 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         assertAllRegistered(resourceAdapter, resourceItems);
         resourceAdapter.notifyDataSetChanged();
     }
-
     /**
      * 地图上加载一体机火点
      */
     private void initYitijiFireMap() {
-        /*//清除旧的卫星定位
+        //清除旧的卫星定位
         dWebView.callHandler("removeDataSource", new Object[]{"ic_onebody"}, new OnReturnValue<String>() {
             @Override
             public void onValue(String retValue) {
                 Log.e(TAG, "onValue:  qingchu" + retValue);
             }
-        });*/
+        });
         //打入新的卫星点位
         if (oneBodyFireFenleiList.size() > 0) {
             List<MapModel> mapModelList = new ArrayList<>();
             for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
-                OneBodyFire.Dto oneBodyFire = oneBodyFireFenleiList.get(i);
-                MapModel mapModel = new MapModel(oneBodyFire.getId(), oneBodyFire.getName(), new MapPosition(oneBodyFire.getAlarmLongitude(), oneBodyFire.getAlarmLatitude(), 0.00), "ic_onebody");
+                OneBodyFire oneBodyFire = oneBodyFireFenleiList.get(i);
+                MapModel mapModel = new MapModel(oneBodyFire.getId(), oneBodyFire.getName(),new MapPosition(oneBodyFire.getAlarmLongitude(), oneBodyFire.getAlarmLatitude(),0.00), "ic_onebody");
                 mapModelList.add(mapModel);
             }
 
-           /* Log.e(TAG, "initWeixingMap: " + new Gson().toJson(mapModelList));
+            Log.e(TAG, "initWeixingMap: " + new Gson().toJson(mapModelList));
             dWebView.callHandler("showPoint", new Object[]{"ic_onebody", new Gson().toJson(mapModelList), ""}, new OnReturnValue<String>() {
                 @Override
                 public void onValue(String retValue) {
                     Log.e(TAG, "onValue:  dadian" + retValue);
                 }
-            });*/
+            });
         }
 
     }
@@ -2404,8 +2752,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
      */
     private void initWeixingData() {
         //往地图上打点
-        //initWeixingMap();
-        removeMarkerBaiduMap();
+        initWeixingMap();
 
         //往列表上展示
         Log.e(TAG, "initWeixingData: " + weixingModelList.size());
@@ -2471,51 +2818,11 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             }
 
             //飞到精确点上
-            // initWeixingFlyMap();
+            initWeixingFlyMap();
             //加载卫星详细数据
             initWeixinModelData();
         }
 
-    }
-
-    /**
-     * 卫星数据百度地图打点
-     */
-    private void initWeixingBaiduMap() {
-        //清除旧的卫星定位
-        /*dWebView.callHandler("removeDataSource", new Object[]{"fire_weixing"}, new OnReturnValue<String>() {
-            @Override
-            public void onValue(String retValue) {
-                Log.e(TAG, "onValue:  qingchu" + retValue);
-            }
-        });*/
-        //打入新的卫星点位
-        if (weixingModelList.size() > 0) {
-            List<MapModel> mapModelList = new ArrayList<>();
-            for (int i = 0; i < weixingModelList.size(); i++) {
-                WeixingModel weixingModel = weixingModelList.get(i);
-                MapModel mapModel = new MapModel(weixingModel.getId(), weixingModel.getFormattedAddress(), new MapPosition(Double.parseDouble(weixingModel.getLongitude()), Double.parseDouble(weixingModel.getLatitude()), 0.00), "fire_weixng");
-                mapModelList.add(mapModel);
-            }
-
-            List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.fire_weixing);
-            for (int i = 0; i < mapModelList.size(); i++) {
-
-                double[] doubles = LatLngChangeNew.calWGS84toBD09(mapModelList.get(i).getPosition().getLat(), mapModelList.get(i).getPosition().getLng());
-                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-                Bundle bundle = new Bundle();
-                bundle.putString("id", mapModelList.get(i).getId());
-                bundle.putInt("type", WEI_XING);
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .extraInfo(bundle)
-                        .icon(btm);
-                options.add(i, option);
-            }
-            optionsAllList.addAll(options);
-            mBaiduMap.addOverlays(options);
-        }
     }
 
     private void initWeixingListData() {
@@ -2527,12 +2834,12 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
      */
     private void initWeixingMap() {
         //清除旧的卫星定位
-      /*  dWebView.callHandler("removeDataSource", new Object[]{"fire_weixing"}, new OnReturnValue<String>() {
+        dWebView.callHandler("removeDataSource", new Object[]{"fire_weixing"}, new OnReturnValue<String>() {
             @Override
             public void onValue(String retValue) {
                 Log.e(TAG, "onValue:  qingchu" + retValue);
             }
-        });*/
+        });
         //打入新的卫星点位
         if (weixingModelList.size() > 0) {
             List<MapModel> mapModelList = new ArrayList<>();
@@ -2541,14 +2848,14 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 MapModel mapModel = new MapModel(weixingModel.getId(), weixingModel.getFormattedAddress(), new MapPosition(Double.parseDouble(weixingModel.getLongitude()), Double.parseDouble(weixingModel.getLatitude()), 0.00), "fire_weixng");
                 mapModelList.add(mapModel);
             }
-/*
+
             Log.e(TAG, "initWeixingMap: " + new Gson().toJson(mapModelList));
             dWebView.callHandler("showPoint", new Object[]{"fire_weixing", new Gson().toJson(mapModelList), ""}, new OnReturnValue<String>() {
                 @Override
                 public void onValue(String retValue) {
                     Log.e(TAG, "onValue:  dadian" + retValue);
                 }
-            });*/
+            });
         }
 
     }
@@ -2562,10 +2869,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     public String getLocation() {
         //获得位置服务
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        /*if (!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-            Toast.makeText(getContext(), "请打开GPS和使用网络定位以提高精度", Toast.LENGTH_LONG).show();
-            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-        }*/
+        if (!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            //Toast.makeText(getContext(), "请打开GPS和使用网络定位以提高精度", Toast.LENGTH_LONG).show();
+            //startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+        }
         String provider = judgeProvider(locationManager);
         //有位置提供器的情况
         List<String> providerList = locationManager.getProviders(true);
@@ -2576,7 +2883,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             provider = LocationManager.GPS_PROVIDER;
         } else {
             // 当没有可用的位置提供器时，弹出Toast提示用户
-            //Toast.makeText(getContext(), "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
 
         }
         if (provider != null) {
@@ -2589,7 +2896,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             }
             Location location = locationManager.getLastKnownLocation(provider);
             try {
-                Log.e(TAG, "getLocation: " + location.getLongitude() + "," + location.getLatitude() );
                 return location.getLongitude() + "," + location.getLatitude();
             } catch (Exception e) {
                 return "0.00,0.00";
@@ -2598,6 +2904,79 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         }
         return null;
     }
+
+
+    /**
+     * 地图资源点点击回调
+     */
+    @Override
+    public void onJsEscapeDetailsClickListener(String json) {
+        Log.e(TAG, "onJsEscapeDetailsClickListener: " + json + monitorTag);
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            String resourcetype = jsonObject.getString("resourcetype");
+            if (resourcetype.equals("fire_weixing")) {
+                String id = jsonObject.getString("id");
+                Message message = mHandler.obtainMessage();
+                Bundle b = new Bundle();
+                b.putString("id", id);
+                b.putInt("what",DIALOG_FIRE_SHOW);
+                message.setData(b);
+                mHandler.sendMessage(message);
+            }else if (resourcetype.equals("ic_onebody")){
+                String id = jsonObject.getString("id");
+                Message message = mHandler.obtainMessage();
+                Bundle b = new Bundle();
+                b.putString("id", id);
+                b.putInt("what",DIALOG_ONEBODY_FIRE_SHOW);
+                message.setData(b);
+                mHandler.sendMessage(message);
+            }else if (resourcetype.equals("monitor")){
+//                String id = jsonObject.getString("id");
+//                Intent intent=new Intent();
+//                intent.putExtra("id",id);
+//                intent.setAction("video_play");
+//                getContext().sendBroadcast(intent);
+
+                if(monitorTag){
+                    return;
+                }
+                String id = jsonObject.getString("id");
+                Message message = mHandler.obtainMessage();
+                Bundle b = new Bundle();
+                b.putString("id", id);
+                b.putInt("what",DIALOG_MOINTOR_SHOW);
+                message.setData(b);
+                mHandler.sendMessage(message);
+            }else{
+                String id = jsonObject.getString("id");
+                Message message = mHandler.obtainMessage();
+                Bundle b = new Bundle();
+                b.putString("id", id);
+                b.putInt("what",DIALOG_RESOURCE_SHOW);
+                message.setData(b);
+                mHandler.sendMessage(message);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+      /*  if (type.equals("fire_weixing")){
+            for (int i = 0; i < weixingModelList.size(); i++) {
+                if (weixingModelList.get(i).getId().equals(id)) {
+                    currentWeixingModel = weixingModelList.get(i);
+                }
+            }
+        }
+
+        //飞到精确点上
+        initWeixingFlyMap();
+        //加载卫星详细数据
+        initWeixinModelData();*/
+    }
+
+
+
 
     /**
      * 地图  飞到卫星火点精确点上
@@ -2613,13 +2992,12 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             e.printStackTrace();
         }
         Log.i("GPSposition", jsonObject.toString());
-        flyBaiduMap(Double.parseDouble(currentWeixingModel.getLatitude()), Double.parseDouble(currentWeixingModel.getLongitude()));
-        /*dWebView.callHandler("GPSflyto", new Object[]{new Gson().toJson(jsonObject.toString())}, new OnReturnValue<String>() {
+        dWebView.callHandler("GPSflyto", new Object[]{new Gson().toJson(jsonObject.toString())}, new OnReturnValue<String>() {
             @Override
             public void onValue(String retValue) {
                 Log.d("jsbridge", "call succeed,return value is " + retValue);
             }
-        });*/
+        });
     }
 
     /**
@@ -2634,11 +3012,11 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         } else {
             fireAddressText.setText(currentWeixingModel.getFormattedAddress());
         }
-        fireTimeText.setText(currentWeixingModel.getObservationDatetime().replace("T", "  ")/*.substring(0, currentWeixingModel.getObservationDatetime().indexOf("."))*/);
+        fireTimeText.setText(currentWeixingModel.getObservationDatetime().replace("T", "  ").substring(0,currentWeixingModel.getObservationDatetime().indexOf(".")));
         jingWeiText.setText(NumberUtils.saveOneBitTwo(Double.parseDouble(currentWeixingModel.getLongitude())) + "  " + NumberUtils.saveOneBitTwo(Double.parseDouble(currentWeixingModel.getLatitude())));
         kexinText.setText(currentWeixingModel.getCredibility() + "");
         mianjiText.setText(currentWeixingModel.getArea() + "");
-        cishuText.setText(currentWeixingModel.getObservationFrequency()==null?"1":currentWeixingModel.getObservationFrequency() + "");
+        cishuText.setText(currentWeixingModel.getObservationFrequency() + "");
         leixingText.setText("林地(" + getTwoDouble(currentWeixingModel.getWoodland() * 100) + "%)草地(" + getTwoDouble(currentWeixingModel.getGrassland() * 100) + "%)农田(" + getTwoDouble(currentWeixingModel.getFarmland() * 100) + "%)其他(" + getTwoDouble(currentWeixingModel.getOtherland() * 100) + "%)");
         Log.e(TAG, "initWeixinModelData: ceshi2");
         shujuyuanText.setText(currentWeixingModel.getSatellite());
@@ -2647,23 +3025,24 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         xiangyuanmianjiView.setText(currentWeixingModel.getPixelArea() + "");
         xiangyuanshuView.setText(currentWeixingModel.getPixelNumber() + "");
         Log.e(TAG, "initWeixinModelData: ceshi4");
-        Log.e(TAG, "initWeixinModelData: ceshi4" + currentWeixingModel.getLightImageAddress());//112.6.162.92:18444
-        if (currentWeixingModel.getLightImageAddress() != null  &&  currentWeixingModel.getLightImageAddress().toString().length()!=0) {
+        Log.e(TAG, "initWeixinModelData: ceshi4" +currentWeixingModel.getLightImageAddress());
+        if (currentWeixingModel.getLightImageAddress() != null){
             Glide.with(getContext()).load("http://web.ehaohai.com:2018" + currentWeixingModel.getLightImageAddress())
                     .error(R.drawable.ic_no_pic)
                     .placeholder(R.drawable.ic_jaizai).into(huodianOneImage);
-        } else {
+        }else {
             Glide.with(getContext()).load(R.drawable.ic_no_pic).into(huodianOneImage);
         }
 
         Log.e(TAG, "initWeixinModelData: ceshi5");
-        if (currentWeixingModel.getIrImageAddress() != null   &&   currentWeixingModel.getIrImageAddress().toString().length()!=0) {
+        if (currentWeixingModel.getIrImageAddress() != null){
             Glide.with(getContext()).load("http://web.ehaohai.com:2018" + currentWeixingModel.getIrImageAddress())
                     .error(R.drawable.ic_no_pic)
                     .placeholder(R.drawable.ic_jaizai).into(huodianTwoImage);
-        } else {
+        }else {
             Glide.with(getContext()).load(R.drawable.ic_no_pic).into(huodianTwoImage);
         }
+
 
 
         Log.e(TAG, "initWeixinModelData: ceshi6");
@@ -2675,7 +3054,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         double f1 = bg.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
         return f1;
     }
-
     /**
      * 日期选择控件
      */
@@ -2690,28 +3068,28 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 if (endDate.length() > 0) { //清除上次记录的日期
                     endDate.delete(0, endDate.length());
                 }
-                if (isChooseStarTime) {
+                if (isChooseStarTime){
                     date.append(String.valueOf(year));
-                    if (month < 9) {
+                    if (month < 9){
                         date.append("-0").append(String.valueOf(month + 1));
-                    } else {
+                    }else {
                         date.append("-").append(String.valueOf(month + 1));
                     }
-                    if (day < 10) {
+                    if (day <10){
                         date.append("-0").append(String.valueOf(day));
                     } else {
                         date.append("-").append(String.valueOf(day));
                     }
                     gaojiStartimeText.setText(date);
                     //gaojiStartimeText.setText(date.append(String.valueOf(year)).append("/").append(String.valueOf(month + 1)).append("/").append(day));
-                } else {
+                }else {
                     date.append(String.valueOf(year));
-                    if (month < 9) {
+                    if (month < 9){
                         date.append("-0").append(String.valueOf(month + 1));
-                    } else {
+                    }else {
                         date.append("-").append(String.valueOf(month + 1));
                     }
-                    if (day < 10) {
+                    if (day <10){
                         date.append("-0").append(String.valueOf(day));
                     } else {
                         date.append("-").append(String.valueOf(day));
@@ -2759,9 +3137,8 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         dialog.setView(dialogView);
         dialog.show();
         //初始化日期监听事件
-        datePicker.init(year, month, day, this);
+        datePicker.init(year, month, day,this);
     }
-
     /**
      * 日期选择控件
      */
@@ -2770,29 +3147,31 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         builder1.setPositiveButton("设置", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (isChooseStarTime) {
-                    if (chooseHour < 10 && chooseMinute < 10) {
+                if (isChooseStarTime){
+                    if (chooseHour < 10 && chooseMinute <10){
                         gaojiStartimeText.append("  0" + chooseHour + ":0" + chooseMinute + ":00");
-                    } else if (chooseHour < 10 && chooseMinute > 10) {
+                    }else if (chooseHour < 10 && chooseMinute >10){
                         gaojiStartimeText.append("  0" + chooseHour + ":" + chooseMinute + ":00");
-                    } else if (chooseHour > 10 && chooseMinute < 10) {
+                    }else if (chooseHour > 10 && chooseMinute < 10){
                         gaojiStartimeText.append("  " + chooseHour + ":0" + chooseMinute + ":00");
-                    } else {
+                    }else {
                         gaojiStartimeText.append("  " + chooseHour + ":" + chooseMinute + ":00");
                     }
                     //gaojiStartimeText.append("  " + chooseHour + ":" + chooseMinute);
-                } else {
-                    if (chooseHour < 10 && chooseMinute < 10) {
+                }else {
+                    if (chooseHour < 10 && chooseMinute <10){
                         gaojiEndTimeText.append("  0" + chooseHour + ":0" + chooseMinute + ":00");
-                    } else if (chooseHour < 10 && chooseMinute > 10) {
+                    }else if (chooseHour < 10 && chooseMinute >10){
                         gaojiEndTimeText.append("  0" + chooseHour + ":" + chooseMinute + ":00");
-                    } else if (chooseHour > 10 && chooseMinute < 10) {
+                    }else if (chooseHour > 10 && chooseMinute < 10){
                         gaojiEndTimeText.append("  " + chooseHour + ":0" + chooseMinute + ":00");
-                    } else {
+                    }else {
                         gaojiEndTimeText.append("  " + chooseHour + ":" + chooseMinute + ":00");
                     }
                     //  gaojiEndTimeText.append("  " + chooseHour + ":" + chooseMinute);
                 }
+
+
 
 
                 dialog.dismiss();
@@ -2846,7 +3225,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         chooseMinute = calendar.get(Calendar.MINUTE);
 
     }
-
     class myReceiver extends BroadcastReceiver {
 
         public void onReceive(Context context, Intent intent) {
@@ -2854,12 +3232,12 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             String msg = intent.getStringExtra("message");
             //Toast.makeText(context, "广播已经接收", Toast.LENGTH_SHORT).show();
             Log.i("onReceive: ", msg);
-          /*  dWebView.callHandler("GPSpoint", new Object[]{new Gson().toJson(msg)}, new OnReturnValue<String>() {
+            dWebView.callHandler("GPSpoint", new Object[]{new Gson().toJson(msg)}, new OnReturnValue<String>() {
                 @Override
                 public void onValue(String retValue) {
                     Log.d("jsbridge", "call succeed,return value is " + retValue);
                 }
-            });*/
+            });
         }
     }
 
@@ -2873,76 +3251,86 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         currentWeixingModel = weixingModel;
 
         fireInfoListDialog.hide();
-
-        flyBaiduMap(Double.parseDouble(weixingModel.getLatitude()), Double.parseDouble(weixingModel.getLongitude()));
-        //  initWeixingFlyMap();
+        //飞到精确点上
+        initWeixingFlyMap();
         //加载卫星详细数据
         initWeixinModelData();
 
     }
 
-    private void flyBaiduMap(double lat, double lnt) {
-        //飞到精确点上
-        double[] position = LatLngChangeNew.calWGS84toBD09(lat, lnt);
-        com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                position[0], position[1]);
-        MapStatus.Builder builder = new MapStatus.Builder();
-        builder.target(ll).zoom(15);
-        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-
-    }
-    private void flyBaiduMapZoom(double lat, double lng, int zoom) {
-        //飞到精确点上
-        com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                lat, lng);
-        MapStatus.Builder builder = new MapStatus.Builder();
-        builder.target(ll).zoom(zoom);
-        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-
-    }
-
     /**
      * 一体机火点条目点击
-     *
      * @param oneBodyFire
      */
     @Override
-    public void onOneBodyItemClickListener(OneBodyFire.Dto oneBodyFire) {
+    public void onOneBodyItemClickListener(OneBodyFire oneBodyFire) {
         currentOneBodyFire = oneBodyFire;
         onebodyListDialog.dismiss();
         //飞到一体机精确点上
-        initOneBodyFlyBaiduMap();
+        initOneBodyFlyMap();
         //加载一体机详细数据
         initOneBodyFireModelData();
 
     }
 
     /**
-     * 一体机火点详情
+     *  其它资源点详情
+     */
+    private void initResourceOtherData() {
+        resourceOtherguideview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+   /*  //构建导航组件配置类，没有传入起点，所以起点默认为 “我的位置”
+                        AmapNaviParams params = new AmapNaviParams(null, null, null, AmapNaviType.DRIVER, AmapPageType.ROUTE);
+//启动导航组件
+                        AmapNaviPage.getInstance().showRouteActivity(getApplicationContext(), params, null);*/
+                String jingweiStr = getLocation();
+                String starweidu = "";
+                String starjingdu = "";
+                Log.e(TAG, "jingweiStr: "+jingweiStr );
+                if (!jingweiStr.isEmpty()) {
+                    List<String> jingweiList = Arrays.asList(jingweiStr.split(","));
+                    starweidu = jingweiList.get(1);
+                    starjingdu = jingweiList.get(0);
+                }
+
+                LatLng latLng = new LatLngChange().transformFromWGSToGCJ(new LatLng(currentResource.getPosition().getLat(), currentResource.getPosition().getLng()));
+
+                Log.e(TAG, "call: starweidu=" + starweidu );
+                Log.e(TAG, "call:starjingdu= " + starjingdu );
+
+                Poi start = new Poi("", new com.amap.api.maps.model.LatLng(Double.parseDouble(starweidu), Double.parseDouble(starjingdu)), "");
+                Poi end = new Poi(currentResource.getName(), new com.amap.api.maps.model.LatLng(latLng.latitude, latLng.longitude), "");
+                AmapNaviParams params = new AmapNaviParams(start, null, end, AmapNaviType.DRIVER, AmapPageType.ROUTE);
+                params.setUseInnerVoice(true);
+                Log.e(TAG, "call: start" + starweidu );
+                Log.e(TAG, "call: end" + latLng.latitude );
+                AmapNaviPage.getInstance().showRouteActivity(getContext(), params, MapFragment.this);
+
+            }
+        });
+        resourceOthernameview.setText(currentResource.getName());
+        resoucedizhiOtherview.setText(currentResource.getAddress());
+        resourcejingweiduOtherview.setText(currentResource.getPosition().getLng()+","+currentResource.getPosition().getLat());
+
+
+        resourceOtherDialog.show();
+    }
+    /**
+     *  一体机火点详情
      */
     private void initOneBodyFireModelData() {
         mingchengView.setText(currentOneBodyFire.getName());
         dizhiView.setText(currentOneBodyFire.getAddress());
-        try{
-            shijianView.setText(currentOneBodyFire.getAlarmDatetime().replace("T"," ").replace(".000+0800","")/*.substring(0,currentOneBodyFire.getAlarmDatetime().indexOf("."))*/);
-        }catch(Exception e){
-            shijianView.setText(currentOneBodyFire.getAlarmDatetime());
-            Log.e(TAG, "shijianView.setText: " + e + "：" + currentOneBodyFire.getAlarmDatetime());
-        }
+        shijianView.setText(currentOneBodyFire.getAlarmDatetime().replace("T"," ").substring(0,currentOneBodyFire.getAlarmDatetime().indexOf(".")));
         jingweiduView.setText(currentOneBodyFire.getAlarmLongitude() +"、" + currentOneBodyFire.getAlarmLatitude());
-        Glide.with(getContext()).load(currentOneBodyFire.getPicPath1()!=null?currentOneBodyFire.getPicPath1().replace("172.17.221.115","1.181.45.82"):"")
+        Glide.with(getContext()).load(currentOneBodyFire.getPicPath1())
                 .error(R.drawable.ic_no_pic)
                 .placeholder(R.drawable.ic_jaizai).into(yitijiOneView);
-        Glide.with(getContext()).load(currentOneBodyFire.getPicPath2()!=null?currentOneBodyFire.getPicPath2().replace("172.17.221.115","1.181.45.82"):"")
+        Glide.with(getContext()).load(currentOneBodyFire.getPicPath2())
                 .error(R.drawable.ic_no_pic)
                 .placeholder(R.drawable.ic_jaizai).into(yitijiTwoView);
-    /*    Glide.with(getContext()).load("http://10.135.49.201:81/snap/a54dbc0a-eb21-0ab6-8de5-55acda985571/938a02f2-b7fa-472e-8ddb-eeeaeb9604ae_2.jpg")
-                .error(R.drawable.ic_no_pic)
-                .placeholder(R.drawable.ic_jaizai).into(yitijiOneView);
-        Glide.with(getContext()).load("http://10.135.49.201:81/snap/a54dbc0a-eb21-0ab6-8de5-55acda985571/938a02f2-b7fa-472e-8ddb-eeeaeb9604ae_2.jpg")
-                .error(R.drawable.ic_no_pic)
-                .placeholder(R.drawable.ic_jaizai).into(yitijiTwoView);*/
-
         if(currentOneBodyFire.getIsReal() == null){
             zhenshiLayout.setVisibility(View.VISIBLE);
             zhenshiTextView.setVisibility(View.GONE);
@@ -2955,21 +3343,94 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 zhenshiTextView.setText("真实火情");
             }
         }
-        Log.e(TAG, "initOneBodyFireModelData: " + currentOneBodyFire.toString() );
         oneBodyFireDialog.show();
+
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "fire/api/monitorFirealarm/getMonitorAlarmById");
+        params.addBodyParameter("id",currentOneBodyFire.getId());
+        params.addHeader("Authorization", "bearer " + user.getToken());
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        Log.e(TAG, "initOneBodyFireModelData: " + params );
+        x.http().get(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "initOneBodyFireModelData: onSuccess " + result );
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(result);
+                    JSONArray data = jsonObject.getJSONArray("data");
+                    JSONObject o = (JSONObject) data.get(0);
+                    double monitorLongitude = o.getDouble("monitorLongitude");
+                    double monitorLatitude = o.getDouble("monitorLatitude");
+                    Log.e(TAG, "onSuccess: getMonitorAlarmById " + o );
+
+                    double[] a = GetAngleAndDistance.CalculateBraring(monitorLongitude,monitorLatitude, currentOneBodyFire.getAlarmLongitude(),currentOneBodyFire.getAlarmLatitude());
+                    Log.e(TAG, "onSuccess: GetAngleAndDistance " + a[0] );
+                    Log.e(TAG, "onSuccess: GetAngleAndDistance " + a[1] );
+                    Log.e(TAG, "onSuccess: GetAngleAndDistance " + a[2] );
+
+                    monitor_jingweidu_view.setText(monitorLongitude +"、" + monitorLatitude);
+                    jiaoduView.setText("火点位于监控点"+parseAngle(parsePoint(a[0])) + parsePoint(a[0]) + "度"+parsePoint(a[2]*1000) + "米处");
+                    juliView.setText(parsePoint(a[2]*1000) + "米");
+
+
+                    //显示报警监控点位置方向角度（230912新增）
+                    fireMonitorMarker(monitorLongitude,monitorLatitude);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
+            }
+        });
+    }
+
+    private String parseAngle(double jiaodu) {
+        if ((jiaodu <= 10) || (jiaodu > 350)) return "东";
+        if ((jiaodu > 10) && (jiaodu <= 80)) return "东北";
+        if ((jiaodu > 80) && (jiaodu <= 100)) return "北";
+        if ((jiaodu > 100) && (jiaodu <= 170)) return "西北";
+        if ((jiaodu > 170) &&(jiaodu <= 190)) return "西";
+        if ((jiaodu > 190) && (jiaodu <= 260)) return "西南";
+        if ((jiaodu > 260) && (jiaodu <= 280)) return "南";
+        if ((jiaodu > 280)&&(jiaodu <= 350)) return"东南";
+        return "";
+    }
+
+    private double parsePoint(double v) {
+        String value = String.valueOf(v);
+        int i = value.indexOf(".");
+        value = value.substring(0,i);
+        return Double.parseDouble(value);
     }
 
     /**
-     * 资源点详情
+     *  资源点详情
      */
     private void initresourceFireModelData() {
         mingchengView.setText(currentOneBodyFire.getName());
+        Log.e(TAG, "initresourceFireModelData: "+currentOneBodyFire.getAddress() );
+        if (currentOneBodyFire.getAddress()!=null){
         dizhiView.setText(currentOneBodyFire.getAddress());
-        shijianView.setText(currentOneBodyFire.getAlarmDatetime().replace("T", " ").substring(0, currentOneBodyFire.getAlarmDatetime().indexOf(".")));
-        jingweiduView.setText(currentOneBodyFire.getAlarmLongitude() + "、" + currentOneBodyFire.getAlarmLatitude());
+        }
+        shijianView.setText(currentOneBodyFire.getAlarmDatetime().replace("T"," ").substring(0,currentOneBodyFire.getAlarmDatetime().indexOf(".")));
+        jingweiduView.setText(currentOneBodyFire.getAlarmLongitude() +"、" + currentOneBodyFire.getAlarmLatitude());
         oneBodyFireDialog.show();
     }
-
     /**
      * 一体机飞到地图上
      */
@@ -2984,48 +3445,137 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             e.printStackTrace();
         }
         Log.i("GPSposition", jsonObject.toString());
-        flyBaiduMap(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
-        /*dWebView.callHandler("GPSflyto", new Object[]{new Gson().toJson(jsonObject.toString())}, new OnReturnValue<String>() {
+        dWebView.callHandler("GPSflyto", new Object[]{new Gson().toJson(jsonObject.toString())}, new OnReturnValue<String>() {
             @Override
             public void onValue(String retValue) {
                 Log.d("jsbridge", "call succeed,return value is " + retValue);
             }
-        });*/
+        });
+    }
+    /**
+     * 其它资源点飞到地图上
+     */
+    private void initResOtherFlyMap() {
+        final JSONObject jsonObject = new JSONObject();
+        JSONObject posObj = new JSONObject();
+        try {
+            posObj.put("lat", currentResource.getPosition().getLat());
+            posObj.put("lng", currentResource.getPosition().getLng());
+            jsonObject.put("position", posObj);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.i("GPSposition", jsonObject.toString());
+        dWebView.callHandler("GPSflyto", new Object[]{new Gson().toJson(jsonObject.toString())}, new OnReturnValue<String>() {
+            @Override
+            public void onValue(String retValue) {
+                Log.d("jsbridge", "call succeed,return value is " + retValue);
+            }
+        });
     }
 
     /**
      * 资源列表的电机回调
-     *
      * @param resourceList
      */
     @Override
     public void onResourceListItemClickListener(ResourceList resourceList) {
         for (int i = 0; i < resourceListList.size(); i++) {
             if (resourceListList.get(i).getId().equals(resourceList.getId())) {
-                Log.e(TAG, "onResourceListItemClickListener: " + resourceList.isCheck());
-                /*if (resourceList.getName().equals("视频监控点") || resourceList.getName().equals("水源地") ||resourceList.getName().equals("墓地")
-                        ||resourceList.getName().equals("护林检查站")) {*/
-                    if (resourceList.isCheck()) {    //隐藏资源点
-                        initMapShow(resourceList.getName(),false);
-                       // isShowMonitor = false;
+                if(!resourceList.isNew()){
+                    Log.e(TAG, "onResourceListItemClickListener: "+resourceList.isCheck());
+                    if (resourceList.isCheck()){    //隐藏资源点
                         resourceListList.get(i).setCheck(false);
-                        removeMarkerBaiduMap();
-                    } else {         //显示资源点逻辑
-                       // isShowMonitor = true;
-                        initMapShow(resourceList.getName(),true);
+                        Log.e(TAG, "onResourceListItemClickListener: "+resourceListList.get(i).getName());
+                        if (resourceListList.get(i).getName().equals("视频监控点")) {
+                            resorcetype = "monitor";
+                        }else if (resourceListList.get(i).getName().equals("消防专业队")){
+                            resorcetype = "team";
+                        }else if (resourceListList.get(i).getName().equals("危险源")){
+                            resorcetype = "dangerSource";
+                        }else if (resourceListList.get(i).getName().equals("物资储备库")){
+                            resorcetype = "materialRepository";
+                        }else if (resourceListList.get(i).getName().equals("水源地")){
+                            resorcetype = "waterSource";
+                        }else if (resourceListList.get(i).getName().equals("墓地")){
+                            resorcetype = "cemetery";
+                        }else if (resourceListList.get(i).getName().equals("瞭望塔")){
+                            resorcetype = "watchTower";
+                        }else if (resourceListList.get(i).getName().equals("护林检查站")){
+                            resorcetype = "checkStation";
+                        }else if (resourceListList.get(i).getName().equals("森林防火监测中心")){
+                            resorcetype = "fireCommand";
+                        }
+                        //清除旧的卫星定位
+                        dWebView.callHandler("removeDataSource", new Object[]{resorcetype}, new OnReturnValue<String>() {
+                            @Override
+                            public void onValue(String retValue) {
+                                Log.e(TAG, "onValue:  qingchu" + retValue);
+                            }
+                        });
+                    }else {
+                        if (resourceListList.get(i).getName().equals("视频监控点")) {
+                            resorcetype = "monitor";
+                        }else if (resourceListList.get(i).getName().equals("消防专业队")){
+                            resorcetype = "team";
+                        }else if (resourceListList.get(i).getName().equals("危险源")){
+                            resorcetype = "dangerSource";
+                        }else if (resourceListList.get(i).getName().equals("物资储备库")){
+                            resorcetype = "materialRepository";
+                        }else if (resourceListList.get(i).getName().equals("水源地")){
+                            resorcetype = "waterSource";
+                        }else if (resourceListList.get(i).getName().equals("墓地")){
+                            resorcetype = "cemetery";
+                        }else if (resourceListList.get(i).getName().equals("瞭望塔")){
+                            resorcetype = "watchTower";
+                        }else if (resourceListList.get(i).getName().equals("护林检查站")){
+                            resorcetype = "checkStation";
+                        }else if (resourceListList.get(i).getName().equals("森林防火监测中心")){
+                            resorcetype = "fireCommand";
+                        }
+                        //清除旧的卫星定位
+                        dWebView.callHandler("removeDataSource", new Object[]{resorcetype}, new OnReturnValue<String>() {
+                            @Override
+                            public void onValue(String retValue) {
+                                Log.e(TAG, "onValue:  qingchu" + retValue);
+                            }
+                        });
+                        //显示资源点逻辑
+                        showMapResQueue();
+                        resLoading = true;
                         resourceListList.get(i).setCheck(true);
-                        getResourceDataFromService(resourceList.getApiUrl(), resourceList.getName());
+                        getResourceDataFromService(resourceList.getApiUrl(),resourceList.getName(),null);
                     }
-               /* } else {
-                    if (resourceList.isCheck()) {    //隐藏资源点
-                        isShowMonitor = false;
+                }else{
+                    //后台新增类型
+                    if (resourceList.isCheck()){    //隐藏资源点
                         resourceListList.get(i).setCheck(false);
-                    } else {         //显示资源点逻辑
-                        isShowMonitor = true;
+                        Log.e(TAG, "onResourceListItemClickListener: "+resourceListList.get(i).getName());
+                        resorcetype = resourceList.getCode();
+                        //清除旧的卫星定位
+                        dWebView.callHandler("removeDataSource", new Object[]{resorcetype}, new OnReturnValue<String>() {
+                            @Override
+                            public void onValue(String retValue) {
+                                Log.e(TAG, "onValue:  qingchu" + retValue);
+                            }
+                        });
+                    }else {
+                        resorcetype = resourceList.getCode();
+                        //清除旧的卫星定位
+                        dWebView.callHandler("removeDataSource", new Object[]{resorcetype}, new OnReturnValue<String>() {
+                            @Override
+                            public void onValue(String retValue) {
+                                Log.e(TAG, "onValue:  qingchu" + retValue);
+                            }
+                        });
+                        //显示资源点逻辑
+                        showMapResQueue();
+                        resLoading = true;
                         resourceListList.get(i).setCheck(true);
+                        getResourceDataNewFromService(resourceList.getCode(),resourceList.getName(),resourceList.getIconFile(),null);
+                    }
+                }
 
-                    }
-                }*/
 
             }
         }
@@ -3033,476 +3583,74 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         initResourceListData();
         //resourceListDialog.dismiss();
 
-    }private void initMapShow(String name, boolean isShow) {
-        if (name.equals("视频监控点")){
-            isShowMonitor = isShow;
-        }else if (name.equals("水源地")){
-            isShowWaterSource = isShow;
-        }else if (name.equals("墓地")){
-            isShowCemetery = isShow;
-        }else if (name.equals("护林检查站")){
-            isShowCheckStation = isShow;
-        }else if (name.equals("消防专业队")){
-            isShowTeam = isShow;
-        }else if (name.equals("危险源")){
-            isShowDanger = isShow;
-        }else if (name.equals("物资库")){
-            isShowWuzi = isShow;
-        }else if (name.equals("瞭望塔")){
-            isShowLwt = isShow;
-        }else if (name.equals("卡口监控点")){
-            isShowKk = isShow;
-        }else if (name.equals("防火指挥部")){
-            isShowZhihui = isShow;
-        }
-
-    }
-
-    /**
-     * 移除百度地图上的资源点
-     */
-    private void removeMarkerBaiduMap() {
-        //清除地图上的所有覆盖物
-        mBaiduMap.clear();
-        //画边界
-        cityTag = true;
-        initQuyuBianjie();
-
-        if (isShowMonitor) {
-          //  initResourceDataIntoBaiduMap();
-            initResourceMonitoerDataIntoBaiduMap();
-        }
-        if (isShowCemetery){
-            initResourceCemeteryDataIntoBaiduMap();
-        }
-        if (isShowWaterSource){
-            initResourceWaterSourceDataIntoBaiduMap();
-        }
-        if (isShowCheckStation){
-            initResourceCheckStationDataIntoBaiduMap();
-        }
-        if (isShowTeam){
-            initResourceTeamDataIntoBaiduMap();
-        }
-        if (isShowDanger){
-            initResourceDangerDataIntoBaiduMap();
-        }
-        if (isShowWuzi){
-            initResourceWuziDataIntoBaiduMap();
-        }
-        if (isShowLwt){
-            initResourceLwtDataIntoBaiduMap();
-        }
-        if (isShowKk){
-            initResourceKkDataIntoBaiduMap();
-        }
-        if (isShowZhihui){
-            initResourceZhihuiDataIntoBaiduMap();
-        }
-        if (isShowYitiji) {
-            initOneBodyFireData();
-        }
-        if (isShowWeixing) {
-            initWeixingBaiduMap();
-        }
-
-      /*  for (int i = 0; i < optionsAllList.size(); i++) {
-            MarkerOptions markerOptions = (MarkerOptions) optionsAllList.get(i);
-            // Marker marker = (Marker) mBaiduMap.addOverlay(overlayOptions);
-            Bundle extraInfo = markerOptions.getExtraInfo();
-            String id = extraInfo.getString("id");
-            int type = extraInfo.getInt("type", 0);
-            if (type == markerType){
-                markerOptions.visible(false);
-            }
-        }*/
-
-    }
-
-    private void initResourceTeamDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +teamDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        for (int i = 0; i < teamDTOList.size(); i++) {
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.teem);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(teamDTOList.get(i).getPosition().getLat(), teamDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", teamDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", teamDTOList.get(i).getAddress());
-            bundle.putString("name", teamDTOList.get(i).getName());
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
-
-        }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
-        optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
-    }
-
-    private void initResourceZhihuiDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +zhihuiDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        for (int i = 0; i < zhihuiDTOList.size(); i++) {
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.zhihui);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(zhihuiDTOList.get(i).getPosition().getLat(), zhihuiDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", zhihuiDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", zhihuiDTOList.get(i).getAddress());
-            bundle.putString("name", zhihuiDTOList.get(i).getName());
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
-
-        }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
-        optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
-    }
-    private void initResourceKkDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +kkDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        for (int i = 0; i < kkDTOList.size(); i++) {
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.kk);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(kkDTOList.get(i).getPosition().getLat(), kkDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", kkDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", kkDTOList.get(i).getAddress());
-            bundle.putString("name", kkDTOList.get(i).getName());
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
-
-        }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
-        optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
-    }
-
-    private void initResourceLwtDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +lwtDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        for (int i = 0; i < lwtDTOList.size(); i++) {
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.lwt);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(lwtDTOList.get(i).getPosition().getLat(), lwtDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", lwtDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", lwtDTOList.get(i).getAddress());
-            bundle.putString("name", lwtDTOList.get(i).getName());
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
-
-        }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
-        optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
-    }
-    private void initResourceWuziDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +wuziDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        for (int i = 0; i < wuziDTOList.size(); i++) {
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.wuziku);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(wuziDTOList.get(i).getPosition().getLat(), wuziDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", wuziDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", wuziDTOList.get(i).getAddress());
-            bundle.putString("name", wuziDTOList.get(i).getName());
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
-
-        }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
-        optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
-    }
-    private void initResourceDangerDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +dangerDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        for (int i = 0; i < dangerDTOList.size(); i++) {
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.danger);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(dangerDTOList.get(i).getPosition().getLat(), dangerDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", dangerDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", dangerDTOList.get(i).getAddress());
-            bundle.putString("name", dangerDTOList.get(i).getName());
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
-
-        }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
-        optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
-    }
-    private void initResourceCheckStationDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +checkStationDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        for (int i = 0; i < checkStationDTOList.size(); i++) {
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.check);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(checkStationDTOList.get(i).getPosition().getLat(), checkStationDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", checkStationDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", checkStationDTOList.get(i).getAddress());
-            bundle.putString("name", checkStationDTOList.get(i).getName());
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
-
-        }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
-        optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
-    }
-
-    private void initResourceWaterSourceDataIntoBaiduMap() {
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        for (int i = 0; i < waterSourceDTOList.size(); i++) {
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.water);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(waterSourceDTOList.get(i).getPosition().getLat(), waterSourceDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", waterSourceDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", waterSourceDTOList.get(i).getAddress());
-            bundle.putString("name", waterSourceDTOList.get(i).getName());
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
-
-        }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
-        optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
-    }
-
-    private void initResourceCemeteryDataIntoBaiduMap() {
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        for (int i = 0; i < cemeteryDTOList.size(); i++) {
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.md);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(cemeteryDTOList.get(i).getPosition().getLat(), cemeteryDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", cemeteryDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            bundle.putString("address", cemeteryDTOList.get(i).getAddress());
-            bundle.putString("name", cemeteryDTOList.get(i).getName());
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
-
-        }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
-        optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
-    }
-
-    private void initResourceMonitoerDataIntoBaiduMap() {
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        for (int i = 0; i < monitorDTOList.size(); i++) {
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.onbody);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", monitorDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_MONITOR);
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
-            /*if (monitorDTOList.get(i).getMonitorType() == 1) {
-                Matrix matrix = new Matrix();
-                Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_monitor_senlin)).getBitmap();
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                BitmapDescriptor marker = BitmapDescriptorFactory.fromBitmap(bitmap);
-                double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-                Bundle bundle = new Bundle();
-                bundle.putString("id", monitorDTOList.get(i).getId());
-                bundle.putInt("type", RESOURCE_MONITOR);
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .extraInfo(bundle)
-                        .icon(marker);
-                options.add(i, option);
-            } else if (monitorDTOList.get(i).getMonitorType() == 2) {
-                Matrix matrix = new Matrix();
-                Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_monitor_shashi)).getBitmap();
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                BitmapDescriptor marker = BitmapDescriptorFactory.fromBitmap(bitmap);
-                double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-                Bundle bundle = new Bundle();
-                bundle.putString("id", monitorDTOList.get(i).getId());
-                bundle.putInt("type", RESOURCE_MONITOR);
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .extraInfo(bundle)
-                        .icon(marker);
-                options.add(i, option);
-            } else if (monitorDTOList.get(i).getMonitorType() == 3) {
-                Matrix matrix = new Matrix();
-                Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_monitor_haiyu)).getBitmap();
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                BitmapDescriptor marker = BitmapDescriptorFactory.fromBitmap(bitmap);
-                double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-                Bundle bundle = new Bundle();
-                bundle.putString("id", monitorDTOList.get(i).getId());
-                bundle.putInt("type", RESOURCE_MONITOR);
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .extraInfo(bundle)
-                        .icon(marker);
-                options.add(i, option);
-            }*/
-            Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter3");
-
-        }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
-        optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
     }
 
     /**
      * 获取资源数据
-     *
      * @param ApiUrl
      * @param nameresult
      */
-    private void getResourceDataFromService(String ApiUrl, String nameresult) {
-
-        showDialogProgress(progressDialog, "加载中...");
+    private void getResourceDataFromService(String ApiUrl,String nameresult,String gridId) {
+        Log.e(TAG, "getResourceDataFromService: "+nameresult );
+        //showDialogProgress(progressDialog,"加载中...");
         if (nameresult.equals("视频监控点")) {
             resorcetype = "monitor";
-        } else if (nameresult.equals("消防专业队")) {
+        }else if (nameresult.equals("消防专业队")){
             resorcetype = "team";
-        } else if (nameresult.equals("危险源")) {
+        }else if (nameresult.equals("危险源")){
             resorcetype = "dangerSource";
-        } else if (nameresult.equals("物资库")) {
+        }else if (nameresult.equals("物资储备库")){
             resorcetype = "materialRepository";
-        } else if (nameresult.equals("水源地")) {
+        }else if (nameresult.equals("水源地")){
             resorcetype = "waterSource";
-        } else if (nameresult.equals("墓地")) {
+        }else if (nameresult.equals("墓地")){
             resorcetype = "cemetery";
-        } else if (nameresult.equals("瞭望塔")) {
+        }else if (nameresult.equals("瞭望塔")){
             resorcetype = "watchTower";
-        } else if (nameresult.equals("护林检查站")) {
+        }else if (nameresult.equals("护林检查站")){
             resorcetype = "checkStation";
-        } else if (nameresult.equals("卡口监控点")) {
-            resorcetype = "kakou";
-        } else if (nameresult.equals("防火指挥部")) {
+        }else if (nameresult.equals("森林防火监测中心")){
             resorcetype = "fireCommand";
         }
-        JSONObject resorcelistobj = new JSONObject();
-        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "resource" + ApiUrl + "/list");
+        JSONObject resorcelistobj =new JSONObject();
+        if(gridId!=null){
+            try {
+                resorcelistobj.put("gridNo",gridId);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource"+ApiUrl+"/list");
         params.setAsJsonContent(true);
         params.setBodyContent(resorcelistobj.toString());
         Log.e(TAG, "getResourceList: " + resorcelistobj.toString());
         params.addHeader("Authorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
-        Log.e(TAG, "resource: --" + params);
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        Log.e(TAG, "resource: --"  + params);
         x.http().post(params, new Callback.CommonCallback<String>() {
 
             @Override
             public void onSuccess(String result) {
-                Log.e(TAG, "getResourceonSuccess: --1-" + result);
+                Log.e(TAG, "getResourceonSuccess: --1-" + result );
                 try {
                     JSONObject json0bject = new JSONObject(result);
                     Log.e("result", json0bject.toString());
                     JSONArray data = json0bject.getJSONArray("data");
-                    Gson gson = new Gson();
-                    if (resorcetype.equals("monitor")) { //视频监控
-                        monitorDTOList.clear();
-                        monitorDTOList = gson.fromJson(String.valueOf(data), new TypeToken<List<MonitorDTO>>() {
-                        }.getType());
-                    } else if (resorcetype.equals("checkStation")) {  //护林检查站
-                        Log.e(TAG, "onSuccess:checkStationDTOList " );
-                        checkStationDTOList.clear();
-                        checkStationDTOList = gson.fromJson(String.valueOf(data), new TypeToken<List<CheckStationDTO>>() {
-                        }.getType());
-                        Log.e(TAG, "onSuccess: " + checkStationDTOList );
-                    } else if (resorcetype.equals("dangerSource")) {  //危险源
-                        Log.e(TAG, "onSuccess:dangerDTOList " );
-                        dangerDTOList.clear();
-                        dangerDTOList = gson.fromJson(String.valueOf(data), new TypeToken<List<ResourceDTO>>() {
-                        }.getType());
-                        Log.e(TAG, "onSuccess: " + dangerDTOList );
-                    } else if (resorcetype.equals("materialRepository")) {  //物资库
-                        Log.e(TAG, "onSuccess:wuziDTOList " );
-                        wuziDTOList.clear();
-                        wuziDTOList = gson.fromJson(String.valueOf(data), new TypeToken<List<ResourceDTO>>() {
-                        }.getType());
-                        Log.e(TAG, "onSuccess: " + wuziDTOList );
-                    }else if (resorcetype.equals("kakou")) {  //卡口
-                        Log.e(TAG, "onSuccess:kkDTOList " );
-                        kkDTOList.clear();
-                        kkDTOList = gson.fromJson(String.valueOf(data), new TypeToken<List<ResourceDTO>>() {
-                        }.getType());
-                        Log.e(TAG, "onSuccess: " + kkDTOList );
-                    }else if (resorcetype.equals("fireCommand")) {  //指挥部
-                        Log.e(TAG, "onSuccess:zhihuiDTOList " );
-                        zhihuiDTOList.clear();
-                        zhihuiDTOList = gson.fromJson(String.valueOf(data), new TypeToken<List<ResourceDTO>>() {
-                        }.getType());
-                        Log.e(TAG, "onSuccess: " + zhihuiDTOList );
-                    }else if (resorcetype.equals("watchTower")) {  //瞭望塔
-                        Log.e(TAG, "onSuccess:lwtDTOList " );
-                        lwtDTOList.clear();
-                        lwtDTOList = gson.fromJson(String.valueOf(data), new TypeToken<List<ResourceDTO>>() {
-                        }.getType());
-                        Log.e(TAG, "onSuccess: " + lwtDTOList );
-                    }  else if (resorcetype.equals("team")) {  //消防专业队
-                        Log.e(TAG, "onSuccess:teamDTOList " );
-                        teamDTOList.clear();
-                        teamDTOList = gson.fromJson(String.valueOf(data), new TypeToken<List<ResourceDTO>>() {
-                        }.getType());
-                        Log.e(TAG, "onSuccess: " + teamDTOList );
-                    } else if (resorcetype.equals("cemetery")) {  //墓地
-                        cemeteryDTOList.clear();
-                        cemeteryDTOList = gson.fromJson(String.valueOf(data), new TypeToken<List<CemeteryDTO>>() {
-                        }.getType());
-                    } else if (resorcetype.equals("waterSource")) {   //水源地
-                        waterSourceDTOList.clear();
-                        waterSourceDTOList = gson.fromJson(String.valueOf(data), new TypeToken<List<WaterSourceDTO>>() {
-                        }.getType());
-                    }
-
-                    initResourceDataIntoBaiduMap();
+                    Log.e("MapFragment","data bingo size = " + data.length());
                     Log.e("data1", data.toString());
-                } catch (JSONException e) {
+                    resourceList.addAll(new Gson().fromJson(String.valueOf(data), new TypeToken<List<Resource>>() {
+                    }.getType()));
+                    /*dWebView.callHandler("showPointforresource", new Object[]{resorcetype, data, ""}, new OnReturnValue<String>() {
+                        @Override
+                        public void onValue(String retValue) {
+                            Log.d("jsbridge", "call succeed,return value is " + retValue);
+                        }
+                    });*/
+                    if(data.length()!=0){
+                        Log.e(TAG, "onSuccess: ApiUrl: " + ApiUrl + "," + result );
+                     resModelList.add(new ResModel("showPointforresource",new Object[]{ApiUrl.replace("/api/",""), data, ""},true));
+                    }
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -3519,129 +3667,86 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
             @Override
             public void onFinished() {
-                progressDialog.dismiss();
+                //progressDialog.dismiss();
             }
         });
     }
-
+    
+    private List<ResModel> resModelList = new ArrayList();
+    private List<ResModel> resModelListReal = new ArrayList();
+    private List<Resource> resourceList = new ArrayList();
+    private List<Resource> monitorLocationList = new ArrayList();
     /**
-     * 往百度地图上加载资源点
+     * 获取资源数据 后台新增类型（。。。）
+     * @param nameresult
      */
-    private void initResourceDataIntoBaiduMap() {
-        if (resorcetype.equals("monitor")) {//视频监控点
-            Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter1");
-            Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter2＝" + monitorDTOList.size());
-            initResourceMonitoerDataIntoBaiduMap();
-        } else if (resorcetype.equals("checkStation")) {  //护林检查站
-            initResourceCheckStationDataIntoBaiduMap();
-        } else if (resorcetype.equals("cemetery")) {  //墓地
-            initResourceCemeteryDataIntoBaiduMap();
-        } else if (resorcetype.equals("waterSource")) {   //水源地
-            initResourceWaterSourceDataIntoBaiduMap();
-        }else if (resorcetype.equals("team")) {   //消防专业队
-            initResourceTeamDataIntoBaiduMap();
-        }else if (resorcetype.equals("dangerSource")) {   //危险源
-            initResourceDangerDataIntoBaiduMap();
-        }else if (resorcetype.equals("materialRepository")) {   //物资库
-            initResourceWuziDataIntoBaiduMap();
-        }else if (resorcetype.equals("watchTower")) {   //瞭望塔
-            initResourceLwtDataIntoBaiduMap();
-        }else if (resorcetype.equals("kakou")) {   //卡口
-            initResourceKkDataIntoBaiduMap();
-        }else if (resorcetype.equals("fireCommand")) {   //防火指挥部
-            initResourceZhihuiDataIntoBaiduMap();
+    private void getResourceDataNewFromService(String apiUrl,String nameresult,String iconFile,String gridId) {
+        Log.e(TAG, "getResourceDataNewFromService: "+nameresult );
+        //showDialogProgress(progressDialog,"加载中...");
+
+        JSONObject resorcelistobj =new JSONObject();
+        try {
+            resorcelistobj.put("resourceType",apiUrl);
+            if(gridId!=null){
+                resorcelistobj.put("gridNo",gridId);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/commonResource/list");
+        params.setAsJsonContent(true);
+        params.setBodyContent(resorcelistobj.toString());
+        Log.e(TAG, "getResourceList: " + resorcelistobj.toString());
+        params.addHeader("Authorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        Log.e(TAG, "resource: --"  + params);
+        x.http().post(params, new Callback.CommonCallback<String>() {
 
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "getResourceonSuccess: --1-" + result );
+                try {
+                    JSONObject json0bject = new JSONObject(result);
+                    Log.e("result", json0bject.toString());
+                    JSONArray data = json0bject.getJSONArray("data");
+                    Log.e("MapFragment","data bingo size = " + data.length());
+                    Log.e("data1", data.toString());
+                    Log.e(TAG, "onSuccess: iconFile = " + iconFile );
+                    resourceList.addAll(new Gson().fromJson(String.valueOf(data), new TypeToken<List<Resource>>() {
+                    }.getType()));
+                    /*dWebView.callHandler("showPointforresourcenew", new Object[]{apiUrl, data, "",iconFile}, new OnReturnValue<String>() {
+                        @Override
+                        public void onValue(String retValue) {
+                            Log.d("jsbridge", "call succeed,return value is " + retValue);
+                        }
+                    });*/
+                    if(data.length()!=0){
+                        resModelList.add(new ResModel("showPointforresourcenew",new Object[]{apiUrl, data, "",iconFile},true));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
 
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+                //progressDialog.dismiss();
+            }
+        });
     }
-
-
-
 
     /**
      * 根据监控点id获取信息
      */
-    /*private void getinfofromid(final String resourceid) {
-        showDialogProgress(progressDialog, "加载中...");
-        //获取摄像头URL
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("monitorId", resourceid);
-        } catch (JSONException e) {
-        }
-        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "resource/api/camera/list");
-        params.setAsJsonContent(true);
-        params.setBodyContent(jsonObject.toString());
-        Log.e(TAG, "getDataFromService: " + jsonObject.toString());
-        params.addHeader("Authorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
-        Log.e(TAG, "resource: --" + params);
-        x.http().post(params, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: --1-" + result);
-                try {
-                    JSONObject jsonObject1 = new JSONObject(result);
-                    if (jsonObject1.getString("code").equals("200")) {
-                        JSONArray data = jsonObject1.getJSONArray("data");
-                        kejianguangUrl ="";
-                        kejianguangMId ="";
-                        rechengxiangUrl ="";
-                        rechengxiangMId ="";
-                        for (int i = 0; i < data.length(); i++) {
-                            JSONObject dataListsObj = data.getJSONObject(i);
-                            if (dataListsObj.getInt("cameraType") == 1) {
-                                kejianguangUrl = dataListsObj.getString("id");
-                                kejianguangMId = dataListsObj.getString("monitorId");
-                                Log.i(TAG, "kejianguangUrl: " + kejianguangUrl);
-                            } else {
-                                rechengxiangUrl = dataListsObj.getString("id");
-                                rechengxiangMId = dataListsObj.getString("monitorId");
-                                Log.i(TAG, "rechengxiangUrl: " + rechengxiangUrl);
-                            }
-                        }
-
-                        if (kejianguangMId.equals("")){
-                            kejianguangbutton.setVisibility(View.GONE);
-                        }else {
-                            kejianguangbutton.setVisibility(View.VISIBLE);
-                        }
-
-                        if (rechengxiangMId.equals("")){
-                            rechengxiangbutton.setVisibility(View.GONE);
-                        }else {
-                            rechengxiangbutton.setVisibility(View.VISIBLE);
-                        }
-
-                        //获取详情
-                        getShipinReourceXiangqing(resourceid);
-                    } else {
-                        Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Log.e(TAG, "onError: " + ex.toString());
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-
-            }
-        });
-
-
-    }*/
-
     private void getinfofromid(final String resourceid){
         showDialogProgress(progressDialog,"加载中...");
         //获取摄像头URL
@@ -3650,11 +3755,12 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             jsonObject.put("monitorId", resourceid);
         } catch (JSONException e) {
         }
-        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "resource/api/camera/list");
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/camera/list");
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         Log.e(TAG, "getDataFromService: " + jsonObject.toString());
         params.addHeader("Authorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
+        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "resource: --"  + params);
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
@@ -3669,13 +3775,14 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                             if (dataListsObj.getInt("cameraType")==1){
                                 kejianguangUrl= dataListsObj.getString("id");
                                 kejianguangMId= dataListsObj.getString("monitorId");
-                                kejianguangDId= dataListsObj.getString("deviceId");
-                                groupId= dataListsObj.getString("groupId");
+                                kejianguangCId= dataListsObj.getString("id");
+                                kejianguangGId= dataListsObj.getString("groupId");
                                 Log.i(TAG, "kejianguangUrl: "+kejianguangUrl);
                             }else {
-                                rechengxiangUrl= dataListsObj.getString("deviceId");
+                                rechengxiangUrl= dataListsObj.getString("id");
                                 rechengxiangMId= dataListsObj.getString("monitorId");
-                                groupId= dataListsObj.getString("groupId");
+                                rechengxiangCId= dataListsObj.getString("id");
+                                rechengxiangGId= dataListsObj.getString("groupId");
                                 Log.i(TAG, "rechengxiangUrl: "+rechengxiangUrl);
                             }
                         }
@@ -3709,75 +3816,12 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
     }
 
-    /*private void getShipinReourceXiangqing(String resourceid) {
-        RequestParams infoparams = new RequestParams(requestaddress.getRequstUrl() + "resource/api/monitor");
-        infoparams.addHeader("Authorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
-        infoparams.addParameter("id", resourceid);
-        infoparams.addHeader("infoAuthorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
-        Log.e(TAG, "inforesource: --" + infoparams);
-        x.http().get(infoparams, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "infoonSuccess: --1-" + result);
-                try {
-                    JSONObject jsonObject1 = new JSONObject(result);
-                    if (jsonObject1.getString("code").equals("200")) {
-                        JSONArray data = jsonObject1.getJSONArray("data");
-                        for (int i = 0; i < data.length(); i++) {
-                            JSONObject dataListsObj = data.getJSONObject(i);
-                            resourcenameview.setText(dataListsObj.getString("name"));
-                            if (dataListsObj.getString("districtName").equals("null") || dataListsObj.getString("districtName").isEmpty()) {
-                                resoucedizhiview.setText(dataListsObj.getString("streetName"));
-                            } else {
-                                resoucedizhiview.setText(dataListsObj.getString("districtName") + dataListsObj.getString("streetName"));
-                            }
-                            int monitorType = dataListsObj.getInt("monitorType");
-                            if (monitorType == 1) {
-                                resourceTypeView.setText("森林防火");
-                            } else if (monitorType == 2) {
-                                resourceTypeView.setText("砂石盗采");
-                            } else if (monitorType == 3) {
-                                resourceTypeView.setText("海域监控");
-                            }
-
-
-                            String positionStr = dataListsObj.getString("position");
-                            Log.e("position1", positionStr);
-                            JSONObject positionObj = new JSONObject(positionStr);
-                            resourcejingweiduview.setText(positionObj.getString("lng") + "，" + positionObj.getString("lat"));
-                            resourceinfoDialog.show();
-                        }
-                    } else {
-                        Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Log.e(TAG, "onError: " + ex.toString());
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-                progressDialog.dismiss();
-            }
-        });
-    }*/
-
     private void getShipinReourceXiangqing(String resourceid) {
-        RequestParams infoparams = new RequestParams(requestaddress.getRequstUrl() + "resource/api/monitor");
+        RequestParams infoparams = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/monitor");
         infoparams.addHeader("Authorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
         infoparams.addParameter("id",resourceid);
         infoparams.addHeader("infoAuthorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
+        infoparams.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "inforesource: --"  + infoparams);
         x.http().get(infoparams, new Callback.CommonCallback<String>() {
             @Override
@@ -3790,10 +3834,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                         for(int i=0; i<data.length(); i++){
                             JSONObject dataListsObj = data.getJSONObject(i);
                             resourcenameview.setText(dataListsObj.getString("name"));
-                            if (dataListsObj.getString("address")==null||dataListsObj.getString("address").equals("null")||dataListsObj.getString("address").isEmpty()) {
-                                resoucedizhiview.setText("暂无地址");
+                            if (dataListsObj.getString("districtName").equals("null")||dataListsObj.getString("districtName").isEmpty()) {
+                                resoucedizhiview.setText(dataListsObj.getString("streetName"));
                             }else {
-                                resoucedizhiview.setText(dataListsObj.getString("address"));
+                                resoucedizhiview.setText(dataListsObj.getString("cityName")+dataListsObj.getString("countyName"));
                             }
 
                             String positionStr = dataListsObj.getString("position");
@@ -3939,7 +3983,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         } else if (prodiverlist.contains(LocationManager.GPS_PROVIDER)) {
             return LocationManager.GPS_PROVIDER;//GPS定位
         } else {
-            //Toast.makeText(getContext(), "未开启本应用地理位置信息，请先开启！", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "未开启本应用地理位置信息，请先开启！", Toast.LENGTH_SHORT).show();
         }
         return null;
     }

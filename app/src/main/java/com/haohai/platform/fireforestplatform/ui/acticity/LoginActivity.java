@@ -214,12 +214,14 @@ public class LoginActivity extends HhBaseActivity {
                             e.printStackTrace();
                         }
 
-                        //  doLogin();
+                        //  doLogin()
                         loginDialog.dismiss();
                         Set<String> tagSet = new LinkedHashSet<String>();
                         tagSet.add(gridNo);
                         Log.e(TAG, "gridNo: "+gridNo);
                         tagSet.add(id);
+                        tagSet.add("offlineNotice");
+                        tagSet.add("Debug20230829");
                         XGPushManager.setTags(getApplicationContext(),"setTag",tagSet);
                         //开启华为推送
                         XGPushConfig.enableOtherPush(getApplicationContext(), true);
