@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.haohai.platform.fireforestplatform">
 
+    <!-- 华为推送 -->
+    <!--<uses-library
+        android:name="org.apache.http.legacy"
+        android:required="false" />-->
+    <!-- Required -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -14,7 +19,6 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.READ_LOGS" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -52,19 +56,21 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:largeHeap="true"
         android:theme="@style/AppTheme">
-
-
-        <activity
-            android:name="com.tencent.bugly.beta.ui.BetaActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize|locale"
-            android:theme="@android:style/Theme.Translucent" />
-
         <activity
             android:name=".MainActivity"
             android:configChanges="keyboard|orientation|keyboardHidden|screenSize"
-            android:screenOrientation="portrait" />
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait">
+
+            <!--
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            -->
+        </activity>
         <activity android:name=".ui.acticity.LoginActivity" />
         <activity android:name=".ui.acticity.TestActivity" />
         <activity android:name=".ui.acticity.Test1Activity" />
@@ -77,24 +83,14 @@
         </activity>
         <activity android:name="com.haohai.platform.platformmodel.ui.acticity.WorkReportListActivity" />
 
-        <!--<provider
+        <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.haohai.platform.fireforestplatform.fileProvider"
+            android:authorities="com.haohai.platform.fireforestplatform"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
-        </provider>-->
-
-        <provider
-            android:name="android.support.v4.content.FileProvider"
-            android:authorities="${applicationId}.fileProvider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
         </provider>
 
         <activity android:name="com.haohai.platform.platformmodel.ui.acticity.WorkReportWeekAddActivity" />
@@ -107,7 +103,7 @@
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"
-            android:process=":remote"></service>
+            android:process=":remote" />
 
         <!-- 高德地图的key 跟服务 -->
         <meta-data
@@ -121,6 +117,7 @@
 
         <receiver android:name=".ui.receiver.TengxunReceiver">
             <intent-filter>
+
                 <!-- 接收消息透传 -->
                 <action android:name="com.tencent.android.xg.vip.action.PUSH_MESSAGE" />
                 <!-- 监听注册、反注册、设置/删除标签、通知被点击等处理结果 -->
@@ -131,17 +128,46 @@
         <service
             android:name=".ui.LocationService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
         <service
             android:name=".ui.utils.TraceServiceImpl"
-            android:enabled="true"/>
-        <service android:name=".ui.service.BackgroundMp3Service"/>
-        <service android:name="com.amap.api.location.APSService"/>
+            android:enabled="true" />
+        <service android:name="com.ruyiruyi.rylibrary.service.BackgroundMp3Service" />
+        <service android:name="com.amap.api.location.APSService" />
+
+        <service
+            android:name=".ui.service.TrackService"
+            android:enabled="true"
+            android:exported="true" />
         <activity
             android:name="com.amap.api.navi.AmapRouteActivity"
-            android:theme="@android:style/Theme.NoTitleBar"
+            android:configChanges="orientation|keyboardHidden|screenSize|navigation"
             android:launchMode="singleInstance"
-            android:configChanges="orientation|keyboardHidden|screenSize|navigation" />
+            android:theme="@android:style/Theme.NoTitleBar" />
+
+        <!-- <!—VPN配置 -->
+        <service
+            android:name="com.vsg.trustaccess.sdks.logic.AuthService"
+            android:exported="false" />
+        <service
+            android:name="com.vsg.trustaccess.sdks.logic.CharonVpnService"
+            android:exported="false"
+            android:permission="android.permission.BIND_VPN_SERVICE">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".ui.service.VpnService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".ui.acticity.TuisongActivity" />
+
+        <service
+            android:name=".ui.service.TuisongService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

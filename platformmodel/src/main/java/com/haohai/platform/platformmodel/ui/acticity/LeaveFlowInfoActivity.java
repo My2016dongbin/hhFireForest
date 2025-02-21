@@ -80,7 +80,7 @@ public class LeaveFlowInfoActivity extends HhBaseActivity {
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "api/process/selectComment");
         params.setAsJsonContent(true);
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        params.addHeader("NetworkType", "Internet");
         params.addParameter("ProcessInstanceId",leaveFlow.getProcessInstanceId());
         Log.e(TAG, "postData:-- params--" + params);
         params.setConnectTimeout(10000);

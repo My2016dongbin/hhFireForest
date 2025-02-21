@@ -3,38 +3,28 @@ package com.haohai.platform.platformmodel.ui.model;
 public class GridCamera {
     String name;
     String monitorId;
+    String deviceId;
+    String serial;
     String id;
     String rtspUrl;
     String subRtspUrl;
     String state;
-    String collectionState;
-    String isOnline;
     int cameraType;
 
-    boolean status = false;
-
-    public String getIsOnline() {
-        return isOnline;
+    public String getSerial() {
+        return serial;
     }
 
-    public void setIsOnline(String isOnline) {
-        this.isOnline = isOnline;
+    public void setSerial(String serial) {
+        this.serial = serial;
     }
 
-    public boolean isStatus() {
-        return status;
+    public String getDeviceId() {
+        return deviceId;
     }
 
-    public String getCollectionState() {
-        return collectionState;
-    }
-
-    public void setCollectionState(String collectionState) {
-        this.collectionState = collectionState;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public String getName() {

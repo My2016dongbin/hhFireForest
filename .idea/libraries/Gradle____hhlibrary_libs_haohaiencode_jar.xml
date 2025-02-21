@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: ./hhlibrary/libs/haohaiencode.jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/hhlibrary/libs/haohaiencode.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

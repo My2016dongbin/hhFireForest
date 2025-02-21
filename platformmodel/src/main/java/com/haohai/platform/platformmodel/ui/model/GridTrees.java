@@ -1,5 +1,7 @@
 package com.haohai.platform.platformmodel.ui.model;
 
+import org.json.JSONArray;
+
 import java.util.List;
 
 public class GridTrees {
@@ -9,29 +11,6 @@ public class GridTrees {
     String name;
     String no;
     String count;
-    String groupId;
-    String cameraCount;
-    String cameraOnlineCount;
-    String level;
-    String isOnline;
-    boolean last;
-    List<GridModel> monitorDetailVOs;
-
-    public String getIsOnline() {
-        return isOnline;
-    }
-
-    public void setIsOnline(String isOnline) {
-        this.isOnline = isOnline;
-    }
-
-    public boolean isLast() {
-        return last;
-    }
-
-    public void setLast(boolean last) {
-        this.last = last;
-    }
 
     boolean status = false;
 
@@ -41,46 +20,6 @@ public class GridTrees {
 
     public void setStatus(boolean status) {
         this.status = status;
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
-
-    public String getCameraCount() {
-        return cameraCount;
-    }
-
-    public void setCameraCount(String cameraCount) {
-        this.cameraCount = cameraCount;
-    }
-
-    public String getCameraOnlineCount() {
-        return cameraOnlineCount;
-    }
-
-    public void setCameraOnlineCount(String cameraOnlineCount) {
-        this.cameraOnlineCount = cameraOnlineCount;
-    }
-
-    public String getLevel() {
-        return level;
-    }
-
-    public void setLevel(String level) {
-        this.level = level;
-    }
-
-    public List<GridModel> getMonitorDetailVOs() {
-        return monitorDetailVOs;
-    }
-
-    public void setMonitorDetailVOs(List<GridModel> monitorDetailVOs) {
-        this.monitorDetailVOs = monitorDetailVOs;
     }
 
     public List<GridTrees> getChildren() {

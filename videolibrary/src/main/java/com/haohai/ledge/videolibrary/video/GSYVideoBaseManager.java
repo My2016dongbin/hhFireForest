@@ -9,6 +9,7 @@ import android.os.Message;
 
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Surface;
 
 
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import tv.danmaku.ijk.media.player.IMediaPlayer;
+import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 /**
  基类管理器
@@ -241,8 +243,16 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
         sendMessage(msg);
     }
 
+    private IjkMediaPlayer player;
+
+    public IjkMediaPlayer getIJKMediaPlayer() {
+        return player;
+    }
+
     @Override
     public void onPrepared(IMediaPlayer mp) {
+        Log.e(TAG, "onPrepared: player = (IjkMediaPlayer) mp"  );
+        player = (IjkMediaPlayer) mp;
         mainThreadHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -256,6 +266,8 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
 
     @Override
     public void onCompletion(IMediaPlayer mp) {
+        Log.e(TAG, "onCompletion: player = (IjkMediaPlayer) mp"  );
+        player = (IjkMediaPlayer) mp;
         mainThreadHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -269,6 +281,8 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
 
     @Override
     public void onBufferingUpdate(IMediaPlayer mp, final int percent) {
+        Log.e(TAG, "onBufferingUpdate: player = (IjkMediaPlayer) mp"  );
+        player = (IjkMediaPlayer) mp;
         mainThreadHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -285,6 +299,8 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
 
     @Override
     public void onSeekComplete(IMediaPlayer mp) {
+        Log.e(TAG, "onSeekComplete: player = (IjkMediaPlayer) mp"  );
+        player = (IjkMediaPlayer) mp;
         mainThreadHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -298,6 +314,8 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
 
     @Override
     public boolean onError(IMediaPlayer mp, final int what, final int extra) {
+        Log.e(TAG, "onError: player = (IjkMediaPlayer) mp"  );
+        player = (IjkMediaPlayer) mp;
         mainThreadHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -312,6 +330,8 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
 
     @Override
     public boolean onInfo(IMediaPlayer mp, final int what, final int extra) {
+        Log.e(TAG, "onInfo: player = (IjkMediaPlayer) mp"  );
+        player = (IjkMediaPlayer) mp;
         mainThreadHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -332,6 +352,8 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
 
     @Override
     public void onVideoSizeChanged(IMediaPlayer mp, int width, int height, int sar_num, int sar_den) {
+        Log.e(TAG, "onVideoSizeChanged: player = (IjkMediaPlayer) mp"  );
+        player = (IjkMediaPlayer) mp;
         currentVideoWidth = mp.getVideoWidth();
         currentVideoHeight = mp.getVideoHeight();
         mainThreadHandler.post(new Runnable() {

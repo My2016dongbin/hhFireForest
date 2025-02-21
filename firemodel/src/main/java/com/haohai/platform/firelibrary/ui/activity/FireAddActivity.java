@@ -45,6 +45,7 @@ import com.alibaba.android.arouter.facade.annotation.Route;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.baidu.location.LocationClient;
 import com.bumptech.glide.Glide;
+import com.haohai.ledge.videolibrary.utils.CommonUtil;
 import com.haohai.platform.firelibrary.R;
 import com.haohai.platform.firelibrary.ui.activity.base.HhBaseActivity;
 import com.haohai.platform.firelibrary.ui.presenter.FirePresenter;
@@ -57,6 +58,7 @@ import com.ruyiruyi.rylibrary.image.ImageUtils;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
 import com.ruyiruyi.rylibrary.ui.cell.WheelView;
+import com.ruyiruyi.rylibrary.utils.CommonData;
 import com.ruyiruyi.rylibrary.utils.GifSizeFilter;
 import com.ruyiruyi.rylibrary.utils.LatLngChangeNew;
 import com.tbruyelle.rxpermissions2.RxPermissions;
@@ -84,13 +86,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import rx.functions.Action1;
-
-import static com.ruyiruyi.rylibrary.request.RequestUtils.REQUEST__URL_HLJ;
 
 @Route(path = RouteUtils.FireAdd)
 public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDateChangedListener , MessagePicturesLayout.Callback {
@@ -119,13 +118,13 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
     public boolean isChooseStarTime ;
     private TextView fireTimeText;
     private String currentCity;
+    private String currentDistrict;
     private LinearLayout shiLayout;
     private LinearLayout shengLayout;
     private LinearLayout quLayout;
     private TextView shengText;
     private TextView shiText;
     private TextView quText;
-    private EditText personText;
     public int currentChooseArea = 0;  //当前在选择省还是市   0选择省  1选择市
 
     public List<Area> shengList;
@@ -174,10 +173,10 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
     private TextView shipinView;
     private String videoSericePath;
     private List<Object> imglist;
-    private String videostr;
     @Autowired
     String token;
     private FirePresenter firePrecenter;
+    private String videostr="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -254,7 +253,6 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         mianjiView = (EditText) findViewById(R.id.mianji_view);
         shipinView = (TextView) findViewById(R.id.shipin_view);
         firenameview=(EditText) findViewById(R.id.fire_name_view);
-        personText=((EditText) findViewById(R.id.person_view));
     }
 
     private void bindView() {
@@ -272,9 +270,10 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                     @Override
                     public void call(Void aVoid) {
                         Intent intent = new Intent(getApplicationContext(), FireMapActivity.class);
-                        double[] doubles = LatLngChangeNew.calWGS84toBD09(currentLatitude, currentLongitude);
-                        intent.putExtra("longitude_double", doubles[1]);
-                        intent.putExtra("latitude_double", doubles[0]);
+                        Log.e(TAG, "call: currentLongitude" +currentLongitude);
+                        Log.e(TAG, "call: currentLatitude" +currentLatitude);
+                        intent.putExtra("longitude_double", CommonData.lng);
+                        intent.putExtra("latitude_double", CommonData.lat);
                         startActivityForResult(intent, MAP_REUEST_CODE);
                     }
                 });
@@ -282,10 +281,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                 .subscribe(new Action1<Void>() {
                     @Override
                     public void call(Void aVoid) {
-                        if (firenameview.getText().toString().isEmpty()){
-                            Toast.makeText(getApplicationContext(), "请输入火点名称", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
+
                         if (addressView.getText().toString().isEmpty()){
                             Toast.makeText(getApplicationContext(), "请输入详细地址", Toast.LENGTH_SHORT).show();
                             return;
@@ -302,16 +298,6 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                             Toast.makeText(getApplicationContext(), "请输入时间", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        if (personText.getText().toString().equals("时间")){
-                            Toast.makeText(getApplicationContext(), "请输入上报人", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-/*                        if (videoPath==null&&imglist.size()==0){
-                            Log.e(TAG, "call: "+videostr );
-                            Log.e(TAG, "call: "+imglist.size() );
-                            Toast.makeText(getApplicationContext(), "图片和视频至少上传一项", Toast.LENGTH_SHORT).show();
-                            return;
-                        }*/
                       /*  if (mianjiView.getText().toString().isEmpty()){
                             Toast.makeText(getApplicationContext(), "请输入面积", Toast.LENGTH_SHORT).show();
                             return;
@@ -324,9 +310,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                             if (isChooseShipin){
                                 postVideoToServiceRx();
                             }else {
-                                addFireDialog.dismiss();
-                                Toast.makeText(getApplicationContext(), "图片和视频至少上传一项", Toast.LENGTH_SHORT).show();
-                                //postFireToService();
+                                postFireToService();
                             }
                            // postPictoService();
                             //postFireToService();
@@ -417,10 +401,8 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                     public void call(Void aVoid) {
                         if (uriChooseList.size() == 1){  //只有一张图
                             uriChooseList.remove(0);
-
-                            oneImageDelete.setVisibility(View.GONE);
-                            oneImage.setImageDrawable(getResources().getDrawable(R.drawable.ic_add_photo));
-                            //photoLayout.setVisibility(View.GONE);
+                            //  Glide.with(getApplicationContext()).load(R.drawable.ic_bigphoto).into(oneImage);
+                            photoLayout.setVisibility(View.GONE);
                         }else {     //如果有两张图
                             uriChooseList.remove(0);
                             Glide.with(getApplicationContext()).load(uriChooseList.get(0)).into(oneImage);
@@ -479,7 +461,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
     }
     private void postPictoService(){
 
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        RequestParams params = new RequestParams(RequestUtils.SAVE_IMAGE);
         params.setAsJsonContent(true);
         params.setMultipart(true);    //以表单得形式上传  文件上传必须要
         String picStr = null;
@@ -487,7 +469,8 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
             try {
 
                 Uri uri = uriChooseList.get(i);
-                int degree = ImageUtils.readPictureDegree(uri.toString());
+                String pathStr = /*ImageUtils.getRealPathFromURI(FireAddActivity.this,uri)*/uri.getPath();
+                int degree = ImageUtils.readPictureDegree(pathStr);
                 Bitmap photo = ImageUtils.getBitmapFormUri(getApplicationContext(), uri);
                 if (i == 0){
                     evaluateOne = rotaingImageView(degree, photo);
@@ -503,8 +486,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
             }
         }
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        params.setConnectTimeout(1000000);
+        params.addHeader("NetworkType", "Internet");
         x.http().post(params, new Callback.CommonCallback<String>() {
 
 
@@ -553,25 +535,26 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         });
     }
     private void postVideoToServiceRx() {
-//        JSONObject jsonObject = new JSONObject();
-//        try {
-//            jsonObject.put("file", new File(videoPath));
-//        } catch (JSONException e) {
-//        }
+      /*  JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("file", new File(videoPath));
+        } catch (JSONException e) {
+        }*/
 
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        RequestParams params = new RequestParams(RequestUtils.SAVE_IMAGE);
         params.addBodyParameter("file", new File(videoPath),null,videoPath);
         params.setAsJsonContent(true);
         params.setMultipart(true);
-        params.setConnectTimeout(1000000);
-        //params.setBodyContent(jsonObject.toString());
+      //  params.setBodyContent(jsonObject.toString());
+      //  Log.e(TAG, "postVideoToService: " + jsonObject.toString());
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        params.addHeader("NetworkType", "Internet");
         Log.e(TAG, "resource: --"  + params);
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 Log.e(TAG, "onSuccess: --1-" + result );
+
                 try {
                     JSONObject videoobj = new JSONObject(result);
                     String code = videoobj.getString("code");
@@ -582,6 +565,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                         for (int i = 0; i<imgStrArray.length(); i++){
                             videostr= (String) imgStrArray.get(i);
                         }
+
                         postFireToService();
                     }else {
                         Toast.makeText(FireAddActivity.this, "提交失败", Toast.LENGTH_SHORT).show();
@@ -630,18 +614,19 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                 quId = quList.get(i).getId();
             }
         }
-        if (quId.isEmpty()){
-            hideDialogProgress(addFireDialog);
-            Toast.makeText(getApplicationContext(), "请选择区", Toast.LENGTH_SHORT).show();
-            return;
-        }
         String addressStr = addressView.getText().toString();
         String jingduStr = jingduView.getText().toString();
         String weiduStr = weiduView.getText().toString();
+        try{
+            double[] doubles = new LatLngChangeNew().calBD09toWGS84(Double.parseDouble(weiduStr), Double.parseDouble(jingduStr));
+            weiduStr = CommonUtil.parsePointCount(doubles[0]+"",5);
+            jingduStr = CommonUtil.parsePointCount(doubles[1]+"",5);
+        }catch (Exception e){
+        }
         String timeStr = fireTimeText.getText().toString();
         String tudiMianjiStr = mianjiView.getText().toString();
         String nameStr =firenameview.getText().toString();
-        String personName =personText.getText().toString();
+
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("address",addressStr);
@@ -661,7 +646,6 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
             jsonObject.put("countyCode",quId);
             jsonObject.put("fireArea",tudiMianjiStr);
             jsonObject.put("videoPath1",videostr);
-            jsonObject.put("reporter",personName);
             if (imglist.size()>0){
                 jsonObject.put("picPath1",imglist.get(0).toString());
                 if (imglist.size()>1){
@@ -677,10 +661,12 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
 
-        Log.e(TAG, "postDataService:jsonObject.toString() = " + jsonObject.toString());
+        Log.e(TAG, "postFireToService: "+jsonObject.toString());
+        Log.e(TAG, "postDataService:反馈---11 " + params);
+        Log.e(TAG, "postDataService:反馈---11 " + weiduStr);
         params.setConnectTimeout(10000);
         params.addHeader("Authorization","bearer " + token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        params.addHeader("NetworkType", "Internet");
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -702,7 +688,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
-                Log.e(TAG, "onError: 请求失败" );
+                Log.e(TAG, "onError: 请求失败" + ex.toString() );
                 Toast.makeText(FireAddActivity.this, "请连接内网上传", Toast.LENGTH_SHORT).show();
             }
 
@@ -734,7 +720,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                                 .countable(true)
                                 .capture(true)
                                 .captureStrategy(
-                                        new CaptureStrategy(true,"com.haohai.platform.fireforestplatform.fileProvider")
+                                        new CaptureStrategy(true,"com.haohai.platform.fireforestplatform")
                                 )
                                 .maxSelectable(size)
                                 .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
@@ -760,36 +746,51 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.e(TAG, "onActivityResult:resultCode " + resultCode + "requestcode" + requestCode);
-        if (requestCode == MAP_REUEST_CODE && resultCode == MAP_REUEST_CODE) {
-            longitude = data.getStringExtra("longitude");
-            latitude = data.getStringExtra("latitude");
+//        Log.e(TAG, "onActivityResult:data ",data);
+        if (requestCode == MAP_REUEST_CODE && resultCode == RESULT_OK) {
+            longitude = CommonUtil.parsePointCount(data.getStringExtra("longitude"),5);
+            latitude = CommonUtil.parsePointCount(data.getStringExtra("latitude"),5);
             cityAddress = data.getStringExtra("cityAddress");
             currentCity = data.getStringExtra("city");
+            currentDistrict = data.getStringExtra("district");
             if (!currentCity.isEmpty()){
-                String p = data.getStringExtra("PROVINCE");
-                String c = data.getStringExtra("CITY");
-                String s = data.getStringExtra("DISTRICT");
-                initAreaById(p);
-                String c_id = "";
-                String s_id = "";
-                for (int i = 0; i < allAreaList.size(); i++) {
-                    if(Objects.equals(allAreaList.get(i).getName(), c)){
-                        c_id = allAreaList.get(i).getId();
-                    }
-                }
-                for (int i = 0; i < allAreaList.size(); i++) {
-                    if(Objects.equals(allAreaList.get(i).getName(), s)){
-                        s_id = allAreaList.get(i).getId();
-                    }
-                }
-                initShiByShiId(shengList.get(shengSelectIndex-1).getId(),c_id);
-                initquByQuId(shiList.get(shiSelectIndex-1).getId(),s_id);
+                String currentCiryParentId = "";
+                String currentCiryId = "";
+                String currentDistrictId = "";
 
-                shengText.setText(p);
-                shiText.setText(c);
-                quText.setText(s);
+                String currentPro = "";
+                String currentProId = "";
+                for (int i = 0; i < allAreaList.size(); i++) {
+                    if (allAreaList.get(i).getName().equals(currentCity)) {
+                        currentCiryParentId = allAreaList.get(i).getParentId();
+                        currentCiryId = allAreaList.get(i).getId();
+                    }
+                }
+
+                for (int i = 0; i < allAreaList.size(); i++) {
+                    if (allAreaList.get(i).getId().equals(currentCiryParentId)){
+                        currentPro = allAreaList.get(i).getName();
+                        currentProId = allAreaList.get(i).getId();
+                    }
+                }
+
+                for (int i = 0; i < allAreaList.size(); i++) {
+                    if (allAreaList.get(i).getName().equals(currentDistrict)) {
+                        currentDistrictId = allAreaList.get(i).getId();
+                    }
+                }
+                shengStrList.add(currentPro);
+                shiStrList.add(currentCity);
+                isChooseSheng = true;
+
+                shengText.setText(currentPro);
+                shiText.setText(currentCity);
+                quText.setText(currentDistrict);
 
                 fromMap = true;
+                initAreaById(currentPro);
+                initShiByShiId(currentProId,currentCiryId);
+                initquByQuId(currentCiryId,currentDistrictId);
 
             }
 
@@ -840,7 +841,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         }
 
     }
-    private void initquByQuId(String currentShiId,String quId) {
+    private void initquByQuId(String currentShiId,String districtId) {
         quList.clear();
         quStrList.clear();
         quStrList.add("请选择区");
@@ -851,10 +852,11 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
             }
         }
         for (int i = 0; i < quList.size(); i++) {
-            if (quList.get(i).getId().equals(quId)) {
-                quSelectIndex = i + 1;
+            if(quList.get(i).getId().equals(districtId)){
+                quSelectIndex = i+1;
             }
         }
+        //  showAreaDialog(shiStrList);
     }
     private void initShiByShiId(String currentShengId,String currentShiId) {
         shiList.clear();
@@ -872,6 +874,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
             }
         }
 
+        //  showAreaDialog(shiStrList);
     }
 
     private void initAreaById(String shengName) {
@@ -900,9 +903,15 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +  "auth/api/sysArea/getAllSysArea");
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
+//        params.addHeader("Transfer-Encoding", "chunked");
+//        params.addHeader("Accept", "application/json,text/plain.*/*");
+//        params.addHeader("Accept-Encoding", "gzip,deflate");
+//        params.addHeader("Accept-Language", "zh_CN,zh;q=0.9");
         params.addHeader("Authorization","bearer " + token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        Log.i(TAG, "getAreaFromService: "+params);
+//        params.addHeader("Cache-Control", "no-cache");
+//        params.addHeader("Connection", "keep-alive");
+//        params.addHeader("Content-Type", "application/json;charset=utf-8");
+        params.addHeader("NetworkType", "Internet");
         x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -1003,9 +1012,9 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
         areaWy.setIsLoop(false);
         if (currentChooseArea == 0){
             areaWy.setItems(strList, shengSelectIndex);//init selected position is 0 初始选中位置为0
-        }else if (currentChooseArea == 1){
+        } else if (currentChooseArea == 1) {
             areaWy.setItems(strList, shiSelectIndex);//init selected position is 0 初始选中位置为0
-        }else {
+        } else {
             areaWy.setItems(strList, quSelectIndex);
         }
 
@@ -1022,15 +1031,15 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                     shiText.setText("请选择市");
                     currentChooseShi = "请选择市";
                     shiSelectIndex = 0;
-                    quText.setText("请选择区");
-                    currentChooseQu = "请选择区";
+                    quText.setText("请选择市");
+                    currentChooseQu = "请选择市";
                     quSelectIndex = 0;
                 }else if(currentChooseArea == 1){                          //选择市
                     currentChooseShi = areaWy.getSelectedItem();
                     shiSelectIndex = areaWy.getSelectedPosition();
                     shiText.setText(currentChooseShi);
-                    quText.setText("请选择区");
-                    currentChooseQu = "请选择区";
+                    quText.setText("请选择市");
+                    currentChooseQu = "请选择市";
                     quSelectIndex = 0;
                 }else {
                     currentChooseQu = areaWy.getSelectedItem();
@@ -1143,9 +1152,9 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
 
                 if (chooseHour < 10 && chooseMinute <10){
                     fireTimeText.append("  0" + chooseHour + ":0" + chooseMinute + ":00");
-                }else if (chooseHour < 10 && chooseMinute >10){
+                }else if (chooseHour < 10 && chooseMinute >=10){
                     fireTimeText.append("  0" + chooseHour + ":" + chooseMinute + ":00");
-                }else if (chooseHour > 10 && chooseMinute < 10){
+                }else if (chooseHour >= 10 && chooseMinute < 10){
                     fireTimeText.append("  " + chooseHour + ":0" + chooseMinute + ":00");
                 }else {
                     fireTimeText.append("  " + chooseHour + ":" + chooseMinute + ":00");

@@ -203,3 +203,4 @@ public class Organization {
         this.snapSwitch = snapSwitch;
     }
 }
+

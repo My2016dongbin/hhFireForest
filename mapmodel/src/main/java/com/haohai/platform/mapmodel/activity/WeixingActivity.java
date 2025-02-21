@@ -68,6 +68,7 @@ public class WeixingActivity extends FullBaseActivity {
     private ImageView weixingNOAA18Image;
     private LinearLayout weixingNOAA19Layout;
     private ImageView weixingNOAA19Image;
+    private TextView chixubaojing_view;
     public boolean weixingAllChoose = true;
     public boolean weixingNPPChoose = true;
     public boolean weixingFY4Choose = true;
@@ -132,6 +133,7 @@ public class WeixingActivity extends FullBaseActivity {
     private ImageView jingwaiImage;
     private LinearLayout huanChongLayout;
     private ImageView huanChongImage;
+    public boolean ischixu = false;
     public boolean isChooseJingwai = false;
     public boolean isChooseHuanchong = false;
     private TextView chongzhiButton;
@@ -316,6 +318,8 @@ public class WeixingActivity extends FullBaseActivity {
         weixingNOAA19Te = ((TextView) gaojiInflater.findViewById(R.id.weixing_noaa19_text));
 
 
+        chixubaojing_view = ((TextView) gaojiInflater.findViewById(R.id.chixubaojing_view));
+
         //地貌监测
         dimaoAllLayout = ((LinearLayout) gaojiInflater.findViewById(R.id.dimao_all_layout));
         dimaoAllText = ((TextView) gaojiInflater.findViewById(R.id.dimao_all_text));
@@ -455,6 +459,21 @@ public class WeixingActivity extends FullBaseActivity {
                         }
                     }
                 });
+        RxViewAction.clickNoDouble(chixubaojing_view)
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        if (ischixu){
+                            ischixu = false;
+                            chixubaojing_view.setBackgroundResource(R.drawable.bg_text_hui);
+                            chixubaojing_view.setTextColor(getResources().getColor(R.color.c6));
+                        }else {
+                            ischixu = true;
+                            chixubaojing_view.setBackgroundResource(R.drawable.bg_text_lan);
+                            chixubaojing_view.setTextColor(getResources().getColor(R.color.c12));
+                        }
+                    }
+                });
 
 
 
@@ -535,6 +554,19 @@ public class WeixingActivity extends FullBaseActivity {
                         dimaoNongtianChoose = true;
                         dimaoQitaChoose = true;
 
+
+                        currentNum = "100";
+                        yibaiText.setBackgroundResource(R.drawable.bg_text_lan);
+                        yibaiText.setTextColor(getResources().getColor(R.color.c12));
+                        wubaiText.setBackgroundResource(R.drawable.bg_text_hui);
+                        wubaiText.setTextColor(getResources().getColor(R.color.c6));
+                        yiqianText.setBackgroundResource(R.drawable.bg_text_hui);
+                        yiqianText.setTextColor(getResources().getColor(R.color.c6));
+                        liangqianText.setBackgroundResource(R.drawable.bg_text_hui);
+                        liangqianText.setTextColor(getResources().getColor(R.color.c6));
+                        wuqianText.setBackgroundResource(R.drawable.bg_text_hui);
+                        wuqianText.setTextColor(getResources().getColor(R.color.c6));
+
                         //区域重置
                         currentChooseSheng = "";
                         currentChooseShi = "";
@@ -546,8 +578,15 @@ public class WeixingActivity extends FullBaseActivity {
                         //初始话境外
                         isChooseJingwai = false;
                         isChooseHuanchong = false;
-//                        jingwaiImage.setImageResource(R.drawable.choose_no);
-//                        huanChongImage.setImageResource(R.drawable.choose_no);
+                        jingwaiText.setBackgroundResource(R.drawable.bg_text_hui);
+                        jingwaiText.setTextColor(getResources().getColor(R.color.c6));
+                        huanchongText.setBackgroundResource(R.drawable.bg_text_hui);
+                        huanchongText.setTextColor(getResources().getColor(R.color.c6));
+                        ischixu = false;
+                        chixubaojing_view.setBackgroundResource(R.drawable.bg_text_hui);
+                        chixubaojing_view.setTextColor(getResources().getColor(R.color.c6));
+                        /*jingwaiImage.setImageResource(R.drawable.choose_no);
+                        huanChongImage.setImageResource(R.drawable.choose_no);*/
                     }
                 });
 

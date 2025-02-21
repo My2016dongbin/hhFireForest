@@ -336,7 +336,6 @@ public class TreeAdapter extends BaseAdapter {
 
     public interface OnPlayerItemClick{
         void onPlayerItemClickListener(String id,String parentid,String name,String rtspUrl);
-        void onPlayerItemClickListener(String id,String name);
     }
 
 

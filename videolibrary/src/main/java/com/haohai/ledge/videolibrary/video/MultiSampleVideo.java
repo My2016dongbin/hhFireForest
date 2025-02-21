@@ -75,6 +75,10 @@ public class MultiSampleVideo extends StandardGSYVideoPlayer {
         return CustomManager.getCustomManager(getKey());
     }
 
+    public CustomManager getCustomManager() {
+        return CustomManager.getCustomManager(getKey());
+    }
+
     @Override
     protected boolean backFromFull(Context context) {
         return CustomManager.backFromWindowFull(context, getKey());

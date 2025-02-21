@@ -1,7 +1,7 @@
 /**
- * Cesium - https://github.com/AnalyticalGraphicsInc/cesium
+ * Cesium - https://github.com/CesiumGS/cesium
  *
- * Copyright 2011-2017 Cesium Contributors
+ * Copyright 2011-2020 Cesium Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
  * Columbus View (Pat. Pend.)
  *
  * Portions licensed separately.
- * See https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md for full licensing details.
+ * See https://github.com/CesiumGS/cesium/blob/master/LICENSE.md for full licensing details.
  */
-define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-52d9479f', './BoundingSphere-ab31357a', './RuntimeError-7c184ac0', './WebGLConstants-4c11ee5f', './ComponentDatatype-919a7463', './FeatureDetection-bac17d71', './Transforms-794e44e6', './buildModuleUrl-02e5236f', './AttributeCompression-4a5b893f', './IntersectionTests-afd4a13d', './Plane-68b37818', './WebMercatorProjection-65629b9f', './createTaskProcessorWorker', './EllipsoidTangentPlane-7eb9b50e', './OrientedBoundingBox-80ab75fe', './TerrainEncoding-f6db33b5'], function (when, Check, _Math, Cartesian2, BoundingSphere, RuntimeError, WebGLConstants, ComponentDatatype, FeatureDetection, Transforms, buildModuleUrl, AttributeCompression, IntersectionTests, Plane, WebMercatorProjection, createTaskProcessorWorker, EllipsoidTangentPlane, OrientedBoundingBox, TerrainEncoding) { 'use strict';
+define(['./when-8d13db60', './Check-70bec281', './Math-61ede240', './Cartographic-fe4be337', './Cartesian2-85064f09', './BoundingSphere-775c5788', './Cartesian4-5af5bb24', './RuntimeError-ba10bc3e', './WebGLConstants-4c11ee5f', './ComponentDatatype-5862616f', './FeatureDetection-7bd32c34', './Transforms-a1cf7267', './buildModuleUrl-e7952659', './AttributeCompression-84a90a13', './IntersectionTests-397d9494', './Plane-8390418f', './WebMercatorProjection-80c70558', './createTaskProcessorWorker', './EllipsoidTangentPlane-e324bfa4', './OrientedBoundingBox-0ede1598', './TerrainEncoding-a807a704'], function (when, Check, _Math, Cartographic, Cartesian2, BoundingSphere, Cartesian4, RuntimeError, WebGLConstants, ComponentDatatype, FeatureDetection, Transforms, buildModuleUrl, AttributeCompression, IntersectionTests, Plane, WebMercatorProjection, createTaskProcessorWorker, EllipsoidTangentPlane, OrientedBoundingBox, TerrainEncoding) { 'use strict';
 
     /**
          * The encoding that is used for a heightmap
@@ -71,10 +71,10 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
             isBigEndian : false
         });
 
-        var cartesian3Scratch = new Cartesian2.Cartesian3();
+        var cartesian3Scratch = new Cartographic.Cartesian3();
         var matrix4Scratch = new BoundingSphere.Matrix4();
-        var minimumScratch = new Cartesian2.Cartesian3();
-        var maximumScratch = new Cartesian2.Cartesian3();
+        var minimumScratch = new Cartographic.Cartesian3();
+        var maximumScratch = new Cartographic.Cartesian3();
 
         /**
          * Fills an array of vertices from a heightmap image.
@@ -213,7 +213,7 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
 
             var relativeToCenter = options.relativeToCenter;
             var hasRelativeToCenter = when.defined(relativeToCenter);
-            relativeToCenter = hasRelativeToCenter ? relativeToCenter : Cartesian2.Cartesian3.ZERO;
+            relativeToCenter = hasRelativeToCenter ? relativeToCenter : Cartographic.Cartesian3.ZERO;
             var exaggeration = when.defaultValue(options.exaggeration, 1.0);
             var includeWebMercatorT = when.defaultValue(options.includeWebMercatorT, false);
 
@@ -417,7 +417,7 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
                     var rSurfaceY = kY * oneOverGamma;
                     var rSurfaceZ = kZ * oneOverGamma;
 
-                    var position = new Cartesian2.Cartesian3();
+                    var position = new Cartographic.Cartesian3();
                     position.x = rSurfaceX + nX * heightSample;
                     position.y = rSurfaceY + nY * heightSample;
                     position.z = rSurfaceZ + nZ * heightSample;
@@ -432,8 +432,8 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
 
                     BoundingSphere.Matrix4.multiplyByPoint(toENU, position, cartesian3Scratch);
 
-                    Cartesian2.Cartesian3.minimumByComponent(cartesian3Scratch, minimum, minimum);
-                    Cartesian2.Cartesian3.maximumByComponent(cartesian3Scratch, maximum, maximum);
+                    Cartographic.Cartesian3.minimumByComponent(cartesian3Scratch, minimum, minimum);
+                    Cartographic.Cartesian3.maximumByComponent(cartesian3Scratch, maximum, maximum);
                     hMin = Math.min(hMin, heightSample);
                 }
             }

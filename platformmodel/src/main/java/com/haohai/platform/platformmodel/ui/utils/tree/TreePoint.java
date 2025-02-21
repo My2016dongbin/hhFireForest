@@ -33,22 +33,6 @@ public class TreePoint {
         this.rtspUrl = rtspUrl;
     }
 
-    public TreePoint(String ID, String NNAME, String PARENTID, String ISLEAF, int DISPLAY_ORDER) {
-        this.ID = ID;
-        this.NNAME = NNAME;
-        this.PARENTID = PARENTID;
-        this.ISLEAF = ISLEAF;
-        this.DISPLAY_ORDER = DISPLAY_ORDER;
-    }
-    public TreePoint(String ID, String NNAME, String PARENTID, String ISLEAF, int DISPLAY_ORDER,boolean isExpand) {
-        this.ID = ID;
-        this.NNAME = NNAME;
-        this.PARENTID = PARENTID;
-        this.ISLEAF = ISLEAF;
-        this.DISPLAY_ORDER = DISPLAY_ORDER;
-        this.isExpand = isExpand;
-    }
-
 
     public void setNNAME(String NNAME) {
         this.NNAME = NNAME;

@@ -45,10 +45,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <wendu.dsbridge.DWebView
+        <!--  <wendu.dsbridge.DWebView
             android:id="@+id/dwebview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent" />-->
+
+        <com.baidu.mapapi.map.MapView
+            android:id="@+id/baidu_mapview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -127,6 +133,7 @@
                     android:gravity="center"
                     android:text="资源"
                     android:textColor="@color/c12"
+                    android:visibility="gone"
                     android:textSize="15sp" />
 
                 <LinearLayout
@@ -140,7 +147,7 @@
                         android:layout_width="50dp"
                         android:layout_height="50dp"
                         android:gravity="center"
-                        android:text="类型     列表"
+                        android:text="资源"
                         android:textColor="@color/c12"
                         android:textSize="14sp" />
 
@@ -164,6 +171,7 @@
                     android:layout_height="50dp"
                     android:gravity="center"
                     android:text="报警     列表"
+                    android:visibility="gone"
                     android:textColor="@color/c12"
                     android:textSize="15sp" />
 
@@ -178,7 +186,7 @@
                         android:layout_width="50dp"
                         android:layout_height="50dp"
                         android:gravity="center"
-                        android:text="列表"
+                        android:text="报警"
                         android:textColor="@color/c12"
                         android:textSize="14sp" />
 
@@ -187,6 +195,7 @@
 
 
             </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/ddrw_layout"
                 android:layout_width="50dp"
@@ -200,9 +209,54 @@
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:gravity="center"
-                    android:text="调度     任务"
+                    android:text="任务"
                     android:textColor="@color/c12"
                     android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/statistics_layout"
+                android:visibility="gone"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/statistics_button"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:gravity="center"
+                    android:text="统计"
+                    android:textColor="@color/c12"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/beidou_layout"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:visibility="gone"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="北斗"
+                    android:textColor="@color/c12"
+                    android:textSize="13sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="通讯"
+                    android:textColor="@color/c12"
+                    android:textSize="13sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -223,5 +277,24 @@
             android:layout_gravity="bottom"
             android:text=" - "
             android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/warn_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="10dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_warning" />
+        <ImageView
+            android:id="@+id/order_warn_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="30dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_warning" />
     </FrameLayout>
 </LinearLayout>

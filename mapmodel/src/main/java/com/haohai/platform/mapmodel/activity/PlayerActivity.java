@@ -2,7 +2,9 @@ package com.haohai.platform.mapmodel.activity;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -38,8 +40,8 @@ public class PlayerActivity extends BaseActivity {
 
         //增加封面
         ImageView imageView = new ImageView(this);
-        imageView.setScaleType(ImageView.ScaleType.CENTER);
-        imageView.setImageResource(R.mipmap.ic_launcher);
+            imageView.setScaleType(ImageView.ScaleType.CENTER);
+        imageView.setImageResource(R.mipmap.ic_player);
         videoPlayer.setThumbImageView(imageView);
         //增加title
         videoPlayer.getTitleTextView().setVisibility(View.VISIBLE);

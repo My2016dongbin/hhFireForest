@@ -6,15 +6,26 @@ package com.haohai.platform.platformmodel.ui.model;
 
 public class VideoId {
     private String monitorId;
+    private String serial;
     private String videoId;
     private String videoName;
     private int videoPlayer;
+    private String url;
 
-    public VideoId(String monitorId, String videoId, String videoName, int videoPlayer) {
+    public VideoId(String monitorId,String serial,String videoId, String videoName, int videoPlayer) {
         this.monitorId = monitorId;
+        this.serial = serial;
         this.videoId = videoId;
         this.videoName = videoName;
         this.videoPlayer = videoPlayer;
+    }
+    public VideoId(String monitorId,String serial,String videoId, String videoName, int videoPlayer,String url) {
+        this.monitorId = monitorId;
+        this.serial = serial;
+        this.videoId = videoId;
+        this.videoName = videoName;
+        this.videoPlayer = videoPlayer;
+        this.url = url;
     }
 
     public VideoId(String videoId, String videoName, int videoPlayer) {
@@ -22,11 +33,21 @@ public class VideoId {
         this.videoName = videoName;
         this.videoPlayer = videoPlayer;
     }
-    public VideoId(String videoId, String videoName, int videoPlayer,String chennelId) {
-        this.videoId = videoId;
-        this.videoName = videoName;
-        this.videoPlayer = videoPlayer;
-        this.monitorId = chennelId;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getSerial() {
+        return serial;
+    }
+
+    public void setSerial(String serial) {
+        this.serial = serial;
     }
 
     public String getMonitorId() {
@@ -59,5 +80,17 @@ public class VideoId {
 
     public void setVideoPlayer(int videoPlayer) {
         this.videoPlayer = videoPlayer;
+    }
+
+    @Override
+    public String toString() {
+        return "VideoId{" +
+                "monitorId='" + monitorId + '\'' +
+                ", serial='" + serial + '\'' +
+                ", videoId='" + videoId + '\'' +
+                ", videoName='" + videoName + '\'' +
+                ", videoPlayer=" + videoPlayer +
+                ", url='" + url + '\'' +
+                '}';
     }
 }

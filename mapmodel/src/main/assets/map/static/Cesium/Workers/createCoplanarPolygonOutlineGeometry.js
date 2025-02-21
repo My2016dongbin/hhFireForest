@@ -1,7 +1,7 @@
 /**
- * Cesium - https://github.com/AnalyticalGraphicsInc/cesium
+ * Cesium - https://github.com/CesiumGS/cesium
  *
- * Copyright 2011-2017 Cesium Contributors
+ * Copyright 2011-2020 Cesium Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
  * Columbus View (Pat. Pend.)
  *
  * Portions licensed separately.
- * See https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md for full licensing details.
+ * See https://github.com/CesiumGS/cesium/blob/master/LICENSE.md for full licensing details.
  */
-define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-52d9479f', './BoundingSphere-ab31357a', './RuntimeError-7c184ac0', './WebGLConstants-4c11ee5f', './ComponentDatatype-919a7463', './GeometryAttribute-ba19792d', './PrimitiveType-97893bc7', './FeatureDetection-bac17d71', './Transforms-794e44e6', './buildModuleUrl-02e5236f', './GeometryAttributes-1c7ce91d', './AttributeCompression-4a5b893f', './GeometryPipeline-5d611954', './EncodedCartesian3-daa1cb04', './IndexDatatype-18a8cae6', './IntersectionTests-afd4a13d', './Plane-68b37818', './GeometryInstance-2015f767', './arrayRemoveDuplicates-aafa59fd', './EllipsoidTangentPlane-7eb9b50e', './OrientedBoundingBox-80ab75fe', './CoplanarPolygonGeometryLibrary-1a473f13', './ArcType-66bc286a', './EllipsoidRhumbLine-c9b776a6', './earcut-2.2.1-b404d9e6', './PolygonPipeline-0532ac9c', './PolygonGeometryLibrary-adc41ee0'], function (when, Check, _Math, Cartesian2, BoundingSphere, RuntimeError, WebGLConstants, ComponentDatatype, GeometryAttribute, PrimitiveType, FeatureDetection, Transforms, buildModuleUrl, GeometryAttributes, AttributeCompression, GeometryPipeline, EncodedCartesian3, IndexDatatype, IntersectionTests, Plane, GeometryInstance, arrayRemoveDuplicates, EllipsoidTangentPlane, OrientedBoundingBox, CoplanarPolygonGeometryLibrary, ArcType, EllipsoidRhumbLine, earcut2_2_1, PolygonPipeline, PolygonGeometryLibrary) { 'use strict';
+define(['./when-8d13db60', './Check-70bec281', './Math-61ede240', './Cartographic-fe4be337', './Cartesian2-85064f09', './BoundingSphere-775c5788', './Cartesian4-5af5bb24', './RuntimeError-ba10bc3e', './WebGLConstants-4c11ee5f', './ComponentDatatype-5862616f', './GeometryAttribute-ed9d707f', './PrimitiveType-97893bc7', './FeatureDetection-7bd32c34', './Transforms-a1cf7267', './buildModuleUrl-e7952659', './GeometryAttributes-aacecde6', './AttributeCompression-84a90a13', './GeometryPipeline-245a05d7', './EncodedCartesian3-a569cba8', './IndexDatatype-9435b55f', './IntersectionTests-397d9494', './Plane-8390418f', './GeometryInstance-93a01b5d', './arrayRemoveDuplicates-f0b089b1', './EllipsoidTangentPlane-e324bfa4', './OrientedBoundingBox-0ede1598', './CoplanarPolygonGeometryLibrary-81d1880f', './ArcType-66bc286a', './EllipsoidRhumbLine-f161e674', './earcut-2.2.1-b404d9e6', './PolygonPipeline-fd46002b', './PolygonGeometryLibrary-9cc18cc2'], function (when, Check, _Math, Cartographic, Cartesian2, BoundingSphere, Cartesian4, RuntimeError, WebGLConstants, ComponentDatatype, GeometryAttribute, PrimitiveType, FeatureDetection, Transforms, buildModuleUrl, GeometryAttributes, AttributeCompression, GeometryPipeline, EncodedCartesian3, IndexDatatype, IntersectionTests, Plane, GeometryInstance, arrayRemoveDuplicates, EllipsoidTangentPlane, OrientedBoundingBox, CoplanarPolygonGeometryLibrary, ArcType, EllipsoidRhumbLine, earcut2_2_1, PolygonPipeline, PolygonGeometryLibrary) { 'use strict';
 
     function createGeometryFromPositions(positions){
             var length = positions.length;
@@ -183,7 +183,7 @@ define(['./when-a55a8a4c', './Check-bc1d37d9', './Math-edfe2d1c', './Cartesian2-
             var polygonHierarchy = polygonGeometry._polygonHierarchy;
 
             var outerPositions = polygonHierarchy.positions;
-            outerPositions = arrayRemoveDuplicates.arrayRemoveDuplicates(outerPositions, Cartesian2.Cartesian3.equalsEpsilon, true);
+            outerPositions = arrayRemoveDuplicates.arrayRemoveDuplicates(outerPositions, Cartographic.Cartesian3.equalsEpsilon, true);
             if (outerPositions.length < 3) {
                 return;
             }

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: ./platformmodel/libs/lechangeSDK.jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/platformmodel/libs/lechangeSDK.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

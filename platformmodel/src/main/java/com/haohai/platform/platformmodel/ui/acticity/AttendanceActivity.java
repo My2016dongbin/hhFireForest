@@ -300,7 +300,7 @@ public class AttendanceActivity extends HhBaseActivity {
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        params.addHeader("NetworkType", "Internet");
         Log.e(TAG, "postData:-- params--" + params);
         Log.e(TAG, "postData:-- jsonObject.toString()--" + jsonObject.toString());
         params.setConnectTimeout(10000);
@@ -400,7 +400,7 @@ public class AttendanceActivity extends HhBaseActivity {
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        params.addHeader("NetworkType", "Internet");
         Log.e(TAG, "postData:-- params--" + params);
         Log.e(TAG, "postData:-- jsonObject.toString()--" + jsonObject.toString());
         params.setConnectTimeout(10000);

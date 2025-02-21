@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="Gradle: ./videolibrary/libs/ijkplayer-java-release.aar">
+    <CLASSES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/b435f260ddc30e6c31c318e91f9288c0/ijkplayer-java-release/jars/classes.jar!/" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/b435f260ddc30e6c31c318e91f9288c0/ijkplayer-java-release/res" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/b435f260ddc30e6c31c318e91f9288c0/ijkplayer-java-release/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b435f260ddc30e6c31c318e91f9288c0/ijkplayer-java-release/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b435f260ddc30e6c31c318e91f9288c0/ijkplayer-java-release/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b435f260ddc30e6c31c318e91f9288c0/ijkplayer-java-release/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: ./firemodel/libs/Volley.jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/firemodel/libs/Volley.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

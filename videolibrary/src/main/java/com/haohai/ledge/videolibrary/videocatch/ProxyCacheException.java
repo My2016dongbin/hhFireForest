@@ -10,7 +10,7 @@ import com.haohai.ledge.videolibrary.BuildConfig;
  */
 public class ProxyCacheException extends Exception {
 
-    private static final String LIBRARY_VERSION = ". Version: " + "BuildConfig.VERSION_NAME";
+    private static final String LIBRARY_VERSION = ". Version: " + BuildConfig.VERSION_NAME;
 
     public ProxyCacheException(String message) {
         super(message + LIBRARY_VERSION);

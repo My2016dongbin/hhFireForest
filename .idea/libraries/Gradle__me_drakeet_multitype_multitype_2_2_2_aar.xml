@@ -1,0 +1,20 @@
+<component name="libraryTable">
+  <library name="Gradle: me.drakeet.multitype:multitype:2.2.2@aar">
+    <CLASSES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/ca7dec915da1aec72f1b9bd9af87dd33/multitype-2.2.2/jars/classes.jar!/" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/ca7dec915da1aec72f1b9bd9af87dd33/multitype-2.2.2/res" />
+      <root url="file://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/transforms-2/files-2.1/ca7dec915da1aec72f1b9bd9af87dd33/multitype-2.2.2/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/ca7dec915da1aec72f1b9bd9af87dd33/multitype-2.2.2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/ca7dec915da1aec72f1b9bd9af87dd33/multitype-2.2.2/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/ca7dec915da1aec72f1b9bd9af87dd33/multitype-2.2.2/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/modules-2/files-2.1/me.drakeet.multitype/multitype/2.2.2/616b5f0a440cae8b89e18fda962d5cf7b8e8ecb7/multitype-2.2.2-javadoc.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/me.drakeet.multitype/multitype/2.2.2/616b5f0a440cae8b89e18fda962d5cf7b8e8ecb7/multitype-2.2.2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/gradle-6.7.1/caches/modules-2/files-2.1/me.drakeet.multitype/multitype/2.2.2/9e144a521d3f9861ef76e20c11aec0dd69c22d3b/multitype-2.2.2-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/me.drakeet.multitype/multitype/2.2.2/9e144a521d3f9861ef76e20c11aec0dd69c22d3b/multitype-2.2.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
