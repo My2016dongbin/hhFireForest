@@ -12,7 +12,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/mapmodel/FireForestPlatform.mapmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/mapmodel/FireForestPlatform.mapmodel.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/platformmodel/FireForestPlatform.platformmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/platformmodel/FireForestPlatform.platformmodel.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/videolibrary/FireForestPlatform.videolibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/videolibrary/FireForestPlatform.videolibrary.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/wlmedia/FireForestPlatform.wlmedia.iml" filepath="$PROJECT_DIR$/.idea/modules/wlmedia/FireForestPlatform.wlmedia.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/wlmedia/alihe.FireForestPlatform.wlmedia.iml" filepath="$PROJECT_DIR$/.idea/modules/wlmedia/alihe.FireForestPlatform.wlmedia.iml" />
     </modules>
   </component>
 </project>

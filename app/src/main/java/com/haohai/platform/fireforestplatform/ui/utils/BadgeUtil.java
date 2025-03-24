@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,7 +36,20 @@ public class BadgeUtil {
         contentValues.put("package", context.getPackageName());
         contentValues.put("class", getLauncherClassName(context));
         contentValues.put("badgecount", count);
-        contentResolver.update(uri, contentValues, null, null);
+
+        ///检查URI是否可用
+        Cursor cursor = null;
+        try {
+            cursor = contentResolver.query(uri, null, null, null, null);
+            contentResolver.update(uri, contentValues, null, null);
+            return;  // 只要查询成功，就说明 URI 可用
+        } catch (Exception e) {
+            return;  // 捕获异常，说明 URI 不支持
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
     }
 
     private static String getLauncherClassName(Context context) {
