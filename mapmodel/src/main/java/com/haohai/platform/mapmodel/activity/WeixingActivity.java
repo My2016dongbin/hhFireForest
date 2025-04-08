@@ -95,6 +95,7 @@ public class WeixingActivity extends FullBaseActivity {
     private LinearLayout gaojiEndTimeLayout;
     private TextView gaojiStartimeText;
     private TextView gaojiEndTimeText;
+    private TextView chixuBaojingText;
     private StringBuffer date;
     private StringBuffer endDate;
     private int year;
@@ -134,6 +135,7 @@ public class WeixingActivity extends FullBaseActivity {
     private ImageView huanChongImage;
     public boolean isChooseJingwai = false;
     public boolean isChooseHuanchong = false;
+    public boolean isChixuBaojing = false;
     private TextView chongzhiButton;
     public String currentFireId = "";
     public String currentFireLo = "";
@@ -333,6 +335,8 @@ public class WeixingActivity extends FullBaseActivity {
         dimaoQitaText = ((TextView) gaojiInflater.findViewById(R.id.dimao_qita_text));
         //   dimaoQitaImage = ((ImageView) gaojiInflater.findViewById(R.id.dimao_qita_image));
 
+           chixuBaojingText = ((TextView) gaojiInflater.findViewById(R.id.chixubaojing_view));
+
         /**
          * 数量的点击
          */
@@ -455,6 +459,21 @@ public class WeixingActivity extends FullBaseActivity {
                         }
                     }
                 });
+        RxViewAction.clickNoDouble(chixuBaojingText)
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        if (isChixuBaojing){
+                            isChixuBaojing = false;
+                            chixuBaojingText.setBackgroundResource(R.drawable.bg_text_hui);
+                            chixuBaojingText.setTextColor(getResources().getColor(R.color.c6));
+                        }else {
+                            isChixuBaojing = true;
+                            chixuBaojingText.setBackgroundResource(R.drawable.bg_text_lan);
+                            chixuBaojingText.setTextColor(getResources().getColor(R.color.c12));
+                        }
+                    }
+                });
 
 
 
@@ -483,6 +502,32 @@ public class WeixingActivity extends FullBaseActivity {
                         weixingHima8Image.setImageResource(R.drawable.choose);
                         weixingNOAA18Image.setImageResource(R.drawable.choose);
                         weixingNOAA19Image.setImageResource(R.drawable.choose);*/
+
+
+                        isChixuBaojing = false;
+                        chixuBaojingText.setBackgroundResource(R.drawable.bg_text_hui);
+                        chixuBaojingText.setTextColor(getResources().getColor(R.color.c6));
+
+                        isChooseJingwai = false;
+                        jingwaiText.setBackgroundResource(R.drawable.bg_text_hui);
+                        jingwaiText.setTextColor(getResources().getColor(R.color.c6));
+
+                        isChooseHuanchong = false;
+                        huanchongText.setBackgroundResource(R.drawable.bg_text_hui);
+                        huanchongText.setTextColor(getResources().getColor(R.color.c6));
+
+                        currentNum = "100";
+                        yibaiText.setBackgroundResource(R.drawable.bg_text_lan);
+                        yibaiText.setTextColor(getResources().getColor(R.color.c12));
+                        wubaiText.setBackgroundResource(R.drawable.bg_text_hui);
+                        wubaiText.setTextColor(getResources().getColor(R.color.c6));
+                        yiqianText.setBackgroundResource(R.drawable.bg_text_hui);
+                        yiqianText.setTextColor(getResources().getColor(R.color.c6));
+                        liangqianText.setBackgroundResource(R.drawable.bg_text_hui);
+                        liangqianText.setTextColor(getResources().getColor(R.color.c6));
+                        wuqianText.setBackgroundResource(R.drawable.bg_text_hui);
+                        wuqianText.setTextColor(getResources().getColor(R.color.c6));
+
                         weixingAllText.setBackgroundResource(R.drawable.bg_text_lan);
                         weixingAllText.setTextColor(getResources().getColor(R.color.c12));
                         weixingNppText.setBackgroundResource(R.drawable.bg_text_lan);

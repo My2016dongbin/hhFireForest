@@ -50,6 +50,7 @@ import com.haohai.platform.firelibrary.ui.multitype.ChooseImageViewBinder;
 import com.ruyiruyi.rylibrary.cell.ActionBar;
 import com.ruyiruyi.rylibrary.db.Area;
 import com.ruyiruyi.rylibrary.db.DbConfig;
+import com.ruyiruyi.rylibrary.db.Requestaddress;
 import com.ruyiruyi.rylibrary.ui.cell.WheelView;
 import com.ruyiruyi.rylibrary.utils.LatLngChangeNew;
 import com.ruyiruyi.rylibrary.utils.image.ImagPagerUtil;
@@ -92,8 +93,9 @@ import rx.functions.Action1;
 
 import static me.drakeet.multitype.MultiTypeAsserts.assertAllRegistered;
 import static me.drakeet.multitype.MultiTypeAsserts.assertHasTheSameAdapter;
+
 @Route(path = RouteUtils.HiddenDangerr)
-public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.OnDateChangedListener ,ChooseImageViewBinder.OnChooseImageClickListener ,MessagePicturesLayout.Callback {
+public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.OnDateChangedListener, ChooseImageViewBinder.OnChooseImageClickListener, MessagePicturesLayout.Callback {
     private static final String TAG = HiddenDangerActivity.class.getSimpleName();
     private RecyclerView listView;
     private List<Object> items = new ArrayList<>();
@@ -122,7 +124,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
     private int day;
     public int chooseHour;
     public int chooseMinute;
-    public boolean isChooseStarTime ;
+    public boolean isChooseStarTime;
     private TextView fireTimeText;
     private String currentCity;
     private LinearLayout shiLayout;
@@ -190,6 +192,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
     public String currentChooseLeibie = "";
     public String currentChooseLeixing = "";
     private EditText nameEdit;
+    private Requestaddress requestaddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -207,14 +210,14 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
         endDate = new StringBuffer();
         imgStrList = new ArrayList<>();
         leiBieList = new ArrayList<>();
-
+        requestaddress = new DbConfig(this).getRequestaddress();
         initDateTime();
         initView();
 
         bindView();
         if (new DbConfig(getApplicationContext()).getAreaList() == null) {
             getAreaFromService();
-        }else {
+        } else {
             allAreaList = new DbConfig(getApplicationContext()).getAreaList();
             initArea();
         }
@@ -243,24 +246,24 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                 .subscribe(new Action1<Void>() {
                     @Override
                     public void call(Void aVoid) {
-                        currentLeibie =1;
+                        currentLeibie = 1;
                         List<String> leixingStrList = new ArrayList<String>();
-                        if (leibieSelectIndex == 0){
+                        if (leibieSelectIndex == 0) {
                             List<Leixing> list = leiBieList.get(0).getList();
                             for (int i = 0; i < list.size(); i++) {
                                 leixingStrList.add(list.get(i).getName());
                             }
-                        }else if(leibieSelectIndex == 1){
+                        } else if (leibieSelectIndex == 1) {
                             List<Leixing> list = leiBieList.get(1).getList();
                             for (int i = 0; i < list.size(); i++) {
                                 leixingStrList.add(list.get(i).getName());
                             }
-                        }else if(leibieSelectIndex == 2){
+                        } else if (leibieSelectIndex == 2) {
                             List<Leixing> list = leiBieList.get(2).getList();
                             for (int i = 0; i < list.size(); i++) {
                                 leixingStrList.add(list.get(i).getName());
                             }
-                        }else if(leibieSelectIndex == 3){
+                        } else if (leibieSelectIndex == 3) {
                             List<Leixing> list = leiBieList.get(3).getList();
                             for (int i = 0; i < list.size(); i++) {
                                 leixingStrList.add(list.get(i).getName());
@@ -298,8 +301,11 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                 .subscribe(new Action1<Void>() {
                     @Override
                     public void call(Void aVoid) {
+                        LatLngChangeNew latLngChangeNew = new LatLngChangeNew();
+                        double[] doubles = latLngChangeNew.calWGS84toBD09(Double.parseDouble(String.valueOf(currentLatitude)), Double.parseDouble(String.valueOf(currentLongitude)));
                         Intent intent = new Intent(getApplicationContext(), FireMapActivity.class);
-                        double[] doubles = LatLngChangeNew.calWGS84toBD09(currentLatitude, currentLongitude);
+                        Log.e(TAG, "call: " + currentLongitude);
+                        Log.e(TAG, "call: " + currentLatitude);
                         intent.putExtra("longitude_double", doubles[1]);
                         intent.putExtra("latitude_double", doubles[0]);
                         startActivityForResult(intent, MAP_REUEST_CODE);
@@ -324,12 +330,12 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                     public void call(Void aVoid) {
                         currentChooseArea = 1;
                         Log.e(TAG, "call: 12321--" + shengText.getText().toString());
-                        if (fromMap){
+                        if (fromMap) {
                             showAreaDialog(shiStrList);
-                        }else {
-                            if (shengText.getText().toString().equals("请选择省")){
+                        } else {
+                            if (shengText.getText().toString().equals("请选择省")) {
                                 Toast.makeText(HiddenDangerActivity.this, "请先选择省", Toast.LENGTH_SHORT).show();
-                            }else {
+                            } else {
                                 String currentShengId = "";
                                 for (int i = 0; i < shengList.size(); i++) {
                                     if (shengList.get(i).getName().equals(currentChooseSheng)) {
@@ -337,7 +343,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                                     }
                                 }
 
-                                initShi(currentShengId);;
+                                initShi(currentShengId);
                             }
                         }
                     }
@@ -349,15 +355,15 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
      * 判断提交数据是都是null
      */
     private void dataIsNull() {
-        if (nameEdit.getText().toString().equals("")){
+        if (nameEdit.getText().toString().equals("")) {
             Toast.makeText(this, "请输入资源点名称", Toast.LENGTH_SHORT).show();
             return;
         }
-        if(currentChooseLeibie.equals("")){
+        if (currentChooseLeibie.equals("")) {
             Toast.makeText(this, "请选择类别", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (currentChooseLeixing.equals("")){
+        if (currentChooseLeixing.equals("")) {
             Toast.makeText(this, "请选择类型", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -370,19 +376,19 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
             Toast.makeText(this, "请选择市", Toast.LENGTH_SHORT).show();
             return;
         }*/
-        if (addressView.getText().toString().equals("")){
+        if (addressView.getText().toString().equals("")) {
             Toast.makeText(this, "请输入地址", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (jingduView.getText().toString().equals("")){
+        if (jingduView.getText().toString().equals("")) {
             Toast.makeText(this, "请输入经度", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (weiduView.getText().toString().equals("")){
+        if (weiduView.getText().toString().equals("")) {
             Toast.makeText(this, "请输入纬度", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (fireTimeText.getText().toString().equals("")){
+        if (fireTimeText.getText().toString().equals("")) {
             Toast.makeText(this, "请选择时间", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -402,23 +408,23 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
         View areaView = LayoutInflater.from(this).inflate(R.layout.dialog_area, null);
         typeWy = ((WheelView) areaView.findViewById(R.id.wheel_view_area));
         typeWy.setIsLoop(false);
-        if (currentLeibie == 0){
+        if (currentLeibie == 0) {
             typeWy.setItems(strList, leibieSelectIndex);//init selected position is 0 初始选中位置为0
-        }else {
+        } else {
             typeWy.setItems(strList, leixingSelectIndex);//init selected position is 0 初始选中位置为0
         }
 
         typeWy.setOnItemSelectedListener(new WheelView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(int selectedIndex, String item) {
-                if (currentLeibie == 0){
+                if (currentLeibie == 0) {
                     currentChooseLeibie = typeWy.getSelectedItem();
                     leibieSelectIndex = typeWy.getSelectedPosition();
                     leibieView.setText(currentChooseLeibie);
                     currentChooseLeixing = leiBieList.get(leibieSelectIndex).getList().get(0).getName();
                     leixingSelectIndex = 0;
                     leixingView.setText(currentChooseLeixing);
-                }else {
+                } else {
                     currentChooseLeixing = typeWy.getSelectedItem();
                     leixingSelectIndex = typeWy.getSelectedPosition();
                     leixingView.setText(currentChooseLeixing);
@@ -426,14 +432,14 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
             }
         });
-        if (currentLeibie == 0){
+        if (currentLeibie == 0) {
             new AlertDialog.Builder(this)
                     .setTitle("请选择隐患类别")
                     .setView(areaView)
                     .setPositiveButton("确定 ", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            if (leibieSelectIndex == 0){
+                            if (leibieSelectIndex == 0) {
                                 leibieView.setText(strList.get(0));
                                 currentChooseLeibie = strList.get(0);
                             }
@@ -442,14 +448,14 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                         }
                     })
                     .show();
-        }else {
+        } else {
             new AlertDialog.Builder(this)
                     .setTitle("请选择隐患类型")
                     .setView(areaView)
                     .setPositiveButton("确定 ", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            if (leixingSelectIndex == 0){
+                            if (leixingSelectIndex == 0) {
                                 leixingView.setText(strList.get(0));
                                 currentChooseLeixing = strList.get(0);
                             }
@@ -476,27 +482,27 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
     private void initLeixingData() {
         List<Leixing> leixings = new ArrayList<>();
-        leixings.add(new Leixing(11,"火种"));
-        leixings.add(new Leixing(12,"可燃物"));
-        leiBieList.add(new LeiBie("火源管控",leixings));
+        leixings.add(new Leixing(11, "火种"));
+        leixings.add(new Leixing(12, "可燃物"));
+        leiBieList.add(new LeiBie("火源管控", leixings));
 
         List<Leixing> leixings1 = new ArrayList<>();
-        leixings1.add(new Leixing(21,"水罐"));
-        leixings1.add(new Leixing(22,"灭火机"));
-        leixings1.add(new Leixing(23,"水泵"));
-        leiBieList.add(new LeiBie("灭火设施",leixings1));
+        leixings1.add(new Leixing(21, "水罐"));
+        leixings1.add(new Leixing(22, "灭火机"));
+        leixings1.add(new Leixing(23, "水泵"));
+        leiBieList.add(new LeiBie("灭火设施", leixings1));
 
         List<Leixing> leixings2 = new ArrayList<>();
-        leixings2.add(new Leixing(31,"防火车辆"));
-        leixings2.add(new Leixing(32,"通信器材"));
-        leixings2.add(new Leixing(33,"个人装备"));
-        leiBieList.add(new LeiBie("物资储备",leixings2));
+        leixings2.add(new Leixing(31, "防火车辆"));
+        leixings2.add(new Leixing(32, "通信器材"));
+        leixings2.add(new Leixing(33, "个人装备"));
+        leiBieList.add(new LeiBie("物资储备", leixings2));
 
         List<Leixing> leixings3 = new ArrayList<>();
-        leixings3.add(new Leixing(41,"应急方案"));
-        leixings3.add(new Leixing(42,"值班备勤"));
-        leixings3.add(new Leixing(43,"宣传教育"));
-        leiBieList.add(new LeiBie("日常管理",leixings3));
+        leixings3.add(new Leixing(41, "应急方案"));
+        leixings3.add(new Leixing(42, "值班备勤"));
+        leixings3.add(new Leixing(43, "宣传教育"));
+        leiBieList.add(new LeiBie("日常管理", leixings3));
 
     }
 
@@ -520,9 +526,9 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
         View areaView = LayoutInflater.from(this).inflate(R.layout.dialog_area, null);
         areaWy = ((WheelView) areaView.findViewById(R.id.wheel_view_area));
         areaWy.setIsLoop(false);
-        if (currentChooseArea == 0){
+        if (currentChooseArea == 0) {
             areaWy.setItems(strList, shengSelectIndex);//init selected position is 0 初始选中位置为0
-        }else {
+        } else {
             areaWy.setItems(strList, shiSelectIndex);//init selected position is 0 初始选中位置为0
         }
 
@@ -530,7 +536,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
             @Override
             public void onItemSelected(int selectedIndex, String item) {
                 fromMap = false;
-                if (currentChooseArea == 0){   //选择省
+                if (currentChooseArea == 0) {   //选择省
                     isChooseSheng = true;
                     currentChooseSheng = areaWy.getSelectedItem();
                     shengSelectIndex = areaWy.getSelectedPosition();
@@ -539,7 +545,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                     shiText.setText("请选择市");
                     currentChooseShi = "请选择市";
                     shiSelectIndex = 0;
-                }else {                          //选择市
+                } else {                          //选择市
                     currentChooseShi = areaWy.getSelectedItem();
                     shiSelectIndex = areaWy.getSelectedPosition();
                     shiText.setText(currentChooseShi);
@@ -585,12 +591,12 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                     endDate.delete(0, endDate.length());
                 }
                 date.append(String.valueOf(year));
-                if (month < 9){
+                if (month < 9) {
                     date.append("-0").append(String.valueOf(month + 1));
-                }else {
+                } else {
                     date.append("-").append(String.valueOf(month + 1));
                 }
-                if (day <10){
+                if (day < 10) {
                     date.append("-0").append(String.valueOf(day));
                 } else {
                     date.append("-").append(String.valueOf(day));
@@ -648,16 +654,15 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
-                if (chooseHour < 10 && chooseMinute <10){
+                if (chooseHour < 10 && chooseMinute < 10) {
                     fireTimeText.append("  0" + chooseHour + ":0" + chooseMinute + ":00");
-                }else if (chooseHour < 10 && chooseMinute >10){
+                } else if (chooseHour < 10 && chooseMinute > 10) {
                     fireTimeText.append("  0" + chooseHour + ":" + chooseMinute + ":00");
-                }else if (chooseHour > 10 && chooseMinute < 10){
+                } else if (chooseHour > 10 && chooseMinute < 10) {
                     fireTimeText.append("  " + chooseHour + ":0" + chooseMinute + ":00");
-                }else {
+                } else {
                     fireTimeText.append("  " + chooseHour + ":" + chooseMinute + ":00");
                 }
-
 
 
                 dialog.dismiss();
@@ -698,6 +703,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
         //初始化日期监听事件
         //   timePicker.init(year, month, day, this);
     }
+
     @Override
     public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
         this.year = year;
@@ -724,12 +730,12 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
     }
 
     private void postPicToService() {
-        showDialogProgress(progressDialog,"提交中...");
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        showDialogProgress(progressDialog, "提交中...");
+        RequestParams params = new RequestParams(requestaddress.getRequstUrl()+"oa/api/workReport/fileUploadAnByNotToken");
         params.setAsJsonContent(true);
         params.setMultipart(true);    //以表单得形式上传  文件上传必须要
 
-    //    File[] fileData = new File[list.size()];
+        //    File[] fileData = new File[list.size()];
         for (int i = 0; i < list.size(); i++) {
             try {
 
@@ -740,19 +746,18 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
                 Bitmap picOne = rotaingImageView(degree, photo);
                 String picStr = ImageUtils.savePhoto(picOne, this.getObbDir().getAbsolutePath(), "fileName" + i);
-              //  fileData[i] = new  File(picStr);
-                params.addBodyParameter("file", new File(picStr),null,picStr);
+                //  fileData[i] = new  File(picStr);
+                params.addBodyParameter("file", new File(picStr), null, picStr);
             } catch (IOException e) {
             }
         }
 
 
         // params.setBodyContent(jsonObject.toString());
-     //   params.addParameter("file",fileData);
-        Log.e(TAG, "postPicToService: " + params );
-        Log.e(TAG, "postPicToService: " + token );
-        params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        //   params.addParameter("file",fileData);
+        Log.e(TAG, "postPicToService: " + params);
+        Log.e(TAG, "postPicToService: " + token);
+        params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
 
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
@@ -761,7 +766,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                 try {
                     JSONObject jsonObject = new JSONObject(result);
                     String code = jsonObject.getString("code");
-                    if (code.equals("200")){
+                    if (code.equals("200")) {
                         imgStrList.clear();
                         JSONObject data = jsonObject.getJSONObject("data");
                         JSONArray imgStrArray = data.getJSONArray("img");
@@ -770,7 +775,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                             imgStrList.add(imgStr);
                         }
                         postDataToService();
-                    }else {
+                    } else {
                         Toast.makeText(HiddenDangerActivity.this, "提交失败", Toast.LENGTH_SHORT).show();
                         progressDialog.dismiss();
                     }
@@ -781,7 +786,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
-                Log.e(TAG, "onError: 请求失败" +ex.toString());
+                Log.e(TAG, "onError: 请求失败" + ex.toString());
             }
 
             @Override
@@ -811,39 +816,38 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
         String shiStr = shiText.getText().toString();
         String shiId = "";
         for (int i = 0; i < shiList.size(); i++) {
-            if (shiList.get(i).getName().equals(shiStr)){
+            if (shiList.get(i).getName().equals(shiStr)) {
                 shiId = shiList.get(i).getId();
             }
         }
 
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("cityCode",shiId);
-            jsonObject.put("cityName",shiStr);
-            jsonObject.put("provinceCode",shengId);
-            jsonObject.put("provinceName",shengStr);
-            jsonObject.put("resourceName",nameEdit.getText().toString());
-            jsonObject.put("address",addressView.getText().toString());
-            jsonObject.put("dangerType",currentChooseLeixing);          //隐患类型
-            jsonObject.put("dangerDescription",fengxianEdit.getText().toString());  //隐患描述
-            jsonObject.put("remark",zhengzhiEdit.getText().toString());  //整治描述
+            jsonObject.put("cityCode", shiId);
+            jsonObject.put("cityName", shiStr);
+            jsonObject.put("provinceCode", shengId);
+            jsonObject.put("provinceName", shengStr);
+            jsonObject.put("resourceName", nameEdit.getText().toString());
+            jsonObject.put("address", addressView.getText().toString());
+            jsonObject.put("dangerType", currentChooseLeixing);          //隐患类型
+            jsonObject.put("dangerDescription", fengxianEdit.getText().toString());  //隐患描述
+            jsonObject.put("remark", zhengzhiEdit.getText().toString());  //整治描述
             JSONObject postsion = new JSONObject();
-            postsion.put("lat",currentLatitude);
-            postsion.put("lng",currentLongitude);
-            jsonObject.put("position",postsion); // 整治描述 ,
+            postsion.put("lat", currentLatitude);
+            postsion.put("lng", currentLongitude);
+            jsonObject.put("position", postsion); // 整治描述 ,
             for (int i = 0; i < imgStrList.size(); i++) {
-                jsonObject.put("pic" + (i+1),imgStrList.get(i));
+                jsonObject.put("pic" + (i + 1), imgStrList.get(i));
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        RequestParams params = new RequestParams(RequestUtils.REQUEST__URL_HLJ + "fire/api/dangerCheck");
+        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "fire/api/dangerCheck");
         params.setBodyContent(jsonObject.toString());
-        Log.e(TAG, "postPicToService: " + params );
-        Log.e(TAG, "postPicToService: " + jsonObject.toString() );
-        params.addHeader("Authorization","bearer " + new DbConfig(getApplicationContext()).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        Log.e(TAG, "postPicToService: " + params);
+        Log.e(TAG, "postPicToService: " + jsonObject.toString());
+        params.addHeader("Authorization", "bearer " + new DbConfig(getApplicationContext()).getUser().getToken());
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -853,10 +857,10 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                     jsonObject = new JSONObject(result);
                     String code = jsonObject.getString("code");
                     String message = jsonObject.getString("message");
-                    if (code.equals("200")){
+                    if (code.equals("200")) {
                         Toast.makeText(HiddenDangerActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
                         finish();
-                    }else {
+                    } else {
                         Toast.makeText(HiddenDangerActivity.this, message, Toast.LENGTH_SHORT).show();
                     }
 
@@ -867,7 +871,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
-                Log.e(TAG, "onError: 请求失败" );
+                Log.e(TAG, "onError: 请求失败");
             }
 
             @Override
@@ -944,10 +948,10 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
      * 图片添加
      */
     @Override
-    public void onImageAddClickListener(boolean add, Uri uri,String id) {
-        if (add){
+    public void onImageAddClickListener(boolean add, Uri uri, String id) {
+        if (add) {
             RxPermissions rxPermissions = new RxPermissions(this);
-            rxPermissions.request(Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA)
+            rxPermissions.request(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
                     .subscribe(new Observer<Boolean>() {
                         @Override
                         public void onSubscribe(Disposable d) {
@@ -962,7 +966,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                                     .countable(true)
                                     .capture(true)
                                     .captureStrategy(
-                                            new CaptureStrategy(true,"com.haohai.platform.fireforestplatform.fileProvider")
+                                            new CaptureStrategy(true, "com.haohai.platform.fireforestplatform")
                                     )
                                     .maxSelectable(size)
                                     .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
@@ -984,16 +988,17 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
                         }
                     });
-        }else {
+        } else {
             //点击查看大图
             ArrayList<String> picList = new ArrayList<>();
             String oneUri = uri.toString();
             picList.add(oneUri); //点击哪张 把哪张放第一个
             for (int i = 0; i < list.size(); i++) {     //除去点击那张  其他放进去
-                if (!oneUri.equals(list.get(i).getUri().toString())){
+                if (!oneUri.equals(list.get(i).getUri().toString())) {
                     picList.add(list.get(i).getUri().toString());
                 }
-            };
+            }
+            ;
             String content = "";     //放评论
             ImagPagerUtil imagPagerUtil = new ImagPagerUtil(HiddenDangerActivity.this, picList);
             imagPagerUtil.setContentText(content);
@@ -1005,7 +1010,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
      * 图片删除
      */
     @Override
-    public void onImageDelete(Uri uri,String id) {
+    public void onImageDelete(Uri uri, String id) {
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getUri().equals(uri)) {
                 list.remove(i);
@@ -1016,26 +1021,26 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
     private void updateData() {
         items.clear();
-        if (list==null){
+        if (list == null) {
             ChooseImage chooseImage = new ChooseImage();
             chooseImage.setAdd(true);
             items.add(chooseImage);
-        }else {
-            if (list.size()<2){
+        } else {
+            if (list.size() < 2) {
                 for (int i = 0; i < list.size(); i++) {
                     items.add(list.get(i));
                 }
                 ChooseImage chooseImage = new ChooseImage();
                 chooseImage.setAdd(true);
                 items.add(chooseImage);
-            }else {
+            } else {
                 for (int i = 0; i < list.size(); i++) {
                     items.add(list.get(i));
                 }
             }
         }
 
-        assertAllRegistered(adapter,items);
+        assertAllRegistered(adapter, items);
         adapter.notifyDataSetChanged();
     }
 
@@ -1068,9 +1073,9 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
 
             // 判断只能添加五张图片
-            if ( (uriList.size() + list.size()) > 9){
+            if ((uriList.size() + list.size()) > 9) {
                 Toast.makeText(this, "最多只能添加2张", Toast.LENGTH_SHORT).show();
-                int size =  9 - list.size();
+                int size = 9 - list.size();
                 for (int i = 0; i < size; i++) {
                     ChooseImage chooseImage = new ChooseImage();
                     chooseImage.setUri(uriList.get(i));
@@ -1078,7 +1083,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                     list.add(chooseImage);
                     // items.add(evaluateImage);
                 }
-            }else {
+            } else {
                 //不足5张的添加  添加图片按钮
                 int size = uriList.size();
                 for (int i = 0; i < size; i++) {
@@ -1095,12 +1100,14 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
             // assertAllRegistered(adapter,items);;
             // adapter.notifyDataSetChanged();
             updateData();
-        }else  if (requestCode == MAP_REUEST_CODE && resultCode == MAP_REUEST_CODE) {
+        } else if (requestCode == MAP_REUEST_CODE && resultCode == MAP_REUEST_CODE) {
             longitude = data.getStringExtra("longitude");
             latitude = data.getStringExtra("latitude");
             cityAddress = data.getStringExtra("cityAddress");
             currentCity = data.getStringExtra("city");
-            if (!currentCity.isEmpty()){
+            LatLngChangeNew latLngChangeNew = new LatLngChangeNew();
+            double[] doubles = latLngChangeNew.calBD09toWGS84(Double.parseDouble(latitude), Double.parseDouble(longitude));
+            if (!currentCity.isEmpty()) {
                 String currentCiryParentId = "";
                 String currentCiryId = "";
 
@@ -1114,7 +1121,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                 }
 
                 for (int i = 0; i < allAreaList.size(); i++) {
-                    if (allAreaList.get(i).getId().equals(currentCiryParentId)){
+                    if (allAreaList.get(i).getId().equals(currentCiryParentId)) {
                         currentPro = allAreaList.get(i).getName();
                         currentProId = allAreaList.get(i).getId();
                     }
@@ -1128,18 +1135,19 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
                 fromMap = true;
                 initAreaById(currentPro);
-                initShiByShiId(currentProId,currentCiryId);
+                initShiByShiId(currentProId, currentCiryId);
             }
 
             addressView.setText(cityAddress);
             addressView.setSelection(cityAddress.length());
-            jingduView.setText(longitude);
-            weiduView.setText(latitude);
+            jingduView.setText(doubles[1]+"");
+            weiduView.setText(doubles[0]+"");
 //            Toast.makeText(this, "经度=" + longitude + "纬度=" + latitude + "cityAddress=" + cityAddress, Toast.LENGTH_SHORT).show();
         }
 
     }
-    private void initShiByShiId(String currentShengId,String currentShiId) {
+
+    private void initShiByShiId(String currentShengId, String currentShiId) {
         shiList.clear();
         shiStrList.clear();
         shiStrList.add("请选择市");
@@ -1200,14 +1208,13 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
      * 获取区域数据
      */
     private void getAreaFromService() {
-        showDialogProgress(progressDialog,"数据获取中...");
+        showDialogProgress(progressDialog, "数据获取中...");
         JSONObject jsonObject = new JSONObject();
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +  "auth/api/sysArea/getAllSysArea");
+        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "auth/api/sysArea/getAllSysArea");
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
-        params.addHeader("Authorization","bearer " + token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        Log.i(TAG, "getAreaFromService: "+params);
+        params.addHeader("Authorization", "bearer " + token);
+        Log.i(TAG, "getAreaFromService: " + params);
         x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -1271,6 +1278,9 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 0.0001f, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -1279,7 +1289,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                 try {
                     longitude = location.getLongitude();
                     latitude = location.getLatitude();
-                }catch (Exception e){
+                } catch (Exception e) {
 
                 }
 
@@ -1320,7 +1330,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
             provider = LocationManager.GPS_PROVIDER;
         } else {
             // 当没有可用的位置提供器时，弹出Toast提示用户
-            Toast.makeText(this, "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
             return;
         }
 

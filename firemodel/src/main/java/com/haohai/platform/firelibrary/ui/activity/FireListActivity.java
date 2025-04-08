@@ -18,6 +18,8 @@ import com.google.gson.reflect.TypeToken;
 import com.haohai.platform.firelibrary.R;
 import com.haohai.platform.firelibrary.ui.activity.base.HhBaseActivity;
 import com.ruyiruyi.rylibrary.cell.ActionBar;
+import com.ruyiruyi.rylibrary.db.DbConfig;
+import com.ruyiruyi.rylibrary.db.Requestaddress;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
 
@@ -47,7 +49,7 @@ public class FireListActivity extends HhBaseActivity {
     private boolean isShowDialog = true;
     private boolean isShuaxin = false;
     private boolean isSearch = false;
-
+    private Requestaddress requestaddress;
     @Autowired
     String token;
 
@@ -58,7 +60,7 @@ public class FireListActivity extends HhBaseActivity {
         ARouter.getInstance().inject(this);
 
         progressDialog = new ProgressDialog(this);
-
+        requestaddress = new DbConfig(this).getRequestaddress();
         initView();
         getDataFromService();
     }
@@ -70,14 +72,13 @@ public class FireListActivity extends HhBaseActivity {
         JSONObject jsonObject = new JSONObject();
 
 
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "api/monitorFirealarm/list");
+        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "api/monitorFirealarm/list");
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
 
         Log.e(TAG, "getDataFromService: " + params);
         Log.e(TAG, "getDataFromService: " + jsonObject.toString());
         params.addHeader("Authorization", "bearer " + token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         params.setConnectTimeout(10000);
         x.http().post(params, new Callback.CommonCallback<String>() {

@@ -1,5 +1,6 @@
 package com.ruyiruyi.rylibrary.popdblibrary;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.Animatable;
@@ -45,7 +46,7 @@ public class AdManager {
     private FlycoPageIndicaor mIndicator;
     private AnimDialogUtils animDialogUtils;
     List<AdInfo> advInfoListList;
-
+    @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {

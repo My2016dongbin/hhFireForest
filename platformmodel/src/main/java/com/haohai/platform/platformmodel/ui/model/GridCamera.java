@@ -8,10 +8,7 @@ public class GridCamera {
     String rtspUrl;
     String subRtspUrl;
     String state;
-    String collectionState;
     int cameraType;
-
-    boolean status = false;
 
     public String getDeviceId() {
         return deviceId;
@@ -19,22 +16,6 @@ public class GridCamera {
 
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
-    }
-
-    public boolean isStatus() {
-        return status;
-    }
-
-    public String getCollectionState() {
-        return collectionState;
-    }
-
-    public void setCollectionState(String collectionState) {
-        this.collectionState = collectionState;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
     }
 
     public String getName() {

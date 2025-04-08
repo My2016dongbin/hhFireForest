@@ -167,7 +167,6 @@ public class AttendanceRecordActivity extends HhBaseActivity implements Attendan
         Log.e(TAG, "getDataFromService: " + jsonObject.toString());
         Log.e(TAG, "getDataFromService: " + params);
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
 
         Log.e(TAG, "getDataFromService: " + "bearer " + new DbConfig(this).getUser().getToken() );
         params.setConnectTimeout(10000);

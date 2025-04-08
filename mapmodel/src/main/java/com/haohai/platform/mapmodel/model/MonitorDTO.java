@@ -8,7 +8,6 @@ public class MonitorDTO {
 
     private String id;
     private String resourceType;
-    private String address;
 
     private String description;
 
@@ -177,14 +176,6 @@ public class MonitorDTO {
         this.townCode = townCode;
         this.villageName = villageName;
         this.villageCode = villageCode;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
     }
 
     public Positon getPosition() {

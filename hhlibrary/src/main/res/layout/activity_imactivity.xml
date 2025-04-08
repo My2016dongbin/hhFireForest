@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:background="@color/c"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <com.ruyiruyi.rylibrary.cell.ActionBar
+            android:id="@+id/my_action"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/refresh_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <!--<android.support.v7.widget.RecyclerView
+                android:id="@+id/rlv"
+                android:visibility="gone"
+                android:background="@color/c"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>-->
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <LinearLayout
+                    android:id="@+id/ll_grid"
+                    android:background="@color/white"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+            </ScrollView>
+
+        </android.support.v4.widget.SwipeRefreshLayout>
+        <FrameLayout
+            android:background="@color/c"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="15dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tv_go"
+                    android:text="语音通话"
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:background="@drawable/login_button_5"
+                    android:textColor="@color/white"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
+                <View
+                    android:layout_width="15dp"
+                    android:layout_height="0dp"/>
+                <TextView
+                    android:id="@+id/tv_go_video"
+                    android:text="视频通话"
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:background="@drawable/login_button_5_border"
+                    android:textColor="@color/theme_primary"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <com.ruyiruyi.rylibrary.utils.DYLoadingView
+        android:id="@+id/dy3"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#33000000"
+        app:color1="#FF00EEEE"
+        app:duration="350"
+        app:pauseDuration="10"
+        app:color2="#FFFF4040"/>
+
+</FrameLayout>

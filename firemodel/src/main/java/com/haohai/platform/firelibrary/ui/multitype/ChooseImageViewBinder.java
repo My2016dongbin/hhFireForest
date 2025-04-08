@@ -77,7 +77,7 @@ public class ChooseImageViewBinder extends ItemViewProvider<ChooseImage, ChooseI
         }
     }
     public interface OnChooseImageClickListener {
-        void onImageAddClickListener(boolean var1, Uri var2, String id);
-        void onImageDelete(Uri var1,String id);
+        void onImageAddClickListener(boolean isAdd, Uri uri, String id);
+        void onImageDelete(Uri uri,String id);
     }
 }

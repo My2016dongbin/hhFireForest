@@ -1,5 +1,6 @@
 package com.haohai.ledge.videolibrary.video.base;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
@@ -7,12 +8,14 @@ import android.os.Handler;
 import android.os.Looper;
 
 
+import android.os.Message;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,9 +35,20 @@ import com.haohai.ledge.videolibrary.listener.GSYVideoProgressListener;
 import com.haohai.ledge.videolibrary.listener.LockClickListener;
 import com.haohai.ledge.videolibrary.utils.CommonUtil;
 import com.haohai.ledge.videolibrary.utils.Debuger;
+import com.ruyiruyi.rylibrary.db.DbConfig;
+import com.ruyiruyi.rylibrary.request.RequestUtils;
+import com.ruyiruyi.rylibrary.utils.CommonData;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.xutils.common.Callback;
+import org.xutils.http.RequestParams;
+import org.xutils.x;
 
 import java.io.File;
+import java.util.Date;
 import java.util.Map;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -137,6 +151,24 @@ public abstract class GSYVideoControlView extends GSYVideoView implements View.O
     protected boolean mPostProgress = false;
     protected boolean mPostDismiss = false;
 
+    //蒙布
+    protected RelativeLayout surface_left;
+    protected RelativeLayout surface_right;
+    protected RelativeLayout surface_top;
+    protected RelativeLayout surface_bottom;
+    protected ImageView iv_left1;
+    protected ImageView iv_left2;
+    protected ImageView iv_left3;
+    protected ImageView iv_right1;
+    protected ImageView iv_right2;
+    protected ImageView iv_right3;
+    protected ImageView iv_bottom1;
+    protected ImageView iv_bottom2;
+    protected ImageView iv_bottom3;
+    protected ImageView iv_top1;
+    protected ImageView iv_top2;
+    protected ImageView iv_top3;
+
     //播放按键
     protected View mStartButton;
 
@@ -194,8 +226,91 @@ public abstract class GSYVideoControlView extends GSYVideoView implements View.O
         super(context, fullFlag);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     protected void init(Context context) {
         super.init(context);
+
+        iv_left1 = findViewById(R.id.iv_left1);
+        iv_left2 = findViewById(R.id.iv_left2);
+        iv_left3 = findViewById(R.id.iv_left3);
+        iv_right1 = findViewById(R.id.iv_right1);
+        iv_right2 = findViewById(R.id.iv_right2);
+        iv_right3 = findViewById(R.id.iv_right3);
+        iv_bottom1 = findViewById(R.id.iv_bottom1);
+        iv_bottom2 = findViewById(R.id.iv_bottom2);
+        iv_bottom3 = findViewById(R.id.iv_bottom3);
+        iv_top1 = findViewById(R.id.iv_top1);
+        iv_top2 = findViewById(R.id.iv_top2);
+        iv_top3 = findViewById(R.id.iv_top3);
+
+        surface_left = findViewById(R.id.surface_left);
+        surface_right = findViewById(R.id.surface_right);
+        surface_top = findViewById(R.id.surface_top);
+        surface_bottom = findViewById(R.id.surface_bottom);
+        surface_left.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                turnLeft();
+                return false;
+            }
+        });
+        surface_left.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_UP){
+                    turnOff();
+                }
+                return false;
+            }
+        });
+        surface_right.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                turnRight();
+                return false;
+            }
+        });
+        surface_right.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_UP){
+                    turnOff();
+                }
+                return false;
+            }
+        });
+        surface_top.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                turnUp();
+                return false;
+            }
+        });
+        surface_top.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_UP){
+                    turnOff();
+                }
+                return false;
+            }
+        });
+        surface_bottom.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                turnDown();
+                return false;
+            }
+        });
+        surface_bottom.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_UP){
+                    turnOff();
+                }
+                return false;
+            }
+        });
 
         mStartButton = findViewById(R.id.start);
         mTitleTextView = (TextView) findViewById(R.id.title);
@@ -274,6 +389,231 @@ public abstract class GSYVideoControlView extends GSYVideoView implements View.O
         if (getActivityContext() != null) {
             mSeekEndOffset = CommonUtil.dip2px(getActivityContext(), 50);
         }
+    }
+    int moveType = 1;//1左 2右 3上 4下
+    boolean isStop = false;
+    int currentMove = 0;//1下 2左 3上 4右 0默认
+    protected void turnLeft(){
+        Log.e(TAG, "turnLeft: " );
+        moveType = 3;
+        currentMove = 2;
+        isStop = false;
+        moveShexiangtou();
+        iv_left1.setVisibility(VISIBLE);
+        iv_left2.setVisibility(VISIBLE);
+        iv_left3.setVisibility(VISIBLE);
+        mHandler.sendEmptyMessageDelayed(0,200);
+    }
+    protected void turnRight(){
+        Log.e(TAG, "turnRight: " );
+        moveType = 4;
+        currentMove = 4;
+        isStop = false;
+        moveShexiangtou();
+        iv_right1.setVisibility(VISIBLE);
+        iv_right2.setVisibility(VISIBLE);
+        iv_right3.setVisibility(VISIBLE);
+        mHandler.sendEmptyMessageDelayed(0,200);
+    }
+    protected void turnUp(){
+        Log.e(TAG, "turnUp: " );
+        moveType = 1;
+        currentMove = 3;
+        isStop = false;
+        moveShexiangtou();
+        iv_top1.setVisibility(VISIBLE);
+        iv_top2.setVisibility(VISIBLE);
+        iv_top3.setVisibility(VISIBLE);
+        mHandler.sendEmptyMessageDelayed(0,200);
+    }
+    protected void turnDown(){
+        Log.e(TAG, "turnDown: " );
+        moveType = 2;
+        currentMove = 1;
+        isStop = false;
+        moveShexiangtou();
+        iv_bottom1.setVisibility(VISIBLE);
+        iv_bottom2.setVisibility(VISIBLE);
+        iv_bottom3.setVisibility(VISIBLE);
+        mHandler.sendEmptyMessageDelayed(0,200);
+    }
+    protected void turnOff(){
+        isStop = true;
+        currentMove = 0;
+        moveShexiangtou();
+        iv_bottom1.setVisibility(INVISIBLE);
+        iv_bottom2.setVisibility(INVISIBLE);
+        iv_bottom3.setVisibility(INVISIBLE);
+        iv_left1.setVisibility(INVISIBLE);
+        iv_left2.setVisibility(INVISIBLE);
+        iv_left3.setVisibility(INVISIBLE);
+        iv_top1.setVisibility(INVISIBLE);
+        iv_top2.setVisibility(INVISIBLE);
+        iv_top3.setVisibility(INVISIBLE);
+        iv_right1.setVisibility(INVISIBLE);
+        iv_right2.setVisibility(INVISIBLE);
+        iv_right3.setVisibility(INVISIBLE);
+    }
+    private int pubg = 0;
+    private Handler mHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            if(msg.what == 0 && currentMove != 0){
+                if(pubg%3==0){
+                    Log.e(TAG, "handleMessage: 0" );
+                    iv_bottom1.setAlpha(0.3f);
+                    iv_left1.setAlpha(0.3f);
+                    iv_top1.setAlpha(0.3f);
+                    iv_right1.setAlpha(0.3f);
+
+                    iv_bottom2.setAlpha(0.6f);
+                    iv_left2.setAlpha(0.6f);
+                    iv_top2.setAlpha(0.6f);
+                    iv_right2.setAlpha(0.6f);
+
+                    iv_bottom3.setAlpha(0.9f);
+                    iv_left3.setAlpha(0.9f);
+                    iv_top3.setAlpha(0.9f);
+                    iv_right3.setAlpha(0.9f);
+
+                    if(pubg!=0){
+                       pubg = 0;
+                    }else{
+                        pubg++;
+                    }
+                }else if(pubg%3==1){
+                    Log.e(TAG, "handleMessage: 1" );
+                    iv_bottom1.setAlpha(0.9f);
+                    iv_left1.setAlpha(0.9f);
+                    iv_top1.setAlpha(0.9f);
+                    iv_right1.setAlpha(0.9f);
+
+                    iv_bottom2.setAlpha(0.3f);
+                    iv_left2.setAlpha(0.3f);
+                    iv_top2.setAlpha(0.3f);
+                    iv_right2.setAlpha(0.3f);
+
+                    iv_bottom3.setAlpha(0.6f);
+                    iv_left3.setAlpha(0.6f);
+                    iv_top3.setAlpha(0.6f);
+                    iv_right3.setAlpha(0.6f);
+
+                    pubg++;
+                }else if(pubg%3==2){
+                    Log.e(TAG, "handleMessage: 2" );
+                    iv_bottom1.setAlpha(0.6f);
+                    iv_left1.setAlpha(0.6f);
+                    iv_top1.setAlpha(0.6f);
+                    iv_right1.setAlpha(0.6f);
+
+                    iv_bottom2.setAlpha(0.9f);
+                    iv_left2.setAlpha(0.9f);
+                    iv_top2.setAlpha(0.9f);
+                    iv_right2.setAlpha(0.9f);
+
+                    iv_bottom3.setAlpha(0.3f);
+                    iv_left3.setAlpha(0.3f);
+                    iv_top3.setAlpha(0.3f);
+                    iv_right3.setAlpha(0.3f);
+
+                    pubg++;
+                }
+                mHandler.sendEmptyMessageDelayed(0,500);
+            }
+            return false;
+        }
+    });
+    private float randomFloat(){
+        Log.e(TAG, "randomFloat: " );
+        float x = (float) new Random().nextInt(100);
+        Log.e(TAG, "randomFloat: x/100 = " + x/100 );
+        return x/100;
+    }
+
+    private void moveShexiangtouNew() {
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("id", CommonData.turnId);
+            jsonObject.put("enumCode",11001);
+            jsonObject.put("stop",isStop);
+            jsonObject.put("direction",moveType);   //转动
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "/resource/api/guide/yunTaiReverse");
+        params.setBodyContent(jsonObject.toString());
+        params.setConnectTimeout(10000);
+        params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
+
+        Log.e(TAG, "moveShexiangtou: " + params);
+        Log.e(TAG, "moveShexiangtou: " + jsonObject.toString());
+        x.http().post(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "moveShexiangtou: onSuccess" + result);
+
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                Log.e(TAG, "moveShexiangtou: onError" + ex.toString());
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+                Log.e(TAG, "moveShexiangtou: onCancelled" + cex.toString());
+
+            }
+
+            @Override
+            public void onFinished() {
+            }
+        });
+    }
+
+    private void moveShexiangtou() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("camera_id",CommonData.turnId);
+            jsonObject.put("direction",moveType);
+            jsonObject.put("step",5);
+            jsonObject.put("stop",isStop);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "resource/api/aqishi/ptzCmd");
+        params.addParameter("token",CommonData.aqsToken);
+
+        params.setBodyContent(jsonObject.toString());
+
+        params.setConnectTimeout(10000);
+        params.addHeader("Authorization","bearer " + new DbConfig(getContext()).getUser().getToken());
+
+        Log.e(TAG, "moveShexiangtou: " + params);
+        Log.e(TAG, "moveShexiangtou: " + jsonObject.toString());
+        x.http().post(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "moveShexiangtou: " + result);
+
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+            }
+        });
     }
 
     @Override

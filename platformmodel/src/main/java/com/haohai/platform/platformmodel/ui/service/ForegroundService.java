@@ -192,7 +192,7 @@ public class ForegroundService extends Service {
             provider = LocationManager.GPS_PROVIDER;
         } else {
             // 当没有可用的位置提供器时，弹出Toast提示用户
-            Toast.makeText(this, "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
             return;
         }
 

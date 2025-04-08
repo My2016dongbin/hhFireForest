@@ -11,7 +11,6 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.support.v4.os.ParcelableCompat;
 import android.support.v4.os.ParcelableCompatCreatorCallbacks;
-import android.support.v4.view.KeyEventCompat;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.VelocityTrackerCompat;
@@ -1057,9 +1056,9 @@ public class LazyViewPager extends ViewGroup {
                     handled = this.arrowScroll(66);
                     break;
                 case 61:
-                    if(KeyEventCompat.hasNoModifiers(event)) {
+                    if(event.hasNoModifiers()) {
                         handled = this.arrowScroll(2);
-                    } else if(KeyEventCompat.hasModifiers(event, 1)) {
+                    } else if(event.hasModifiers(KeyEvent.META_SHIFT_ON)) {
                         handled = this.arrowScroll(1);
                     }
             }

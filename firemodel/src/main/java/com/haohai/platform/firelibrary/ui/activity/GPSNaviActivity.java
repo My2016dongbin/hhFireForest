@@ -120,8 +120,8 @@ public class GPSNaviActivity extends DaohangBaseActivity {
         //获得位置服务
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-            //Toast.makeText(this, "请打开GPS和使用网络定位以提高精度", Toast.LENGTH_LONG).show();
-            //startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            Toast.makeText(this, "请打开GPS和使用网络定位以提高精度", Toast.LENGTH_LONG).show();
+            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         }
         String provider = judgeProvider(locationManager);
         //有位置提供器的情况
@@ -133,7 +133,7 @@ public class GPSNaviActivity extends DaohangBaseActivity {
             provider = LocationManager.GPS_PROVIDER;
         } else {
             // 当没有可用的位置提供器时，弹出Toast提示用户
-            Toast.makeText(this, "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
 
         }
         if (provider != null) {
@@ -167,7 +167,7 @@ public class GPSNaviActivity extends DaohangBaseActivity {
         }else if(prodiverlist.contains(LocationManager.GPS_PROVIDER)) {
             return LocationManager.GPS_PROVIDER;//GPS定位
         }else{
-            Toast.makeText(this,"未开启本应用地理位置信息，请先开启！",Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this,"未开启本应用地理位置信息，请先开启！",Toast.LENGTH_SHORT).show();
         }
         return null;
     }

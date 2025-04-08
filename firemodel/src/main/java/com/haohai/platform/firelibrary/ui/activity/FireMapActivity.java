@@ -76,7 +76,6 @@ public class FireMapActivity extends HhBaseActivity {
     private MyLocationData locData;
     private ActionBar mActionBar;
     private String city;
-    private ReverseGeoCodeResult poiResult;
 
     public static final int MAP_REUEST_CODE = 2;
     public static final double LATITUDE_DEF = 0.00;//默认天安数码城: latitude: 36.32087806111286, longitude: 120.44349123197962
@@ -174,7 +173,6 @@ public class FireMapActivity extends HhBaseActivity {
                 if (result == null || result.error != SearchResult.ERRORNO.NO_ERROR) {
                     //没有找到检索结果
                 }
-                poiResult = result;
 
                 //获取反向地理编码结果
                 //      Log.e(TAG, "onGetReverseGeoCodeResult: getAddress ==" + result.getAddress());
@@ -306,11 +304,6 @@ public class FireMapActivity extends HhBaseActivity {
                     intent.putExtra("latitude", latitude);
                     intent.putExtra("cityAddress", cityAddress);
                     intent.putExtra("city", city);
-                    if(poiResult!=null){
-                        intent.putExtra("PROVINCE", poiResult.getAddressDetail().province);
-                        intent.putExtra("CITY", poiResult.getAddressDetail().city);
-                        intent.putExtra("DISTRICT", poiResult.getAddressDetail().district);
-                    }
                     FireMapActivity.this.setResult(MAP_REUEST_CODE, intent);
                     finish();
                 }

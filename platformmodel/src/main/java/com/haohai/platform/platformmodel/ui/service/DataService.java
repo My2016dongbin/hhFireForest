@@ -45,10 +45,15 @@ public class DataService extends Service {
     }
 
     private void getBumenDataFromService() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_QUANXIAN + "api/department/list");
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_QUANXIAN() + "api/department/list");
         params.setAsJsonContent(true);
-        params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        String token = "";
+        try{
+            token = new DbConfig(this).getUser().getToken();
+        }catch (Exception e){
+
+        }
+        params.addHeader("Authorization","bearer " + token);
 
         JSONObject jsonObject = new JSONObject();
         params.setBodyContent(jsonObject.toString());
@@ -94,10 +99,14 @@ public class DataService extends Service {
     }
 
     private void geUserDataFromService() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_QUANXIAN + "api/auth/user/list");
-        params.setAsJsonContent(true);
-        params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_QUANXIAN() + "api/auth/user/list");
+        params.setAsJsonContent(true);String token = "";
+        try{
+            token = new DbConfig(this).getUser().getToken();
+        }catch (Exception e){
+
+        }
+        params.addHeader("Authorization","bearer " + token);
 
         JSONObject jsonObject = new JSONObject();
         params.setBodyContent(jsonObject.toString());

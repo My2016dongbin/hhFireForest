@@ -1,13 +1,12 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+}
 
-def VERSION_CODE = 203
-def VERSION_NAME = "2.0.3"
+def VERSION_CODE = 40
+def VERSION_NAME = "1.4.0"
 
 def keystoreFilepath = ''
 def keyfile = file('s.keystore.temp')
-
-// 依赖插件脚本
-apply from: 'tinker-support.gradle'
 
 android {
     compileSdkVersion rootProject.compileSdkVersion
@@ -20,7 +19,7 @@ android {
         versionCode VERSION_CODE
         versionName VERSION_NAME
         multiDexEnabled true
-
+        flavorDimensions "versionCode"
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = [moduleName: project.getName()]
@@ -29,18 +28,20 @@ android {
 
         ndk {
             //设置支持的SO库架构
-            /*abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64","armeabi"*/
-            /*abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a'*/
-            abiFilters 'armeabi', 'armeabi-v7a'
+//            abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64","armeabi"
+//            abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a'
+            abiFilters /*'armeabi', *//*'armeabi-v7a',*/'arm64-v8a'
+//            abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
         }
         manifestPlaceholders = [
                 XG_ACCESS_ID : "1500015815",
                 XG_ACCESS_KEY : "AO3YNOCJ0AK2",
                 HW_APPID: "103450845"
         ]
-        /*jackOptions {
-            enabled true
-        }*/
+
+        //dialogX
+        renderscriptTargetApi 19
+        renderscriptSupportModeEnabled true
     }
 
     signingConfigs {
@@ -60,20 +61,13 @@ android {
             println("====== buildTypes.debug ======")
             signingConfig signingConfigs.debug
         }
-
         release {
             //是否混淆
             minifyEnabled false
             //是否移除无用资源
-            zipAlignEnabled false
-            multiDexKeepFile file ('multidex-config.txt')// 小括号记得要加上，官方文档没有 bugly
+            zipAlignEnabled true
             //混淆配置
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-
-            ndk{
-                //QQ微信等大佬都只用"armeabi"
-                abiFilters "armeabi-v7a"
-            }
             //签名文件存在，则签名
             if (keyfile.exists()) {
                 println("WITH -> buildTypes -> release: using jks key")
@@ -85,7 +79,7 @@ android {
                 variant ->
                     variant.outputs.all {
                         //在这里修改apk文件名
-                        outputFileName = "haohai-${variant.versionName}.apk"
+                        outputFileName = "taian-${variant.versionName}.apk"
                     }
             }
             signingConfig signingConfigs.config
@@ -93,61 +87,60 @@ android {
     }
     lintOptions {
         abortOnError false
-        disable "Instantiatable"
+        checkReleaseBuilds false
     }
 
+        productFlavors {
+          /*  xiaomi {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "xiaomi"]
+            }*/
+            /*  kuan {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "kuan"]
+            }*/
+            xiaomi {
+                manifestPlaceholders = [
+                        UMENG_CHANNEL_VALUE: "xiaomi",
+                ]
+            }
+            /*   qh360 {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "qh360"]
+            }
+            baidu {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "baidu"]
+            }
+            wandoujia {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "wandoujia"]
+            }
+            oppo {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "oppo"]
+            }
+            vivo {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "vivo"]
+            }*/
+            oppo {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "oppo"]
+            }
+            huawei {
+                manifestPlaceholders = [
+                        UMENG_CHANNEL_VALUE: "huawei",
 
-    flavorDimensions "app"
-    productFlavors {
-        /*  xiaomi {
-              manifestPlaceholders = [UMENG_CHANNEL_VALUE: "xiaomi"]
-          }*/
-        /*  kuan {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "kuan"]
-        }*/
-        xiaomi {
-            manifestPlaceholders = [
-                    UMENG_CHANNEL_VALUE: "xiaomi",
-            ]
-        }
-        /*   qh360 {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "qh360"]
-        }
-        baidu {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "baidu"]
-        }
-        wandoujia {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "wandoujia"]
-        }
-        oppo {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "oppo"]
-        }
-        vivo {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "vivo"]
-        }*/
-        oppo {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "oppo"]
-        }
-        huawei {
-            manifestPlaceholders = [
-                    UMENG_CHANNEL_VALUE: "huawei",
+                ]
 
-            ]
+            }
+            /*
+            yingyongbao {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "yingyongbao"]
+            }
+            anzhi {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "anzhi"]
+            }*/
+        }
 
-        }
-        /*
-        yingyongbao {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "yingyongbao"]
-        }
-        anzhi {
-            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "anzhi"]
-        }*/
-    }
 
     packagingOptions {
         exclude 'META-INF/rxjava.properties'
     }
-   dexOptions {
+   /*dexOptions {
        javaMaxHeapSize "6g"
        dexInProcess true
        preDexLibraries true
@@ -156,16 +149,16 @@ android {
     aaptOptions {
         cruncherEnabled = false
         useNewCruncher = false
-    }
+    }*/
 
     compileOptions {
         sourceCompatibility org.gradle.api.JavaVersion.VERSION_1_8
         targetCompatibility org.gradle.api.JavaVersion.VERSION_1_8
     }
 
-    dataBinding {
+    /*dataBinding {
         enabled = true
-    }
+    }*/
 
     sourceSets{
         main{
@@ -179,24 +172,18 @@ android {
 
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     api project(':platformmodel')
-    //路由在 主模块 跟 model中要分别引包
+    //路由在 主模块 跟 model中要分别引包{}
     api project(':firemodel')
     api project(':mapmodel')
     api 'com.alibaba:arouter-api:1.3.1'
-    /*    compile 'com.tencent.jg:jg:1.1'
-        compile 'com.tencent.tpns:tpns:1.2.1.3-release'*/
     testImplementation 'junit:junit:4.12'
+
+
     annotationProcessor 'com.alibaba:arouter-compiler:1.1.4'
     api 'com.xdandroid:hellodaemon:+'
-//    api 'com.android.support:support-v4:26.0.0-alpha1'
-
-
-    api "com.android.support:multidex:1.0.3" // 多dex配置
-    api 'com.tencent.bugly:nativecrashreport:3.9.0'
-    api 'com.tencent.tinker:tinker-android-lib:1.9.14.17'
-    api 'com.tencent.bugly:crashreport_upgrade:1.5.23'
+//    api 'com.king.thread:nevercrash:1.0.0'
 }

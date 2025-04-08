@@ -19,7 +19,7 @@ import rx.functions.Action1;
 /**
  * Created by geyang on 2020/12/3.
  */
-public class OneBodyFireViewBinder extends ItemViewProvider<OneBodyFire.Dto, OneBodyFireViewBinder.ViewHolder> {
+public class OneBodyFireViewBinder extends ItemViewProvider<OneBodyFire, OneBodyFireViewBinder.ViewHolder> {
 
     public OnOneBodyItemClick listener;
 
@@ -35,11 +35,11 @@ public class OneBodyFireViewBinder extends ItemViewProvider<OneBodyFire.Dto, One
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull ViewHolder holder, @NonNull final OneBodyFire.Dto oneBodyFire) {
+    protected void onBindViewHolder(@NonNull ViewHolder holder, @NonNull final OneBodyFire oneBodyFire) {
         holder.textView1.setText("监控点名称 : " + oneBodyFire.getName());
         String str = ("发现时间 : " + oneBodyFire.getAlarmDatetime());
         try{
-            holder.textView2.setText(str.replace("T"," ").replace(".000+0800","")/*.substring(0,str.indexOf("."))*/);
+            holder.textView2.setText(str.replace("T"," ")/*.substring(0,str.indexOf("."))*/);
         }catch (Exception e){
             holder.textView2.setText(str);
         }
@@ -79,7 +79,7 @@ public class OneBodyFireViewBinder extends ItemViewProvider<OneBodyFire.Dto, One
         }
     }
     public interface OnOneBodyItemClick{
-        void onOneBodyItemClickListener(OneBodyFire.Dto oneBodyFire);
+        void onOneBodyItemClickListener(OneBodyFire oneBodyFire);
     }
 
 }

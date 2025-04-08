@@ -12,6 +12,159 @@
 
     </RelativeLayout>
 
+
+
+    <!--bingo新增边缘长按控制 -->
+    <RelativeLayout
+        android:id="@+id/surface_left"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="100dp"
+        android:layout_alignParentStart="true">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:rotation="180"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/iv_left1"
+                android:src="@mipmap/move"
+                android:visibility="invisible"
+                android:rotation="90"
+                android:layout_width="22dp"
+                android:layout_height="22dp"/>
+            <ImageView
+                android:id="@+id/iv_left2"
+                android:src="@mipmap/move"
+                android:visibility="invisible"
+                android:rotation="90"
+                android:layout_width="18dp"
+                android:layout_height="18dp"/>
+            <ImageView
+                android:id="@+id/iv_left3"
+                android:src="@mipmap/move"
+                android:visibility="invisible"
+                android:rotation="90"
+                android:layout_width="14dp"
+                android:layout_height="14dp"/>
+        </LinearLayout>
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/surface_right"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="100dp"
+        android:layout_alignParentEnd="true">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:rotation="0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/iv_right1"
+                android:src="@mipmap/move"
+                android:visibility="invisible"
+                android:rotation="90"
+                android:layout_width="22dp"
+                android:layout_height="22dp"/>
+            <ImageView
+                android:id="@+id/iv_right2"
+                android:src="@mipmap/move"
+                android:visibility="invisible"
+                android:rotation="90"
+                android:layout_width="18dp"
+                android:layout_height="18dp"/>
+            <ImageView
+                android:id="@+id/iv_right3"
+                android:src="@mipmap/move"
+                android:visibility="invisible"
+                android:rotation="90"
+                android:layout_width="14dp"
+                android:layout_height="14dp"/>
+        </LinearLayout>
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/surface_top"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="100dp"
+        android:layout_alignParentTop="true">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:rotation="270"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/iv_top1"
+                android:src="@mipmap/move"
+                android:visibility="invisible"
+                android:rotation="90"
+                android:layout_width="22dp"
+                android:layout_height="22dp"/>
+            <ImageView
+                android:id="@+id/iv_top2"
+                android:src="@mipmap/move"
+                android:visibility="invisible"
+                android:rotation="90"
+                android:layout_width="18dp"
+                android:layout_height="18dp"/>
+            <ImageView
+                android:id="@+id/iv_top3"
+                android:src="@mipmap/move"
+                android:visibility="invisible"
+                android:rotation="90"
+                android:layout_width="14dp"
+                android:layout_height="14dp"/>
+        </LinearLayout>
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/surface_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="100dp"
+        android:layout_alignParentBottom="true">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:rotation="90"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/iv_bottom1"
+                android:visibility="invisible"
+                android:src="@mipmap/move"
+                android:rotation="90"
+                android:layout_width="22dp"
+                android:layout_height="22dp"/>
+            <ImageView
+                android:id="@+id/iv_bottom2"
+                android:visibility="invisible"
+                android:src="@mipmap/move"
+                android:rotation="90"
+                android:layout_width="18dp"
+                android:layout_height="18dp"/>
+            <ImageView
+                android:id="@+id/iv_bottom3"
+                android:visibility="invisible"
+                android:src="@mipmap/move"
+                android:rotation="90"
+                android:layout_width="14dp"
+                android:layout_height="14dp"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+
     <RelativeLayout
         android:id="@+id/thumb"
         android:layout_width="match_parent"
@@ -161,5 +314,9 @@
         android:scaleType="centerInside"
         android:src="@drawable/unlock"
         android:visibility="gone" />
+
+
+
+
 
 </RelativeLayout>

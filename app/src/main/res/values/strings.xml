@@ -5,9 +5,8 @@
 <!--    <string name="app_name">森林防火检查系统</string>
     <string name="app_title">新乡森林防火检查系统</string>-->
 
-    <string name="app_name">西安市森林火情预警及救援系统</string>
-    <string name="app_title">西安市森林火情预警及救援系统</string>
-
-<!--    <string name="app_name">西安市森林火情预警及救援系统</string>-->
-<!--    <string name="app_title">西安市森林火情预警及救援系统</string>-->
+    <!--<string name="app_name">泰安铁塔森林防火监测预警系统</string>-->
+    <!--<string name="app_title">泰安铁塔森林防火监测预警系统</string>-->
+    <string name="app_name">天眼护山</string>
+    <string name="app_title">天眼护山</string>
 </resources>

@@ -32,6 +32,7 @@ import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.cell.ActionBar;
 import com.ruyiruyi.rylibrary.cell.MessagePicturesLayout;
 import com.ruyiruyi.rylibrary.db.DbConfig;
+import com.ruyiruyi.rylibrary.db.Requestaddress;
 import com.ruyiruyi.rylibrary.image.ImageUtils;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.utils.GifSizeFilter;
@@ -85,6 +86,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
     private EditText xcqkedit;
     private EditText qtqkedit;
     private ProgressDialog addFireDialog;
+    private Requestaddress requestaddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +98,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
         Intent intent = getIntent();
         id = intent.getStringExtra("ID");
         addFireDialog = new ProgressDialog(this);
+        requestaddress = new DbConfig(this).getRequestaddress();
         initView();
         bindView();
 
@@ -138,7 +141,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
      * 上传图片到服务器
      */
     private void postPicToService() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        RequestParams params = new RequestParams(requestaddress.getRequstUrl()+"oa/api/workReport/fileUploadAnByNotToken");
         params.setAsJsonContent(true);
         params.setMultipart(true);    //以表单得形式上传  文件上传必须要
 
@@ -165,8 +168,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
         Log.e(TAG, "postPicToService: " + params );
         Log.e(TAG, "postPicToService: " + new DbConfig(this).getUser().getToken() );
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
-        params.setConnectTimeout(1000000);
+
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
@@ -273,7 +275,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
                                     .countable(true)
                                     .capture(true)
                                     .captureStrategy(
-                                            new CaptureStrategy(true,"com.haohai.platform.fireforestplatform.fileProvider")
+                                            new CaptureStrategy(true,"com.haohai.platform.fireforestplatform")
                                     )
                                     .maxSelectable(size)
                                     .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
@@ -431,14 +433,13 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
 
 
     private void postVideoToServiceRx() {
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_UPLOAD);
+        RequestParams params = new RequestParams(requestaddress.getRequstUrl()+"oa/api/workReport/fileUploadAnByNotToken");
         params.addBodyParameter("file", new File(videoPath),null,videoPath);
         params.setAsJsonContent(true);
         params.setMultipart(true);
         params.setConnectTimeout(1000000);
         //params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "resource: --"  + params);
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
@@ -500,12 +501,11 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
         }
         Log.e(TAG, "postFireToService: "+jsonObject);
         Log.e(TAG, "token: "+new DbConfig(this).getUser().getToken() );
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +  "oa//api/taskDetail");
+        RequestParams params = new RequestParams(requestaddress.getRequstUrl() +  "oa//api/taskDetail");
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.setConnectTimeout(10000);
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {

@@ -54,24 +54,6 @@
                 android:textColor="@color/c7"
                 android:textSize="16sp"
                 android:text="admin"/>
-
-            <TextView
-                android:id="@+id/bumen_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/c6"
-                android:textSize="14sp"
-                android:layout_marginTop="8dp"
-                android:text="市场部"/>
-
-            <TextView
-                android:id="@+id/dianhua_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/c6"
-                android:textSize="14sp"
-                android:layout_marginTop="8dp"
-                android:text="135135135135"/>
         </LinearLayout>
         <ImageView
             android:layout_width="wrap_content"
@@ -150,9 +132,68 @@
             android:textColor="@color/c7"
             android:textSize="14sp"/>
     </LinearLayout>
+    <LinearLayout
+        android:id="@+id/ll_autostart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/c12"
+        android:layout_marginTop="5dp"
+        android:padding="20dp">
+
+        <ImageView
+            android:src="@drawable/ic_permis"
+            android:layout_width="16dp"
+            android:layout_height="16dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="10dp"
+            android:text="权限开启"
+            android:textColor="@color/c7"
+            android:textSize="14sp" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/ll_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/c12"
+        android:layout_marginTop="5dp"
+        android:padding="20dp">
+
+        <ImageView
+            android:src="@drawable/ic_update"
+            android:layout_width="16dp"
+            android:layout_height="16dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="10dp"
+            android:text="模式切换"
+            android:textColor="@color/c7"
+            android:textSize="14sp" />
+        <TextView
+            android:id="@+id/text_mode"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="10dp"
+            android:gravity="end"
+            android:textColor="@color/c6"
+            android:textSize="12sp" />
+        <ImageView
+            android:src="@drawable/ic_right"
+            android:layout_marginStart="2dp"
+            android:layout_width="16dp"
+            android:layout_height="16dp" />
+    </LinearLayout>
 
     <FrameLayout
-        android:id="@+id/sswz_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/c12"
@@ -181,7 +222,7 @@
             />
     </FrameLayout>
     <FrameLayout
-        android:id="@+id/voice_layout"
+        android:id="@+id/fl_change_pw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/c12"
@@ -198,10 +239,12 @@
             android:textSize="14sp"/>
 
         <Switch
-            android:id="@+id/voice_switch"
+            android:id="@+id/yuyin_switch"
             android:textColor="@color/theme_primary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textOn="关"
+            android:textOff="开"
             android:track="@drawable/switch_selector_green"
             android:layout_gravity="center_vertical|right"
             android:layout_marginRight="10dp"
@@ -209,7 +252,6 @@
             android:checked="true"
             />
     </FrameLayout>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

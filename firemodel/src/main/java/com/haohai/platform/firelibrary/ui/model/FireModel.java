@@ -67,11 +67,10 @@ public class FireModel implements IFireModel {
      */
     private void getAreFromService(final CallBack2<Area> callBack2) {
         JSONObject jsonObject = new JSONObject();
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_QUANXIAN + "api/sysArea/list");
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_QUANXIAN() + "api/sysArea/list");
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + token);
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "getAreFromService: " + params);
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override

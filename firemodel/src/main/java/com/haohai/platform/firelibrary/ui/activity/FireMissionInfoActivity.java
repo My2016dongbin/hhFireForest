@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +35,7 @@ import com.haohai.platform.firelibrary.utils.LatLngChange;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.cell.ActionBar;
 import com.ruyiruyi.rylibrary.db.DbConfig;
+import com.ruyiruyi.rylibrary.db.Requestaddress;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 
 import org.json.JSONArray;
@@ -65,17 +65,19 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
     private TextView renwuneirongView;
     private TextView jingduView;
     private TextView weiduView;
+    private TextView peopleView;
+    private TextView carView;
+    private TextView jijuView;
     private ImageView imageOneView;
     private ImageView imageTwoView;
     private ImageView imageThreeView;
     private TextView dizhiView;
-    private LinearLayout ll_address;
     private TextView orderStateView;
     private TextView kaishirenwuView;
     private TextView daozheliView;
     private boolean isChange = false;
     private TextView shangbaoButton;
-
+    private Requestaddress requestaddress;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,7 +88,7 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
         isChange = false;
         initView();
         bindView();
-
+        requestaddress =new DbConfig(this).getRequestaddress();
         getDataFromService();
     }
 
@@ -178,10 +180,12 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
         renwuneirongView = (TextView) findViewById(R.id.renwuneirong_view);
         jingduView = (TextView) findViewById(R.id.jingdu_view);
         weiduView = (TextView) findViewById(R.id.weidu_view);
+        peopleView = (TextView) findViewById(R.id.people_view);
+        carView = (TextView) findViewById(R.id.car_view);
+        jijuView = (TextView) findViewById(R.id.jiju_view);
         imageOneView = (ImageView) findViewById(R.id.image_one_view);
         imageTwoView = (ImageView) findViewById(R.id.image_two_view);
         imageThreeView = (ImageView) findViewById(R.id.image_three_view);
-        ll_address = (LinearLayout) findViewById(R.id.ll_address);
         dizhiView = (TextView) findViewById(R.id.dizhi_view);
     }
 
@@ -203,12 +207,10 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
 
         } catch (JSONException e) {
         }
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "oa/api/taskManagement");
+        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "oa/api/taskManagement");
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
         Log.e(TAG, "changeStateToService: " + params);
-        Log.e(TAG, "changeStateToService: params.getHeaders() = " + params.getHeaders());
         Log.e(TAG, "changeStateToService: " + jsonObject.toString());
         x.http().request(HttpMethod.PUT,params, new Callback.CommonCallback<String>() {
             @Override
@@ -249,9 +251,9 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
 
     private void getDataFromService() {
         showDialogProgress(progressDialog,"加载中...");
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "oa/api/taskManagement");
+        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "oa/api/taskManagement");
         params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        params.addHeader("NetworkType", "Internet");
         params.addParameter("id",id);
         Log.e(TAG, "postData:-- params--" + params);
         params.setConnectTimeout(10000);
@@ -267,7 +269,6 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
                         JSONObject data = jsonObject.getJSONObject("data");
                         Gson gson = new Gson();
                         fireMission = gson.fromJson(data.toString(), FireMission.class);
-
                         initData();
                     }else {
                         Toast.makeText(FireMissionInfoActivity.this, "数据获取失败", Toast.LENGTH_SHORT).show();
@@ -311,9 +312,10 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
         renwuneirongView.setText(fireMission.getTaskContent());
         jingduView.setText(fireMission.getPosition().getLng() +" ");
         weiduView.setText(fireMission.getPosition().getLat() + " ");
-        dizhiView.setText(fireMission.getTaskRegion());
-        ll_address.setVisibility(View.GONE);
-
+        dizhiView.setText(fireMission.getReserve());
+        peopleView.setText(fireMission.getPeopleCount());
+        carView.setText(fireMission.getFireEngine());
+        jijuView.setText(fireMission.getFireEquipment());
         //0未开始，1执行中，2已结束
         if (fireMission.getStatus() == 0) {
             kaishirenwuView.setText("未开始");
@@ -328,20 +330,35 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
             imageOneView.setVisibility(View.VISIBLE);
             imageTwoView.setVisibility(View.GONE);
             imageThreeView.setVisibility(View.GONE);
-            Glide.with(getApplicationContext()).load(imgArray[0].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
+            if (requestaddress.isIfinternet()) {
+                Glide.with(getApplicationContext()).load(imgArray[0].replace("10.10.2.27:8000", "121.36.6.140:80").replace("10.10.2.26:16000", "218.201.180.118:16000")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
+            }else {
+                Glide.with(getApplicationContext()).load(imgArray[0]).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
+            }
         }else if (imgArray.length==2){
             imageOneView.setVisibility(View.VISIBLE);
             imageTwoView.setVisibility(View.VISIBLE);
             imageThreeView.setVisibility(View.GONE);
-            Glide.with(getApplicationContext()).load(imgArray[0].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
-            Glide.with(getApplicationContext()).load(imgArray[1].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
+            if (requestaddress.isIfinternet()) {
+                Glide.with(getApplicationContext()).load(imgArray[0].replace("10.10.2.27:8000", "121.36.6.140:80").replace("10.10.2.26:16000", "218.201.180.118:16000")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
+                Glide.with(getApplicationContext()).load(imgArray[1].replace("10.10.2.27:8000", "121.36.6.140:80").replace("10.10.2.26:16000", "218.201.180.118:16000")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
+            }else {
+                Glide.with(getApplicationContext()).load(imgArray[0]).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
+                Glide.with(getApplicationContext()).load(imgArray[1]).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
+            }
         }else {
             imageOneView.setVisibility(View.VISIBLE);
             imageTwoView.setVisibility(View.VISIBLE);
             imageThreeView.setVisibility(View.VISIBLE);
-            Glide.with(getApplicationContext()).load(imgArray[0].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
-            Glide.with(getApplicationContext()).load(imgArray[1].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
-            Glide.with(getApplicationContext()).load(imgArray[2].replace("10.22.148.105","123.138.59.82")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageThreeView);
+            if (requestaddress.isIfinternet()) {
+                Glide.with(getApplicationContext()).load(imgArray[0].replace("10.10.2.27:8000", "121.36.6.140:80").replace("10.10.2.26:16000", "218.201.180.118:16000")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
+                Glide.with(getApplicationContext()).load(imgArray[1].replace("10.10.2.27:8000", "121.36.6.140:80").replace("10.10.2.26:16000", "218.201.180.118:16000")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
+                Glide.with(getApplicationContext()).load(imgArray[2].replace("10.10.2.27:8000", "121.36.6.140:80").replace("10.10.2.26:16000", "218.201.180.118:16000")).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageThreeView);
+            }else {
+                Glide.with(getApplicationContext()).load(imgArray[0]).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageOneView);
+                Glide.with(getApplicationContext()).load(imgArray[1]).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageTwoView);
+                Glide.with(getApplicationContext()).load(imgArray[2]).placeholder(R.drawable.ic_jaizai).error(R.drawable.ic_no_pic).into(imageThreeView);
+            }
         }
     }
     @Override
@@ -379,7 +396,7 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
             provider = LocationManager.GPS_PROVIDER;
         } else {
             // 当没有可用的位置提供器时，弹出Toast提示用户
-            Toast.makeText(this, "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
 
         }
         if (provider != null) {
@@ -414,7 +431,7 @@ public class FireMissionInfoActivity extends HhBaseActivity implements INaviInfo
         } else if (prodiverlist.contains(LocationManager.GPS_PROVIDER)) {
             return LocationManager.GPS_PROVIDER;//GPS定位
         } else {
-            Toast.makeText(this, "未开启本应用地理位置信息，请先开启！", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "未开启本应用地理位置信息，请先开启！", Toast.LENGTH_SHORT).show();
         }
         return null;
     }

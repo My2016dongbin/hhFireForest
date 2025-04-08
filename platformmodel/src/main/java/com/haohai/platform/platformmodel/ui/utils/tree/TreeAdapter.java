@@ -186,7 +186,7 @@ public class TreeAdapter extends BaseAdapter {
         }
         final TreePoint tempPoint = (TreePoint) getItem(position);
         int level = TreeUtils.getLevel(tempPoint,pointMap);
-        holder.icon.setPadding(50 * level, holder.icon.getPaddingTop(), 0, holder.icon.getPaddingBottom());
+        holder.icon.setPadding(25 * level, holder.icon.getPaddingTop(), 0, holder.icon.getPaddingBottom());
         if ("0".equals(tempPoint.getISLEAF())) {  //如果为父节点
             holder.item_layout.setBackgroundColor(0xff273445);
             if (!tempPoint.isExpand()) {    //不展开显示加号
@@ -235,9 +235,8 @@ public class TreeAdapter extends BaseAdapter {
         TreePoint treePoint = (TreePoint) getItem(position);
         if ("1".equals(treePoint.getISLEAF())) {   //点击叶子节点
             //处理回填
-            Log.e(TAG, "treePoint: "+treePoint.getPARENTID() );
             Toast.makeText(mcontext, getSubmitResult(treePoint), Toast.LENGTH_SHORT).show();
-            listener.onPlayerItemClickListener(treePoint.getID(),treePoint.getPARENTID(),treePoint.getNNAME(),treePoint.getRtspUrl());
+            listener.onPlayerItemClickListener(treePoint.getID(),treePoint.getNNAME());
         } else {  //如果点击的是父类
             if (treePoint.isExpand()) {
                /* for (TreePoint tempPoint : pointList) {
@@ -335,9 +334,7 @@ public class TreeAdapter extends BaseAdapter {
     }
 
     public interface OnPlayerItemClick{
-        void onPlayerItemClickListener(String id,String parentid,String name,String rtspUrl);
         void onPlayerItemClickListener(String id,String name);
     }
-
 
 }

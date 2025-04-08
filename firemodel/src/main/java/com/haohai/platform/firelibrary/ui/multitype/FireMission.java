@@ -1,6 +1,5 @@
 package com.haohai.platform.firelibrary.ui.multitype;
 
-import com.baidu.mapapi.model.inner.GeoPoint;
 import com.haohai.platform.firelibrary.ui.model.FirePosition;
 
 /**
@@ -100,6 +99,18 @@ public class FireMission {
  //   @ApiModelProperty(value = "任务范围")
     private String taskRegion;
 
+    /**
+     * 防火人数
+     */
+    private String peopleCount;
+    /**
+     * 防火车辆
+     */
+    private String fireEngine;
+    /**
+     * 防火机具
+     */
+    private String fireEquipment;
     public FireMission() {
     }
 
@@ -303,5 +314,29 @@ public class FireMission {
 
     public void setTaskRegion(String taskRegion) {
         this.taskRegion = taskRegion;
+    }
+
+    public String getPeopleCount() {
+        return peopleCount;
+    }
+
+    public void setPeopleCount(String peopleCount) {
+        this.peopleCount = peopleCount;
+    }
+
+    public String getFireEngine() {
+        return fireEngine;
+    }
+
+    public void setFireEngine(String fireEngine) {
+        this.fireEngine = fireEngine;
+    }
+
+    public String getFireEquipment() {
+        return fireEquipment;
+    }
+
+    public void setFireEquipment(String fireEquipment) {
+        this.fireEquipment = fireEquipment;
     }
 }

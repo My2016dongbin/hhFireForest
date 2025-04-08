@@ -24,7 +24,7 @@ import org.xutils.DbManager;
 import org.xutils.ex.DbException;
 
 
-public class BaseFragmentActivity extends FragmentActivity {
+public class BaseFragmentActivity extends AppCompatActivity {
 
 
 

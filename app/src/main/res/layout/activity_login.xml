@@ -32,11 +32,12 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="280dp"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
             android:layout_marginTop="150dp"
-            android:background="@drawable/ic_login_box_bg"
+            android:background="@drawable/border_white"
+            android:elevation="5dp"
             android:orientation="vertical"
             android:padding="20dp">
 
@@ -102,15 +103,115 @@
                     android:textCursorDrawable="@drawable/edit_cursor_color" />
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/login_button"
+            <!--ip-->
+            <LinearLayout
+                android:id="@+id/ll_ip"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_marginTop="40dp"
-                android:background="@drawable/bg_button"
+                android:layout_marginTop="30dp"
+                android:background="@drawable/login_input_bg"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="ip:"
+                    android:textSize="12sp"
+                    android:textColor="@color/c5"
+                    android:layout_marginStart="10dp"/>
+
+                <EditText
+                    android:id="@+id/et_ip"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/edit_bg_select"
+                    android:inputType="text"
+                    android:textColor="@color/c4"
+                    android:textCursorDrawable="@drawable/edit_cursor_color" />
+            </LinearLayout>
+            <!--port-->
+            <LinearLayout
+                android:id="@+id/ll_port"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="30dp"
+                android:background="@drawable/login_input_bg"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="端口号:"
+                    android:textSize="12sp"
+                    android:textColor="@color/c5"
+                    android:layout_marginStart="10dp"/>
+
+                <EditText
+                    android:id="@+id/et_port"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/edit_bg_select"
+                    android:inputType="number"
+                    android:textColor="@color/c4"
+                    android:textCursorDrawable="@drawable/edit_cursor_color" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp">
+                <!--<ImageView
+                    android:id="@+id/tv_ip"
+                    android:src="@drawable/setting"
+                    android:layout_marginEnd="15dp"
+                    android:layout_width="30dp"
+                    android:layout_gravity="center_vertical|right"
+                    android:layout_height="30dp"/>-->
+                <TextView
+                    android:id="@+id/login_nw_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:text="内网登录"
+                    android:textColor="@color/c5" />
+                <TextView
+                    android:id="@+id/tv_ip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|right"
+                    android:text="设置ip端口"
+                    android:textColor="@color/c5" />
+            </FrameLayout>
+            <TextView
+                android:id="@+id/login_button"
+                android:layout_marginBottom="15dp"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginTop="15dp"
+                android:background="@drawable/bg_button2"
                 android:gravity="center"
                 android:text="登录"
+                android:textSize="16sp"
                 android:textColor="@color/c12" />
+
+            <!--<TextView
+                android:id="@+id/login_nw_button"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_button"
+                android:gravity="center"
+                android:text="内网登录"
+                android:textColor="@color/c12" />-->
 
 
         </LinearLayout>

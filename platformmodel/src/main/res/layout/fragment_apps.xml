@@ -370,11 +370,11 @@
 
     </LinearLayout>
 
+    <!--火情管理-->
     <LinearLayout
-        android:id="@+id/ll_1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="6dp"
         android:background="@color/c12"
         android:orientation="vertical"
         android:padding="10dp">
@@ -383,15 +383,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="火情管理"
-            android:textColor="@color/c7"
+            android:textColor="@color/c8_"
             android:textSize="14sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="20dp"
+            android:weightSum="4"
             android:orientation="horizontal">
 
+            <!--火情上报-->
             <LinearLayout
                 android:id="@+id/huoqing_layout"
                 android:layout_width="0dp"
@@ -402,9 +404,9 @@
                 android:orientation="vertical">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_hq" />
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/huoqing" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -414,7 +416,7 @@
                     android:textColor="@color/c7"
                     android:textSize="13sp" />
             </LinearLayout>
-
+            <!--隐患排查-->
             <LinearLayout
                 android:id="@+id/yinhuanpaicha_layout"
                 android:layout_width="0dp"
@@ -425,9 +427,9 @@
                 android:orientation="vertical">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="34dp"
-                    android:src="@drawable/ic_yhpc" />
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/yinhuan" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -437,7 +439,7 @@
                     android:textColor="@color/c7"
                     android:textSize="13sp" />
             </LinearLayout>
-
+            <!--调度任务-->
             <LinearLayout
                 android:id="@+id/renwu_layout"
                 android:layout_width="0dp"
@@ -448,9 +450,9 @@
                 android:orientation="vertical">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_rw" />
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/diaodu" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -460,8 +462,9 @@
                     android:textColor="@color/c7"
                     android:textSize="13sp" />
             </LinearLayout>
-
+            <!--指挥作战-->
             <LinearLayout
+                android:id="@+id/ll_zhzz"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -469,19 +472,122 @@
                 android:orientation="vertical">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/zhihui" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
-                    android:text=""
+                    android:text="指挥作战"
                     android:textColor="@color/c7"
                     android:textSize="13sp" />
             </LinearLayout>
 
         </LinearLayout>
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:weightSum="4"
+            android:orientation="horizontal">
+            <!--巡护轨迹-->
+            <LinearLayout
+                android:id="@+id/ll_xhgj"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:src="@drawable/xunhu"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="巡护轨迹"
+                    android:textColor="@color/c7"
+                    android:textSize="13sp" />
+            </LinearLayout>
+            <!--无人机-->
+            <LinearLayout
+                android:id="@+id/ll_wrj"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:src="@drawable/feiji"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="无人机"
+                    android:textColor="@color/c7"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!--天气信息-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:background="@color/c12"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="天气信息"
+            android:textColor="@color/c8_"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:weightSum="4"
+            android:orientation="horizontal">
+            <!--天气信息-->
+            <LinearLayout
+                android:id="@+id/ll_tqxx"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:src="@drawable/tianqi"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="天气信息"
+                    android:textColor="@color/c7"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

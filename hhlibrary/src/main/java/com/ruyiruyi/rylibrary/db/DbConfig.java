@@ -25,7 +25,7 @@ public class DbConfig {
                 .setAllowTransaction(true)
                 .setDbDir(context.getFilesDir())
                 //.setDbDir(Environment.getExternalStorageDirectory())
-                .setDbVersion(8);
+                .setDbVersion(9);
 
         return daoConfig;
     }
@@ -35,6 +35,26 @@ public class DbConfig {
         return db;
     }
 
+    public void clearLocations(){
+        DbManager.DaoConfig daoConfig = getDaoConfig();
+        DbManager db = x.getDb(daoConfig);
+        try {
+            db.delete(BeiDouLocation.class);
+        } catch (DbException e) {
+        }
+    }
+    public List<BeiDouLocation> getBeiDouLocationList(){
+        DbManager.DaoConfig daoConfig = getDaoConfig();
+        DbManager db = x.getDb(daoConfig);
+        try {
+            List<BeiDouLocation> locations = db.selector(BeiDouLocation.class)
+                    .findAll();
+            return locations;
+
+        } catch (DbException e) {
+        }
+        return null;
+    }
     public List<Area> getAreaList(){
         DbManager.DaoConfig daoConfig = getDaoConfig();
         DbManager db = x.getDb(daoConfig);
@@ -87,26 +107,6 @@ public class DbConfig {
         return null;
     }
 
-    public User getUser(){
-        DbManager.DaoConfig daoConfig = getDaoConfig();
-        DbManager db = x.getDb(daoConfig);
-        try {
-            List<User> users = db.selector(User.class)
-                    .findAll();
-            if (users != null){
-                for (int i = 0; i < users.size(); i++) {
-                    User user = users.get(i);
-                    if (user.getIsLogin() == 1){
-                        return user;
-                    }
-                }
-            }
-
-        } catch (DbException e) {
-        }
-        return null;
-    }
-
     public String getPermissions(){
         DbManager.DaoConfig daoConfig = getDaoConfig();
         DbManager db = x.getDb(daoConfig);
@@ -125,6 +125,26 @@ public class DbConfig {
         } catch (DbException e) {
         }
         return "";
+    }
+
+    public User getUser(){
+        DbManager.DaoConfig daoConfig = getDaoConfig();
+        DbManager db = x.getDb(daoConfig);
+        try {
+            List<User> users = db.selector(User.class)
+                    .findAll();
+            if (users != null){
+                for (int i = 0; i < users.size(); i++) {
+                    User user = users.get(i);
+                    if (user.getIsLogin() == 1){
+                        return user;
+                    }
+                }
+            }
+
+        } catch (DbException e) {
+        }
+        return null;
     }
 
     public User getUserOut(){
@@ -153,6 +173,21 @@ public class DbConfig {
             if (settings != null){
                 Setting setting = settings.get(0);
                 return setting;
+            }
+
+        } catch (DbException e) {
+        }
+        return null;
+    }
+    public Requestaddress getRequestaddress(){
+        DbManager.DaoConfig daoConfig = getDaoConfig();
+        DbManager db = x.getDb(daoConfig);
+        try {
+            List<Requestaddress> requestaddresses = db.selector(Requestaddress.class)
+                    .findAll();
+            if (requestaddresses != null){
+                Requestaddress requestaddress = requestaddresses.get(0);
+                return requestaddress;
             }
 
         } catch (DbException e) {

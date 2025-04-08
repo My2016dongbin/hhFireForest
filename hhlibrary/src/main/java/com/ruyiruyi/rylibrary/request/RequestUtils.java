@@ -1,15 +1,21 @@
 package com.ruyiruyi.rylibrary.request;
 
-/**
- * Created by geyang on 2020/6/2.
- */
-
 public class RequestUtils {
-    public static String REQUEST__URL_HLJ = "http://123.138.59.82:10100/";//release
+    public static String IP = "112.6.162.92";//"10.10.2.23";//"58.58.115.2";//"218.201.180.118";
+    public static int PORT = 18444;///8011;//8444;//10100;
+//    public static String IP = "58.58.115.2";//"10.10.2.23";//"58.58.115.2";//"218.201.180.118";
+//    public static int PORT = 8444;///8011;//8444;//10100;
+//    public static String IP = "192.168.1.67";//"10.10.2.23";//"58.58.115.2";//"218.201.180.118";
+//    public static int PORT = 8444;///8011;//8444;//10100;
+    public static String REQUEST_URL_TEST = "http://192.168.1.131:10200/";//测试
 
-    public static String REQUEST_UPLOAD = REQUEST__URL_HLJ + "oa/api/workReport/fileUploadAnByNotToken" ;
-    public static String REQUEST_URL = REQUEST__URL_HLJ ;
-    public static String LOGIN_URL = REQUEST__URL_HLJ  ;
+    public static String REQUEST_URL = REQUEST_URL_BASE();
+    public static String LOGIN_URL = REQUEST_URL_BASE();
 
-    public static String REQUEST_QUANXIAN = REQUEST__URL_HLJ + "auth/";//release
+    public static String REQUEST_URL_BASE(){
+        return "http://" + IP + ":" + PORT + "/";//正式;
+    }
+    public static String REQUEST_QUANXIAN(){
+        return REQUEST_URL_BASE() + "auth/";
+    }
 }

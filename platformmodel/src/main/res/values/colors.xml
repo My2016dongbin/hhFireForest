@@ -14,6 +14,7 @@
     <color name="c6">#646464</color>
     <color name="c7">#383838</color>
     <color name="c8">#181818</color>
+    <color name="c8_">#181818</color>
     <color name="c9">#cc3333</color>
     <color name="c10">#e79e99</color>
     <color name="c11">#ffe8e7</color>
@@ -46,6 +47,7 @@
     <color name="semitransparent">#80000000</color>
     <color name="lightransparent">#a0000000</color>
     <color name="transparent">#00000000</color>
+    <color name="black">#FF000000</color>
     <color name="navpage">#FFE1E8EB</color>
     <color name="white">#FFFFFF</color>
     <color name="titlecolor">#ff2081D9</color>

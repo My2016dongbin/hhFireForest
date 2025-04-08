@@ -3,7 +3,6 @@ package com.haohai.platform.platformmodel.ui.fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,27 +11,29 @@ import android.widget.LinearLayout;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.haohai.platform.platformmodel.R;
 import com.haohai.platform.platformmodel.ui.acticity.AttendanceActivity;
+import com.haohai.platform.platformmodel.ui.acticity.CommandActivity;
+import com.haohai.platform.platformmodel.ui.acticity.HistoryLineActivity;
 import com.haohai.platform.platformmodel.ui.acticity.LeaveFlowApproveListActivity;
 import com.haohai.platform.platformmodel.ui.acticity.LeaveFlowListActivity;
+import com.haohai.platform.platformmodel.ui.acticity.UAVActivity;
+import com.haohai.platform.platformmodel.ui.acticity.WeatherActivity;
 import com.haohai.platform.platformmodel.ui.acticity.WorkReportListActivity;
 import com.haohai.platform.platformmodel.ui.fragment.base.HhBaseFragment;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
-import com.ruyiruyi.rylibrary.utils.CommonUtils;
 
 import rx.functions.Action1;
 
-/**
- * Created by geyang on 2020/7/2.
- */
-
 public class AppsFragment extends HhBaseFragment {
+    private LinearLayout ll_zhzz;
+    private LinearLayout ll_xhgj;
+    private LinearLayout ll_wrj;
+    private LinearLayout ll_tqxx;
     private LinearLayout kaoqinLayout;
     private LinearLayout huibaoLayout;
     private LinearLayout liuchengLayout;
     private LinearLayout daishenpiLayout;
-    private LinearLayout ll_1;
     private LinearLayout huoqingLayout;
     private LinearLayout renwuLayout;
     private LinearLayout yinhuanpaichaLayout;
@@ -54,36 +55,65 @@ public class AppsFragment extends HhBaseFragment {
 
 
     private void initView() {
+        ll_zhzz = ((LinearLayout) getView().findViewById(R.id.ll_zhzz));
+        ll_xhgj = ((LinearLayout) getView().findViewById(R.id.ll_xhgj));
+        ll_wrj = ((LinearLayout) getView().findViewById(R.id.ll_wrj));
+        ll_tqxx = ((LinearLayout) getView().findViewById(R.id.ll_tqxx));
         kaoqinLayout = ((LinearLayout) getView().findViewById(R.id.kaoqin_layout));
         huibaoLayout = ((LinearLayout) getView().findViewById(R.id.huibao_layout));
         liuchengLayout = ((LinearLayout) getView().findViewById(R.id.liucheng_layout));
         daishenpiLayout = ((LinearLayout) getView().findViewById(R.id.daishenpi_layout));
 
-        ll_1 = ((LinearLayout) getView().findViewById(R.id.ll_1));
         huoqingLayout = ((LinearLayout) getView().findViewById(R.id.huoqing_layout));
         renwuLayout = ((LinearLayout) getView().findViewById(R.id.renwu_layout));
         yinhuanpaichaLayout=((LinearLayout) getView().findViewById(R.id.yinhuanpaicha_layout));
-        initPermission();
-    }
-
-    private void initPermission() {
-        if(!CommonUtils.hasPermission(getActivity(),"app-application-btn-fire")){//TODO 应用权限
-            huoqingLayout.setVisibility(View.GONE);
-        }
-        if(!CommonUtils.hasPermission(getActivity(),"app-application-btn-danger")){
-            yinhuanpaichaLayout.setVisibility(View.GONE);
-        }
-        if(!CommonUtils.hasPermission(getActivity(),"app-application-btn-task")){
-            renwuLayout.setVisibility(View.GONE);
-        }
-        if((!CommonUtils.hasPermission(getActivity(),"app-application-btn-fire"))
-                && (!CommonUtils.hasPermission(getActivity(),"app-application-btn-danger"))
-                && (!CommonUtils.hasPermission(getActivity(),"app-application-btn-task"))){
-            ll_1.setVisibility(View.GONE);
-        }
     }
 
     private void bindView() {
+        /**
+         * 无人机
+         */
+        RxViewAction.clickNoDouble(ll_wrj)
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        Intent intent = new Intent(getActivity(), UAVActivity.class);
+                        startActivity(intent);
+                    }
+                });
+        /**
+         * 巡护轨迹
+         */
+        RxViewAction.clickNoDouble(ll_xhgj)
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        Intent intent = new Intent(getActivity(), HistoryLineActivity.class);
+                        startActivity(intent);
+                    }
+                });
+        /**
+         * 指挥作战
+         */
+        RxViewAction.clickNoDouble(ll_zhzz)
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        Intent intent = new Intent(getActivity(), CommandActivity.class);
+                        startActivity(intent);
+                    }
+                });
+        /**
+         * 天气信息
+         */
+        RxViewAction.clickNoDouble(ll_tqxx)
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        startActivity(intent);
+                    }
+                });
         /**
          * 火情上报
          */
@@ -91,20 +121,18 @@ public class AppsFragment extends HhBaseFragment {
                 .subscribe(new Action1<Void>() {
                     @Override
                     public void call(Void aVoid) {
-
                         ARouter.getInstance().build(RouteUtils.FireAdd)
                                 .withString("token",new DbConfig(getContext()).getUser().getToken())
                                 .navigation();
                     }
                 });
         /**
-         * 火情上报
+         * 隐患排查
          */
         RxViewAction.clickNoDouble(yinhuanpaichaLayout)
                 .subscribe(new Action1<Void>() {
                     @Override
                     public void call(Void aVoid) {
-
                         ARouter.getInstance().build(RouteUtils.HiddenDangerr)
                                 .withString("token",new DbConfig(getContext()).getUser().getToken())
                                 .navigation();

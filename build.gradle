@@ -2,49 +2,39 @@
 
 buildscript {
     repositories {
-        /*maven{ url'http://maven.aliyun.com/nexus/content/groups/public/'}
-        jcenter()
-        maven { url 'https://jitpack.io' }
-        maven {
-            url "https://repo.eclipse.org/content/repositories/paho-releases/"
-        }
-        google()*/
         maven { url 'https://jitpack.io' }
         maven {
             url "https://repo.eclipse.org/content/repositories/paho-releases/"
         }
         maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/jcenter' }
+//        maven { url 'https://maven.aliyun.com/repository/jcenter' }
         maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
         maven { url 'https://maven.aliyun.com/nexus/content/repositories/jcenter' }
-        jcenter() { url 'https://jcenter.bintray.com/' }
+//        jcenter() { url 'https://jcenter.bintray.com/' }
+
+        google()
+        jcenter()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:4.2.1"
+        classpath 'com.android.tools.build:gradle:4.2.1'
         classpath 'com.tencent.android.tpns:tpnsplugin:1.2.0'
         classpath 'me.tatarka:gradle-retrolambda:3.2.5'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
-
-        // tinkersupport插件, 其中lastest.release指拉取最新版本，也可以指定明确版本号，例如1.0.4
-//        classpath "com.tencent.bugly:tinker-support:1.1.5"
-
-        classpath "com.tencent.bugly:tinker-support:1.2.3"
     }
 }
 
 allprojects {
     repositories {
-        /*maven{ url'http://maven.aliyun.com/nexus/content/groups/public/'}
-        jcenter()
-        maven { url 'https://jitpack.io' }
-        google()*/
         maven { url 'https://jitpack.io' }
         maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/jcenter' }
+//        maven { url 'https://maven.aliyun.com/repository/jcenter' }
         maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
         maven { url 'https://maven.aliyun.com/nexus/content/repositories/jcenter' }
-        jcenter() { url 'https://jcenter.bintray.com/' }
+//        jcenter() { url 'https://jcenter.bintray.com/' }
+
+        google()
+        jcenter()
     }
 }
 
@@ -76,7 +66,7 @@ ext{
             cardview_v7      : 'com.android.support:cardview-v7:26.1.0',
             palette_v7       : 'com.android.support:palette-v7:26.1.0',
             recyclerview_v7 : 'com.android.support:recyclerview-v7:26.1.0',
-            design           : 'com.android.support:design:25.0.1',
+            design           : 'com.android.support:design:25.0.0',
             rxjava           : 'io.reactivex.rxjava2:rxjava:2.0.5',
             rxandroid        : 'io.reactivex:rxandroid:1.2.0',
             rxbinding        : 'com.jakewharton.rxbinding:rxbinding:0.4.0',

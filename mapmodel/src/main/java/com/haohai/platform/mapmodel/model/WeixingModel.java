@@ -473,4 +473,56 @@ public class WeixingModel {
     public void setFireListType(int fireListType) {
         this.fireListType = fireListType;
     }
+
+    @Override
+    public String toString() {
+        return "WeixingModel{" +
+                "id='" + id + '\'' +
+                ", groupId='" + groupId + '\'' +
+                ", longitude='" + longitude + '\'' +
+                ", latitude='" + latitude + '\'' +
+                ", observationFrequency='" + observationFrequency + '\'' +
+                ", observationDatetime='" + observationDatetime + '\'' +
+                ", strength='" + strength + '\'' +
+                ", strengthLevel='" + strengthLevel + '\'' +
+                ", landType='" + landType + '\'' +
+                ", woodland=" + woodland +
+                ", grassland=" + grassland +
+                ", farmland=" + farmland +
+                ", otherland=" + otherland +
+                ", area=" + area +
+                ", credibility=" + credibility +
+                ", pixelArea=" + pixelArea +
+                ", pixelNumber=" + pixelNumber +
+                ", country='" + country + '\'' +
+                ", countryCode='" + countryCode + '\'' +
+                ", province='" + province + '\'' +
+                ", provinceCode='" + provinceCode + '\'' +
+                ", city='" + city + '\'' +
+                ", cityCode='" + cityCode + '\'' +
+                ", county='" + county + '\'' +
+                ", countyCode='" + countyCode + '\'' +
+                ", formattedAddress='" + formattedAddress + '\'' +
+                ", lightImageAddress='" + lightImageAddress + '\'' +
+                ", irImageAddress='" + irImageAddress + '\'' +
+                ", satellite='" + satellite + '\'' +
+                ", datasourceFile='" + datasourceFile + '\'' +
+                ", fireNo='" + fireNo + '\'' +
+                ", districtNum='" + districtNum + '\'' +
+                ", isReal='" + isReal + '\'' +
+                ", isHandle='" + isHandle + '\'' +
+                ", isReport='" + isReport + '\'' +
+                ", handleUser='" + handleUser + '\'' +
+                ", handlePerson='" + handlePerson + '\'' +
+                ", isArchives='" + isArchives + '\'' +
+                ", handleDescription='" + handleDescription + '\'' +
+                ", startTime='" + startTime + '\'' +
+                ", endTime='" + endTime + '\'' +
+                ", isMajor='" + isMajor + '\'' +
+                ", latelyTime='" + latelyTime + '\'' +
+                ", isShowTime=" + isShowTime +
+                ", isShowLine=" + isShowLine +
+                ", fireListType=" + fireListType +
+                '}';
+    }
 }

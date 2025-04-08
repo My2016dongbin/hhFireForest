@@ -94,7 +94,6 @@ public class AttendanceActivity extends HhBaseActivity {
         initButton();
 
 
-
         String deviceID = PhoneUtils.getDeviceID();
         Log.e(TAG, "onCreate: " + deviceID);
     }
@@ -104,16 +103,16 @@ public class AttendanceActivity extends HhBaseActivity {
      */
     private void getAttendanceInfo() {
         Attendance attendance = dbConfig.getAttendance();
-        if (attendance == null){
+        if (attendance == null) {
             try {
-                db.saveOrUpdate(new Attendance("1",currentRiqi,"","",false,false));
+                db.saveOrUpdate(new Attendance("1", currentRiqi, "", "", false, false));
             } catch (DbException e) {
                 e.printStackTrace();
             }
-        }else {
-            if (!attendance.getRiqi().equals(currentRiqi)){      //不是当天的数据  初始化数据
+        } else {
+            if (!attendance.getRiqi().equals(currentRiqi)) {      //不是当天的数据  初始化数据
                 try {
-                    db.saveOrUpdate(new Attendance("1",currentRiqi,"","",false,false));
+                    db.saveOrUpdate(new Attendance("1", currentRiqi, "", "", false, false));
                 } catch (DbException e) {
                     e.printStackTrace();
                 }
@@ -127,35 +126,34 @@ public class AttendanceActivity extends HhBaseActivity {
         isQiandao = attendance.isQiandao();
         isQiantui = attendance.isQiantui();
         //更新按钮数据
-        if (isQiandao){     //已经签到
+        if (isQiandao) {     //已经签到
             qiandaoButton.setBackgroundResource(R.drawable.bg_button_hui);
             qiantuiButton.setBackgroundResource(R.drawable.bg_button_lan);
             qiandaoButton.setClickable(false);
-        }else {             //没有签到
+        } else {             //没有签到
             qiandaoButton.setBackgroundResource(R.drawable.bg_button_lan);
             qiantuiButton.setBackgroundResource(R.drawable.bg_button_hui);
             qiantuiButton.setClickable(false);
         }
 
-        if (isQiantui){
+        if (isQiantui) {
             qiantuiButton.setBackgroundResource(R.drawable.bg_button_hui);
             qiantuiButton.setClickable(false);
         }
-
 
 
         //更新时间数据
         if (attendance.isQiandao()) {
             qiandaoShijianView.setVisibility(View.VISIBLE);
             qiandaoShijianView.setText(attendance.getQiandaoShijian());
-        }else {
+        } else {
             qiandaoShijianView.setVisibility(View.GONE);
         }
 
-        if (attendance.isQiantui()){
+        if (attendance.isQiantui()) {
             qiantuishijianvView.setVisibility(View.VISIBLE);
             qiantuishijianvView.setText(attendance.getQiantuiShijian());
-        }else {
+        } else {
             qiantuishijianvView.setVisibility(View.GONE);
         }
     }
@@ -200,12 +198,12 @@ public class AttendanceActivity extends HhBaseActivity {
                 .subscribe(new Action1<Void>() {
                     @Override
                     public void call(Void aVoid) {
-                        startActivity(new Intent(getApplicationContext(),AttendanceRecordActivity.class));
+                        startActivity(new Intent(getApplicationContext(), AttendanceRecordActivity.class));
                     }
                 });
 
         infoDialog = new Dialog(this, R.style.ActionSheetDialogStyle);
-        infoInflate = LayoutInflater.from(this).inflate(R.layout.dialog_alarm_process,null);
+        infoInflate = LayoutInflater.from(this).inflate(R.layout.dialog_alarm_process, null);
         infoInflate.setMinimumWidth(10000);
 
         yuanyinEditView = ((EditText) infoInflate.findViewById(R.id.yuanyin_edit));
@@ -232,9 +230,9 @@ public class AttendanceActivity extends HhBaseActivity {
                             Toast.makeText(AttendanceActivity.this, "请输入说明情况", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        if (currentPost == 0){
+                        if (currentPost == 0) {
                             postQiandaoDateToService();
-                        }else {
+                        } else {
                             postQiantuiDataToService();
                         }
                     }
@@ -249,7 +247,7 @@ public class AttendanceActivity extends HhBaseActivity {
                     @Override
                     public void call(Void aVoid) {
 
-                        if (isQiandao){
+                        if (isQiandao) {
                             return;
                         }
                         getLocation();
@@ -265,7 +263,7 @@ public class AttendanceActivity extends HhBaseActivity {
                 .subscribe(new Action1<Void>() {
                     @Override
                     public void call(Void aVoid) {
-                        if (isQiantui || !isQiandao){       //已签退  未签到 都不可点击
+                        if (isQiantui || !isQiandao) {       //已签退  未签到 都不可点击
                             return;
                         }
                         getLocation();
@@ -277,21 +275,21 @@ public class AttendanceActivity extends HhBaseActivity {
     }
 
     private void postQiantuiDataToService() {
-        showDialogProgress(progressDialog,"签退中...");
+        showDialogProgress(progressDialog, "签退中...");
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date curDate = new Date(System.currentTimeMillis());
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("userId",new DbConfig(this).getUser().getId());
-            if (hasYuanyin){
-                jsonObject.put("cause",yuanyinEditView.getText().toString());
+            jsonObject.put("userId", new DbConfig(this).getUser().getId());
+            if (hasYuanyin) {
+                jsonObject.put("cause", yuanyinEditView.getText().toString());
             }
             // jsonObject.put("signInTime",formatter.format(curDate).replace(" ","T"));
-            jsonObject.put("signInTime","2020-06-10T08:28:59");
+            jsonObject.put("signInTime", "2020-06-10T08:28:59");
             JSONObject workPositionObj = new JSONObject();
-            workPositionObj.put("lat",Double.parseDouble(currentLatitude));
-            workPositionObj.put("lng",Double.parseDouble(currentLongitude));
-            jsonObject.put("workPosition",workPositionObj);
+            workPositionObj.put("lat", Double.parseDouble(currentLatitude));
+            workPositionObj.put("lng", Double.parseDouble(currentLongitude));
+            jsonObject.put("workPosition", workPositionObj);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -299,8 +297,7 @@ public class AttendanceActivity extends HhBaseActivity {
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "oa/api/attendance/nightSign");
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
-        params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
         Log.e(TAG, "postData:-- params--" + params);
         Log.e(TAG, "postData:-- jsonObject.toString()--" + jsonObject.toString());
         params.setConnectTimeout(10000);
@@ -311,8 +308,8 @@ public class AttendanceActivity extends HhBaseActivity {
                 try {
                     JSONObject jsonObject1 = new JSONObject(result);
                     String code = jsonObject1.getString("code");
-                    Log.e(TAG, "onSuccess:code= " + code );
-                    if (code.equals("200")){
+                    Log.e(TAG, "onSuccess:code= " + code);
+                    if (code.equals("200")) {
                         Toast.makeText(AttendanceActivity.this, "签退成功", Toast.LENGTH_SHORT).show();
                         progressDialog.dismiss();
                         infoDialog.dismiss();
@@ -332,22 +329,22 @@ public class AttendanceActivity extends HhBaseActivity {
                         }
                         initButton();
 
-                    }else if (code.equals("204")){
+                    } else if (code.equals("204")) {
                         hasYuanyin = true;
                         qingkuangView.setText("请说明早退原因:");
                         progressDialog.dismiss();
                         infoDialog.show();
-                    }else if ( code.equals("202")){
+                    } else if (code.equals("202")) {
                         hasYuanyin = true;
                         qingkuangView.setText("请说明签退范围之外原因:");
                         progressDialog.dismiss();
                         infoDialog.show();
-                    }else if ( code.equals("203")){
+                    } else if (code.equals("203")) {
                         hasYuanyin = true;
                         qingkuangView.setText("请说明早退原因及签退范围之外原因:");
                         progressDialog.dismiss();
                         infoDialog.show();
-                    }else if ( code.equals("205")){
+                    } else if (code.equals("205")) {
                         hasYuanyin = true;
                         qingkuangView.setText("请说明早退原因及签退范围之外原因:");
                         progressDialog.dismiss();
@@ -376,22 +373,22 @@ public class AttendanceActivity extends HhBaseActivity {
     }
 
     private void postQiandaoDateToService() {
-        showDialogProgress(progressDialog,"签到中...");
+        showDialogProgress(progressDialog, "签到中...");
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date curDate = new Date(System.currentTimeMillis());
         final JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("userId",new DbConfig(this).getUser().getId());
-            if (hasYuanyin){
-                jsonObject.put("cause",yuanyinEditView.getText().toString());
+            jsonObject.put("userId", new DbConfig(this).getUser().getId());
+            if (hasYuanyin) {
+                jsonObject.put("cause", yuanyinEditView.getText().toString());
             }
 
-             jsonObject.put("signInTime",formatter.format(curDate).replace(" ","T"));
-        //    jsonObject.put("signInTime","2020-06-10T08:28:59");
+            jsonObject.put("signInTime", formatter.format(curDate).replace(" ", "T"));
+            //    jsonObject.put("signInTime","2020-06-10T08:28:59");
             JSONObject workPositionObj = new JSONObject();
-            workPositionObj.put("lat",Double.parseDouble(currentLatitude));
-            workPositionObj.put("lng",Double.parseDouble(currentLongitude));
-            jsonObject.put("workPosition",workPositionObj);
+            workPositionObj.put("lat", Double.parseDouble(currentLatitude));
+            workPositionObj.put("lng", Double.parseDouble(currentLongitude));
+            jsonObject.put("workPosition", workPositionObj);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -399,8 +396,7 @@ public class AttendanceActivity extends HhBaseActivity {
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "oa/api/attendance/earlySign");
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
-        params.addHeader("Authorization","bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
         Log.e(TAG, "postData:-- params--" + params);
         Log.e(TAG, "postData:-- jsonObject.toString()--" + jsonObject.toString());
         params.setConnectTimeout(10000);
@@ -412,8 +408,8 @@ public class AttendanceActivity extends HhBaseActivity {
                 try {
                     JSONObject jsonObject1 = new JSONObject(result);
                     String code = jsonObject1.getString("code");
-                    Log.e(TAG, "onSuccess:code= " + code );
-                    if (code.equals("200")){
+                    Log.e(TAG, "onSuccess:code= " + code);
+                    if (code.equals("200")) {
                         Toast.makeText(AttendanceActivity.this, "签到成功", Toast.LENGTH_SHORT).show();
                         progressDialog.dismiss();
                         infoDialog.dismiss();
@@ -434,17 +430,17 @@ public class AttendanceActivity extends HhBaseActivity {
 
                         initButton();
 
-                    }else if ( code.equals("201")){
+                    } else if (code.equals("201")) {
                         hasYuanyin = true;
                         qingkuangView.setText("请说明迟到原因:");
                         progressDialog.dismiss();
                         infoDialog.show();
-                    }else if ( code.equals("202")){
+                    } else if (code.equals("202")) {
                         hasYuanyin = true;
                         qingkuangView.setText("请说明签到范围之外原因:");
                         progressDialog.dismiss();
                         infoDialog.show();
-                    }else if ( code.equals("203")){
+                    } else if (code.equals("203")) {
                         hasYuanyin = true;
                         qingkuangView.setText("请说明迟到原因及签到范围之外原因:");
                         progressDialog.dismiss();
@@ -483,6 +479,9 @@ public class AttendanceActivity extends HhBaseActivity {
 
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 0.0001f, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -491,12 +490,12 @@ public class AttendanceActivity extends HhBaseActivity {
                 try {
                     longitude = location.getLongitude();
                     latitude = location.getLatitude();
-                }catch (Exception e){
+                } catch (Exception e) {
 
                 }
 
-                currentLongitude = longitude+"";
-                currentLatitude = latitude+"";
+                currentLongitude = longitude + "";
+                currentLatitude = latitude + "";
                 //   Toast.makeText(MainActivity.this, "经纬度发生改变了,经度" +longitude + "纬度" +latitude, Toast.LENGTH_SHORT).show();
             }
 
@@ -532,7 +531,7 @@ public class AttendanceActivity extends HhBaseActivity {
             provider = LocationManager.GPS_PROVIDER;
         } else {
             // 当没有可用的位置提供器时，弹出Toast提示用户
-            Toast.makeText(this, "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Please Open Your GPS or Location Service", Toast.LENGTH_SHORT).show();
             return;
         }
 

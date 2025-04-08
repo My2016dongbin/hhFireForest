@@ -24,12 +24,11 @@ public class Organization {
     public String place_code;
     public String install_addr;
     public String snapSwitch;
-    public String rtspUrl;
 
     public Organization() {
     }
 
-    public Organization(String id, String org_code, String name, String unit_type, String device_code, String online_status, String is_start, String camera_type, String category, String device_type, String node_type, String channel_seq, String ip, String longitude, String latitude, String place_code, String install_addr, String snapSwitch,String rtspUrl) {
+    public Organization(String id, String org_code, String name, String unit_type, String device_code, String online_status, String is_start, String camera_type, String category, String device_type, String node_type, String channel_seq, String ip, String longitude, String latitude, String place_code, String install_addr, String snapSwitch) {
         this.id = id;
         this.org_code = org_code;
         this.name = name;
@@ -48,15 +47,6 @@ public class Organization {
         this.place_code = place_code;
         this.install_addr = install_addr;
         this.snapSwitch = snapSwitch;
-        this.rtspUrl = rtspUrl;
-    }
-
-    public String getRtspUrl() {
-        return rtspUrl;
-    }
-
-    public void setRtspUrl(String rtspUrl) {
-        this.rtspUrl = rtspUrl;
     }
 
     public String getId() {
@@ -203,3 +193,4 @@ public class Organization {
         this.snapSwitch = snapSwitch;
     }
 }
+

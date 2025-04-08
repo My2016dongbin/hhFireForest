@@ -1,14 +1,16 @@
 package com.haohai.platform.platformmodel.ui.fragment;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
@@ -17,19 +19,29 @@ import android.widget.Toast;
 
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.bumptech.glide.Glide;
+import com.google.gson.Gson;
 import com.haohai.platform.platformmodel.R;
+import com.haohai.platform.platformmodel.ui.model.PutMode;
+import com.kongzue.dialog.util.TextInfo;
+import com.kongzue.dialog.v2.MessageDialog;
+import com.kongzue.dialog.v2.SelectDialog;
+import com.ruyiruyi.rylibrary.base.AutoStartActivity;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.db.User;
 import com.haohai.platform.platformmodel.ui.fragment.base.HhBaseFragment;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
 import com.ruyiruyi.rylibrary.cell.ImageTextView;
+import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
-import com.ruyiruyi.rylibrary.utils.CommonUtils;
 import com.ruyiruyi.rylibrary.utils.glide.GlideCircleTransform;
 //import com.tencent.android.tpush.XGPushManager;
 
 import org.xutils.DbManager;
+import org.xutils.common.Callback;
 import org.xutils.ex.DbException;
+import org.xutils.http.HttpMethod;
+import org.xutils.http.RequestParams;
+import org.xutils.x;
 
 import rx.functions.Action1;
 
@@ -45,14 +57,17 @@ public class MyFragment extends HhBaseFragment {
     private User user;
     private TextView nameView;
     private Switch weizhiSwitch;
-    private Switch voiceSwitch;
-    private Boolean isShangchuan = true;;
+    private Boolean isShangchuan = true;
+    ;
     private LinearLayout gengxinLayout;
     private LinearLayout guanyuLayout;
-    private FrameLayout sswzLayout;
-    private FrameLayout voiceLayout;
+    private LinearLayout ll_mode;
+    private TextView text_mode;
     private TextView versionCode;
     private String appversionNum;
+    private Switch yuyinSwitch;
+    LinearLayout ll_autostart;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -71,41 +86,46 @@ public class MyFragment extends HhBaseFragment {
     }
 
 
-
     private void initView() {
+        ll_autostart = getView().findViewById(R.id.ll_autostart);
+        yuyinSwitch = (Switch) getView().findViewById(R.id.yuyin_switch);
         gengxinLayout = ((LinearLayout) getView().findViewById(R.id.gengxin_layout));
         guanyuLayout = ((LinearLayout) getView().findViewById(R.id.guanyu_layout));
 
+        ll_mode = ((LinearLayout) getView().findViewById(R.id.ll_mode));
+        text_mode = ((TextView) getView().findViewById(R.id.text_mode));
+
 
         weizhiSwitch = ((Switch) getView().findViewById(R.id.weizhi_switch));
-        if(user.isShangchuan){
-            weizhiSwitch.setChecked(true);
-        }else{
-            weizhiSwitch.setChecked(false);
-        }
-        voiceSwitch = ((Switch) getView().findViewById(R.id.voice_switch));
-        if(user.getIsyunyin()==1){
-            voiceSwitch.setChecked(true);
-        }else{
-            voiceSwitch.setChecked(false);
-        }
         outButtonView = ((TextView) getView().findViewById(R.id.out_login_button));
 
         touxiangImage = ((ImageView) getView().findViewById(R.id.touxiang_image));
         touxiangView = ((ImageTextView) getView().findViewById(R.id.touxiang_view));
         nameView = ((TextView) getView().findViewById(R.id.name_view));
         versionCode = ((TextView) getView().findViewById(R.id.version_code));
+        int isyunyin = user.getIsyunyin();
+        if (isyunyin == 1) {
+            yuyinSwitch.setChecked(true);
+        } else {
+            yuyinSwitch.setChecked(false);
+        }
         if (user.getHeadUrl().equals("null")) {
             touxiangImage.setVisibility(View.GONE);
             touxiangView.setVisibility(View.VISIBLE);
 
             touxiangView.setName(user.getFullName());
-        }else {
+        } else {
             touxiangImage.setVisibility(View.VISIBLE);
             touxiangView.setVisibility(View.GONE);
             Glide.with(getContext()).load(user.getHeadUrl()).transform(new GlideCircleTransform(getContext())).into(touxiangImage);
         }
         nameView.setText(user.getFullName());
+
+        if (user.getMode() == 1) {
+            text_mode.setText("指挥车模式");
+        }else{
+            text_mode.setText("护林员模式");
+        }
 
         PackageManager pm = getContext().getPackageManager();
         try {
@@ -114,7 +134,7 @@ public class MyFragment extends HhBaseFragment {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        versionCode.setText("版本信息："+appversionNum);
+        versionCode.setText("版本信息：" + appversionNum);
 
         RxViewAction.clickNoDouble(gengxinLayout)
                 .subscribe(new Action1<Void>() {
@@ -128,45 +148,66 @@ public class MyFragment extends HhBaseFragment {
                     @Override
                     public void call(Void aVoid) {
                         Toast.makeText(getContext(), "青岛浩海网络科技股份有限公司技术支持", Toast.LENGTH_SHORT).show();
-                   }
+                    }
                 });
-        sswzLayout= ((FrameLayout) getView().findViewById(R.id.sswz_layout));
-        voiceLayout= ((FrameLayout) getView().findViewById(R.id.voice_layout));
-        if(!CommonUtils.hasPermission(getActivity(),"app-setting-btn-position")){
-            sswzLayout.setVisibility(View.GONE);
-        }
 
     }
 
     private void bindView() {
-        voiceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        RxViewAction.clickNoDouble(ll_mode).subscribe(new Action1<Void>() {
+            @Override
+            public void call(Void aVoid) {
+                //初始化布局：
+                View customView = LayoutInflater.from(getActivity()).inflate(R.layout.layout_mode_type, null);
+                TextView user = customView.findViewById(R.id.user);
+                TextView driver = customView.findViewById(R.id.driver);
+                //启动对话框
+                MessageDialog messageDialog = MessageDialog.show(getActivity(), null, null, "取消", null)
+                        .setCanCancel(true)
+                        .setCustomView(customView);
+                user.setOnClickListener(v -> {
+                    changeMode(0);
+                    messageDialog.doDismiss();
+                });
+                driver.setOnClickListener(v -> {
+                    changeMode(1);
+                    messageDialog.doDismiss();
+                });
+            }
+        });
+        RxViewAction.clickNoDouble(ll_autostart).subscribe(new Action1<Void>() {
+            @Override
+            public void call(Void aVoid) {
+                startActivity(new Intent(getActivity(), AutoStartActivity.class));
+            }
+        });
+        yuyinSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                User user = new DbConfig(getContext()).getUser();
+                Log.e(TAG, "onCheckedChanged: " + user.getIsyunyin());
+                if (isChecked) {
+                    Log.e(TAG, "onCheckedChanged: setting1");
                     user.setIsyunyin(1);
-                    DbConfig dbConfig = new DbConfig(getContext());
-                    DbManager db = dbConfig.getDbManager();
-                    try {
-                        db.saveOrUpdate(user);
-                    } catch (DbException e) {
-                        e.printStackTrace();
-                    }
-                }else {
+                    Log.e(TAG, "getIsyunyin: " + user.getIsyunyin());
+                } else {
+                    Log.e(TAG, "onCheckedChanged: setting0");
                     user.setIsyunyin(0);
-                    DbConfig dbConfig = new DbConfig(getContext());
-                    DbManager db = dbConfig.getDbManager();
-                    try {
-                        db.saveOrUpdate(user);
-                    } catch (DbException e) {
-                        e.printStackTrace();
-                    }
+                    Log.e(TAG, "getIsyunyin: " + user.getIsyunyin());
+                }
+                DbConfig dbConfig = new DbConfig(getContext());
+                DbManager db = dbConfig.getDbManager();
+                try {
+                    db.saveOrUpdate(user);
+                } catch (DbException e) {
+                    e.printStackTrace();
                 }
             }
         });
         weizhiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     isShangchuan = true;
 
                     user.isShangchuan = true;
@@ -177,7 +218,7 @@ public class MyFragment extends HhBaseFragment {
                     } catch (DbException e) {
                         e.printStackTrace();
                     }
-                }else {
+                } else {
                     isShangchuan = false;
                     user.isShangchuan = false;
                     DbConfig dbConfig = new DbConfig(getContext());
@@ -209,9 +250,53 @@ public class MyFragment extends HhBaseFragment {
                         ARouter.getInstance().build(RouteUtils.OutLogin)
                                 .navigation();
                         getActivity().finish();
-                       // startActivity(new Intent(getContext(), LoginActivity.class));
+                        // startActivity(new Intent(getContext(), LoginActivity.class));
                     }
                 });
+    }
+
+    private void changeMode(int mode) {
+        RequestParams entity = new RequestParams(RequestUtils.REQUEST_URL + "auth/api/auth/user");
+        entity.addHeader("Authorization","bearer " + user.getToken());
+        entity.setBodyContent(new Gson().toJson(new PutMode(new DbConfig(getActivity()).getUser().getId(), mode)));
+        x.http().request(HttpMethod.PUT, entity, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG, "onSuccess: result " + result );
+                if (result.contains("200")) {
+                    Toast.makeText(getActivity(), "模式切换成功", Toast.LENGTH_SHORT).show();
+                    DbConfig dbConfig = new DbConfig(getActivity());
+                    User user = dbConfig.getUser();
+                    user.setMode(mode);
+                    DbManager db = dbConfig.getDbManager();
+                    try {
+                        db.saveOrUpdate(user);
+                    } catch (DbException e) {
+                        Log.e(TAG, "onSuccess: error " + e.toString() );
+                    }
+                    if (mode == 1) {
+                        text_mode.setText("指挥车模式");
+                    }else{
+                        text_mode.setText("护林员模式");
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
+            }
+        });
     }
 
     @Override

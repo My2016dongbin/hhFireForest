@@ -1,3 +1,4 @@
+/*
 package com.haohai.platform.fireforestplatform.ui.fragment.base;
 
 import android.os.Bundle;
@@ -9,14 +10,16 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.haohai.platform.fireforestplatform.R;
-import com.haohai.platform.mapmodel.fragment.MapNewFragment;
+import com.haohai.platform.mapmodel.fragment.MapFragment;
 import com.haohai.platform.mapmodel.fragment.WeixingFragment;
 import com.ruyiruyi.rylibrary.base.BaseFragment;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 
+*/
 /**
  * Created by geyang on 2020/11/6.
- */
+ *//*
+
 
 public class MapHomeFragment extends BaseFragment {
 
@@ -38,7 +41,7 @@ public class MapHomeFragment extends BaseFragment {
         FragmentManager fm = getChildFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
 
-        MapNewFragment mapFragment = new MapNewFragment();
+        MapFragment mapFragment = new MapFragment();
 
         WeixingFragment weixingFragment = new WeixingFragment();
         Bundle bundle = new Bundle();
@@ -52,3 +55,4 @@ public class MapHomeFragment extends BaseFragment {
 
     }
 }
+*/

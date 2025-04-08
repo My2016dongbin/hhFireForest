@@ -6,11 +6,16 @@
         android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true">
+        <activity android:name=".base.AutoStartActivity"/>
         <activity android:name=".base.BaseActivity" />
         <activity android:name=".base.BaseWebActivity" />
         <activity android:name=".base.BaseFragmentActivity" />
-        <activity android:name=".base.FullBaseActivity"></activity>
+        <activity android:name=".base.FullBaseActivity"/>
         <service android:name=".service.BackgroundMp3Service"/>
+        <service android:name=".service.WechatService" />
+        <activity android:name=".base.CallingActivity"/>
+        <activity android:name=".base.IMActivity" />
+        <activity android:name=".base.IMOnlineActivity" />
     </application>
 
 </manifest>

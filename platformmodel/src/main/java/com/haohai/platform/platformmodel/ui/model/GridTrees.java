@@ -9,38 +9,12 @@ public class GridTrees {
     String name;
     String no;
     String count;
-    String groupId;
     String cameraCount;
     String cameraOnlineCount;
     String level;
-    boolean last;
-    List<GridModel> monitorDetailVOs;
-
-    public boolean isLast() {
-        return last;
-    }
-
-    public void setLast(boolean last) {
-        this.last = last;
-    }
+    List<VOS> monitorDetailVOs;
 
     boolean status = false;
-
-    public boolean isStatus() {
-        return status;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
 
     public String getCameraCount() {
         return cameraCount;
@@ -66,12 +40,20 @@ public class GridTrees {
         this.level = level;
     }
 
-    public List<GridModel> getMonitorDetailVOs() {
+    public List<VOS> getMonitorDetailVOs() {
         return monitorDetailVOs;
     }
 
-    public void setMonitorDetailVOs(List<GridModel> monitorDetailVOs) {
+    public void setMonitorDetailVOs(List<VOS> monitorDetailVOs) {
         this.monitorDetailVOs = monitorDetailVOs;
+    }
+
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
     }
 
     public List<GridTrees> getChildren() {
@@ -131,7 +113,51 @@ public class GridTrees {
                 ", name='" + name + '\'' +
                 ", no='" + no + '\'' +
                 ", count='" + count + '\'' +
-                ", status='" + status + '\'' +
+                ", cameraCount='" + cameraCount + '\'' +
+                ", cameraOnlineCount='" + cameraOnlineCount + '\'' +
+                ", level='" + level + '\'' +
+                ", monitorDetailVOs=" + monitorDetailVOs +
+                ", status=" + status +
                 '}';
+    }
+
+    public static class VOS{
+        Monitor monitor;
+        List<Camera> cameraList;
+
+        public VOS(Monitor monitor, List<Camera> cameraList) {
+            this.monitor = monitor;
+            this.cameraList = cameraList;
+        }
+
+        public Monitor getMonitor() {
+            return monitor;
+        }
+
+        public void setMonitor(Monitor monitor) {
+            this.monitor = monitor;
+        }
+
+        public List<Camera> getCameraList() {
+            return cameraList;
+        }
+
+        public void setCameraList(List<Camera> cameraList) {
+            this.cameraList = cameraList;
+        }
+
+        @Override
+        public String toString() {
+            return "VOS{" +
+                    "monitor=" + monitor +
+                    ", cameraList=" + cameraList +
+                    '}';
+        }
+    }
+    public static class Monitor{
+
+    }
+    public static class Camera{
+
     }
 }

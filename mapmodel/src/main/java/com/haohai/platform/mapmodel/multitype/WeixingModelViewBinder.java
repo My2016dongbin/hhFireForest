@@ -48,7 +48,7 @@ public class WeixingModelViewBinder extends ItemViewProvider<WeixingModel, Weixi
         }
 
         if (weixingModel.getFireListType() == 1) {       //时间分类
-            holder.fireTimeText.setText(weixingModel.getObservationDatetime().replace("T", " ").substring(0, weixingModel.getObservationDatetime().indexOf(".")));
+            holder.fireTimeText.setText(weixingModel.getObservationDatetime().replace("T", " ")/*.substring(0, weixingModel.getObservationDatetime().indexOf("."))*/);
         } else {         //编号分类
             holder.fireTimeText.setText(weixingModel.getFireNo());
         }

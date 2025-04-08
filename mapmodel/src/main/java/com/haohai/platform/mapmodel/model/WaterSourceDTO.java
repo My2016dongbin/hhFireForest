@@ -10,25 +10,6 @@ public class WaterSourceDTO {
 
     //@ApiModelProperty(value = "资源类型")
     private String resourceType;
-    private String address;
-    private String name;
-    private String resourceName;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getResourceName() {
-        return resourceName;
-    }
-
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
-    }
 
     /**
      * 类型，1水囊2水罐 3水池 4水坝
@@ -93,14 +74,6 @@ public class WaterSourceDTO {
         this.otherPic = otherPic;
         this.checkState = checkState;
         this.position = position;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
     }
 
     public Positon getPosition() {

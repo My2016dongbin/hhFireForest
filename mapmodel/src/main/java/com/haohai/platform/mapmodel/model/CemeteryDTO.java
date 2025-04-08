@@ -9,25 +9,6 @@ public class CemeteryDTO {
     private String id;
 
     private String resourceType;
-    private String address;
-    private String name;
-    private String resourceName;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getResourceName() {
-        return resourceName;
-    }
-
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
-    }
 
     /**
      * 编号
@@ -105,14 +86,6 @@ public class CemeteryDTO {
         this.otherPic = otherPic;
         this.position = position;
         this.checkState = checkState;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
     }
 
     public Positon getPosition() {

@@ -1,5 +1,6 @@
 package com.haohai.platform.fireforestplatform.ui.service;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import com.ruyiruyi.rylibrary.db.User;
 public class BackgroundMp3Service extends Service {
     private static final String TAG = BackgroundMp3Service.class.getSimpleName();
     private String messageWeb;
+    @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {

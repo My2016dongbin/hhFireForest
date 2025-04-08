@@ -21,6 +21,7 @@ import com.haohai.platform.firelibrary.ui.multitype.FireMission;
 import com.haohai.platform.firelibrary.ui.multitype.FireMissionViewBinder;
 import com.ruyiruyi.rylibrary.cell.ActionBar;
 import com.ruyiruyi.rylibrary.db.DbConfig;
+import com.ruyiruyi.rylibrary.db.Requestaddress;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
 
@@ -53,6 +54,7 @@ public class FireMissionListActivity extends HhBaseActivity implements FireMissi
     private boolean isSearch = false;
     private  List<FireMission> fireMissionList;
     public static int ORDER_CHANGE = 113;
+    private Requestaddress requestaddress;
     @Autowired
     String token;
 
@@ -64,6 +66,7 @@ public class FireMissionListActivity extends HhBaseActivity implements FireMissi
         ARouter.getInstance().inject(this);
         progressDialog = new ProgressDialog(this);
         fireMissionList = new ArrayList<>();
+        requestaddress=new DbConfig(this).getRequestaddress();
         initView();
         isShowDialog = true;
         getDataFromService();
@@ -83,14 +86,16 @@ public class FireMissionListActivity extends HhBaseActivity implements FireMissi
          * oa/api/taskManagement/page  {"page":1,"limit":20,"dto":{}} post
          * 分页功能接口
          */
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "oa/api/taskManagement/listNew");
+        RequestParams params = new RequestParams(requestaddress.getRequstUrl() + "oa/api/taskManagement/listNew");
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
 
+        Log.e(TAG, "getDataFromService: NetworkType");
         Log.e(TAG, "getDataFromService: " + params);
         Log.e(TAG, "getDataFromService: " + jsonObject.toString());
+        Log.e(TAG, "getDataFromService: " + new DbConfig(this).getUser().getToken());
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
-        params.addHeader("NetworkType","Internet");//内网  Intranet互联网  Internet
+        params.addHeader("NetworkType", "Internet");
 
         params.setConnectTimeout(10000);
         x.http().post(params, new Callback.CommonCallback<String>() {
@@ -175,7 +180,6 @@ public class FireMissionListActivity extends HhBaseActivity implements FireMissi
                 currentPage = 0;
                 isShowDialog = false;
                 getDataFromService();*/
-                getDataFromService();
 
 
             }

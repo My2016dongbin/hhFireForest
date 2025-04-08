@@ -1,21 +1,13 @@
 package com.haohai.platform.fireforestplatform.ui.receiver;
 
-import android.annotation.SuppressLint;
-import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
 import android.sax.RootElement;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import com.haohai.platform.fireforestplatform.MainActivity;
-import com.haohai.platform.fireforestplatform.MyApplication;
-import com.haohai.platform.fireforestplatform.R;
 import com.haohai.platform.fireforestplatform.ui.service.BackgroundMp3Service;
-import com.haohai.platform.fireforestplatform.ui.utils.BadgeUtil;
+import com.ruyiruyi.rylibrary.bus.DoUpdate;
 import com.tencent.android.tpush.NotificationAction;
 import com.tencent.android.tpush.XGPushBaseReceiver;
 import com.tencent.android.tpush.XGPushClickedResult;
@@ -23,14 +15,9 @@ import com.tencent.android.tpush.XGPushRegisterResult;
 import com.tencent.android.tpush.XGPushShowedResult;
 import com.tencent.android.tpush.XGPushTextMessage;
 
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Objects;
-
-import static com.iflytek.speech.UtilityConfig.CHANNEL_ID;
 
 /**
  * Created by geyang on 2020/11/24.
@@ -69,9 +56,18 @@ public class TengxunReceiver extends XGPushBaseReceiver{
         Log.e(TAG, "onDeleteAccountResult: ");
     }
 
+    /**
+     * 消息透传
+     * @param context
+     * @param xgPushTextMessage
+     */
     @Override
     public void onTextMessage(Context context, XGPushTextMessage xgPushTextMessage) {
         Log.e(TAG, "onTextMessage: ");
+        String title = xgPushTextMessage.getTitle();
+        if(title!=null && title.contains("update")){
+            EventBus.getDefault().post(new DoUpdate());
+        }
     }
 
     /**
@@ -124,7 +120,6 @@ public class TengxunReceiver extends XGPushBaseReceiver{
 
         Intent intenta = new Intent(context,BackgroundMp3Service.class);
         context.startService(intenta);
-
-        BadgeUtil.setBadge(1);
+        Log.e(TAG, "" );
     }
 }

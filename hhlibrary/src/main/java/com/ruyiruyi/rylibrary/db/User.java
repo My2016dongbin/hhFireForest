@@ -1,7 +1,5 @@
 package com.ruyiruyi.rylibrary.db;
 
-import com.ruyiruyi.rylibrary.utils.CommonData;
-
 import org.xutils.db.annotation.Column;
 import org.xutils.db.annotation.Table;
 
@@ -39,6 +37,16 @@ public class User {
      */
     @Column(name = "fullname")
     private String fullName;
+    /**
+     * 经度
+     */
+    @Column(name = "longitude")
+    private double longitude;
+    /**
+     * 纬度
+     */
+    @Column(name = "latitude")
+    private double latitude;
     /**
      * 邮箱
      */
@@ -84,17 +92,6 @@ public class User {
      */
     @Column(name = "permission")
     private String permission;
-    /**
-     * 主页主模块权限
-     */
-    @Column(name = "hasmainmap")
-    private boolean hasMainMap;
-    @Column(name = "hasmainvideo")
-    private boolean hasMainVideo;
-    @Column(name = "hasmainapp")
-    private boolean hasMainApp;
-    @Column(name = "hasmainmy")
-    private boolean hasMainMy;
     /**
      * 组织id
      */
@@ -148,6 +145,9 @@ public class User {
     @Column(name = "headurl")
     public String headUrl;
 
+    @Column(name = "mode")
+    public int mode;
+
     @Column(name = "isshangchuan")
     public Boolean isShangchuan;
 
@@ -182,7 +182,7 @@ public class User {
         this.token = token;
     }
 
-    public User(String id, String userCode, String userName, String userPasswd, String fullName, String email, String phone, String sex, String entryTime, String birthday, String type, String isSuperAdmin, String comment, String groupId, String gridNo, String bkchar2, String money, String lockMoney, String groupName, String state, int isLogin, String token,String headUrl) {
+    public User(String id, String userCode, String userName, String userPasswd, String fullName, String email, String phone, String sex, String entryTime, String birthday, String type, String isSuperAdmin, String comment, String groupId, String gridNo, String bkchar2, String money, String lockMoney, String groupName, String state, int isLogin, String token,String headUrl,int mode) {
         this.id = id;
         this.userCode = userCode;
         this.userName = userName;
@@ -206,53 +206,30 @@ public class User {
         this.isLogin = isLogin;
         this.token = token;
         this.headUrl = headUrl;
+        this.mode = mode;
     }
 
-    public boolean isHasMainMap() {
-        return hasMainMap;
+    public int getMode() {
+        return mode;
     }
 
-    public void setHasMainMap(boolean hasMainMap) {
-        this.hasMainMap = hasMainMap;
+    public void setMode(int mode) {
+        this.mode = mode;
     }
 
-    public boolean isHasMainVideo() {
-        return hasMainVideo;
-    }
-
-    public void setHasMainVideo(boolean hasMainVideo) {
-        this.hasMainVideo = hasMainVideo;
-    }
-
-    public boolean isHasMainApp() {
-        return hasMainApp;
-    }
-
-    public void setHasMainApp(boolean hasMainApp) {
-        this.hasMainApp = hasMainApp;
-    }
-
-    public boolean isHasMainMy() {
-        return hasMainMy;
-    }
-
-    public void setHasMainMy(boolean hasMainMy) {
-        this.hasMainMy = hasMainMy;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
     public void addPermission(String permission) {
         if(Objects.equals(this.permission, "")){
             this.permission = this.permission + permission;
         }else{
             this.permission = this.permission + "," + permission;
         }
+    }
+    public String getPermission() {
+        return permission;
+    }
+
+    public void setPermission(String permission) {
+        this.permission = permission;
     }
 
     public int getIsyunyin() {
@@ -325,6 +302,22 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 
     public String getPhone() {
@@ -453,5 +446,38 @@ public class User {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", userCode='" + userCode + '\'' +
+                ", userName='" + userName + '\'' +
+                ", userPasswd='" + userPasswd + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", longitude=" + longitude +
+                ", latitude=" + latitude +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", sex='" + sex + '\'' +
+                ", entryTime='" + entryTime + '\'' +
+                ", birthday='" + birthday + '\'' +
+                ", type='" + type + '\'' +
+                ", isSuperAdmin='" + isSuperAdmin + '\'' +
+                ", comment='" + comment + '\'' +
+                ", groupId='" + groupId + '\'' +
+                ", gridNo='" + gridNo + '\'' +
+                ", bkchar2='" + bkchar2 + '\'' +
+                ", money='" + money + '\'' +
+                ", lockMoney='" + lockMoney + '\'' +
+                ", groupName='" + groupName + '\'' +
+                ", state='" + state + '\'' +
+                ", isLogin=" + isLogin +
+                ", token='" + token + '\'' +
+                ", headUrl='" + headUrl + '\'' +
+                ", isShangchuan=" + isShangchuan +
+                ", isyunyin=" + isyunyin +
+                '}';
     }
 }

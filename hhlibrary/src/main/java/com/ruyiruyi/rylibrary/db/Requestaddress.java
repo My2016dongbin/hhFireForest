@@ -10,7 +10,7 @@ public class Requestaddress {
     @Column(name = "id",isId = true,autoGen = true)
     private String id;
     @Column(name = "requsturl")
-    private String requstUrl = RequestUtils.REQUEST__URL_HLJ;
+    private String requstUrl = RequestUtils.REQUEST_URL_BASE();
     @Column(name = "ifinternet")
     private boolean ifinternet = true;
 
