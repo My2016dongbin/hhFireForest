@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AndroidLayouts">
+    <shared>
+      <config />
+    </shared>
+  </component>
+  <component name="AndroidLogFilters">
+    <option name="TOOL_WINDOW_LOG_LEVEL" value="error" />
+    <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
+    <option name="TOOL_WINDOW_REGEXP_FILTER" value="false" />
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8986f158-8764-40fc-b9ea-07116f378117" name="Default" comment="邹平市">
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[SerialNumber@534c0934]" />
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view>
+          <tree_state>
+            <expand />
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="GenerateSignedApkSettings">
+    <option name="KEY_STORE_PATH" value="$PROJECT_DIR$/app/sign.jks" />
+    <option name="KEY_ALIAS" value="haohai" />
+    <option name="REMEMBER_PASSWORDS" value="true" />
+    <option name="BUILD_TARGET_KEY" value="apk" />
+  </component>
+  <component name="Git.Settings">
+    <option name="PUSH_TAGS">
+      <GitPushTagMode>
+        <option name="argument" value="--follow-tags" />
+        <option name="title" value="Current Branch" />
+      </GitPushTagMode>
+    </option>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+  </component>
+  <component name="ProjectId" id="21tLYWN2msMzSXUqRKX7DaYFkVB" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ApkExportedModule" value="FireForestPlatform.app" />
+    <property name="DeviceAndSnapshotComboBoxAction.selectedDevice" value="SerialNumber@d6fc341" />
+    <property name="DeviceAndSnapshotComboBoxAction.selectionTime" value="2023-03-14T02:38:33.715408Z" />
+    <property name="ExportApk.ApkPath" value="$PROJECT_DIR$/app" />
+    <property name="ExportApk.BuildType" value="release" />
+    <property name="ExportApk.BuildVariants" value="xiaomiRelease" />
+    <property name="ExportApk.Flavors" value="xiaomi" />
+    <property name="ExportApk.SignV1" value="true" />
+    <property name="ExportApk.SignV2" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="android-custom-view/Applications/Android Studio.app/Contents/gradle/gradle-6.7.1/caches/modules-2/files-2.1/com.shuyu/GSYVideoPlayer/1.6.6/3589fd55a46a3df2661c9dbb18db733e5b8b8d38/GSYVideoPlayer-1.6.6-sources.jar!/com/shuyu/gsyvideoplayer/video/StandardGSYVideoPlayer.java_SELECTED" value="StandardGSYVideoPlayer" />
+    <property name="android-custom-view/Users/dongbin/Documents/pingdu 2/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/render/view/GSYVideoGLView.java_SELECTED" value="GSYVideoGLView" />
+    <property name="android-custom-view/Users/dongbin/Documents/pingdu 2/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/MultiSampleVideo.java_SELECTED" value="MultiSampleVideo" />
+    <property name="android-custom-view/Users/dongbin/Documents/pingdu 2/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/StandardGSYVideoPlayer.java_SELECTED" value="StandardGSYVideoPlayer" />
+    <property name="android-custom-view/Users/dongbin/Documents/pingdu 2/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/base/GSYBaseVideoPlayer.java_SELECTED" value="GSYBaseVideoPlayer" />
+    <property name="android-custom-view/Users/dongbin/Documents/pingdu 2/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/base/GSYTextureRenderView.java_SELECTED" value="GSYTextureRenderView" />
+    <property name="android-custom-view/Users/dongbin/Documents/pingdu 2/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/base/GSYVideoControlView.java_SELECTED" value="GSYVideoControlView" />
+    <property name="android-custom-view/Users/dongbin/Documents/pingdu 2/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/base/GSYVideoPlayer.java_SELECTED" value="GSYVideoPlayer" />
+    <property name="android-custom-view/Users/dongbin/Documents/pingdu 2/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/base/GSYVideoView.java_SELECTED" value="GSYVideoView" />
+    <property name="android-custom-view/Users/dongbin/Documents/pingdu/FireForestPlatform/hhlibrary/src/main/java/com/ruyiruyi/rylibrary/utils/image/LazyViewPager.java_SELECTED" value="LazyViewPager" />
+    <property name="android-custom-view/Users/dongbin/Documents/xihaian/FireForestPlatform/hhlibrary/src/main/java/com/ruyiruyi/rylibrary/cell/NoCanSlideViewPager.java_SELECTED" value="NoCanSlideViewPager" />
+    <property name="android-custom-view/Users/dongbin/Documents/zouping/FireForestPlatform/dsbridge/src/main/java/wendu/dsbridge/DWebView.java_SELECTED" value="DWebView" />
+    <property name="android-custom-view/Users/dongbin/Documents/zouping/FireForestPlatform/hhlibrary/src/main/java/com/ruyiruyi/rylibrary/https/NumberProgressBar.java_SELECTED" value="NumberProgressBar" />
+    <property name="android-custom-view/Users/dongbin/Documents/zouping/FireForestPlatform/hhlibrary/src/main/java/com/ruyiruyi/rylibrary/ui/viewpager/CustomBanner.java_SELECTED" value="CustomBanner" />
+    <property name="android-custom-view/Users/dongbin/Documents/zouping/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/GSYSampleADVideoPlayer.java_SELECTED" value="GSYSampleADVideoPlayer" />
+    <property name="android-custom-view/Users/dongbin/Documents/zouping/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/NormalGSYVideoPlayer.java_SELECTED" value="NormalGSYVideoPlayer" />
+    <property name="android-custom-view/Users/dongbin/Documents/zouping/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/StandardGSYVideoPlayer.java_SELECTED" value="StandardGSYVideoPlayer" />
+    <property name="android-custom-view/Users/dongbin/Documents/zouping/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/base/GSYBaseVideoPlayer.java_SELECTED" value="GSYBaseVideoPlayer" />
+    <property name="android-custom-view/Users/dongbin/Documents/zouping/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/base/GSYTextureRenderView.java_SELECTED" value="GSYTextureRenderView" />
+    <property name="android-custom-view/Users/dongbin/Documents/zouping/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/base/GSYVideoControlView.java_SELECTED" value="GSYVideoControlView" />
+    <property name="android-custom-view/Users/dongbin/Documents/zouping/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/base/GSYVideoPlayer.java_SELECTED" value="GSYVideoPlayer" />
+    <property name="android-custom-view/Users/dongbin/Documents/zouping/FireForestPlatform/videolibrary/src/main/java/com/haohai/ledge/videolibrary/video/base/GSYVideoView.java_SELECTED" value="GSYVideoView" />
+    <property name="android-custom-view/Users/dongbin/Library/Android/sdk/sources/android-26/android/widget/ImageView.java_SELECTED" value="ImageView" />
+    <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="device.picker.selection" value="S2N6R21928000888" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="settings.editor.selected.configurable" value="AndroidSdkUpdater" />
+    <property name="show.migrate.to.gradle.popup" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/hhlibrary/src/main/java/com/ruyiruyi/rylibrary/bus" />
+      <recent name="$PROJECT_DIR$/hhlibrary/src/main/res/raw" />
+      <recent name="$PROJECT_DIR$/platformmodel/src/main/res/drawable-xhdpi" />
+      <recent name="$PROJECT_DIR$/hhlibrary/src/main/res/mipmap-xhdpi" />
+      <recent name="$PROJECT_DIR$/hhlibrary/src/main/res/layout" />
+    </key>
+    <key name="android.template.packageName">
+      <recent name="com.haohai.platform.mapmodel.activity" />
+    </key>
+    <key name="android.template.-1080843178">
+      <recent name="com.ruyiruyi.rylibrary.base" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/videolibrary/libs" />
+      <recent name="$PROJECT_DIR$/hhlibrary" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.ruyiruyi.rylibrary.bus" />
+      <recent name="com.ruyiruyi.rylibrary.service" />
+      <recent name="com.ruyiruyi.rylibrary.utils" />
+      <recent name="com.ruyiruyi.rylibrary.base" />
+      <recent name="com.haohai.platform.platformmodel.ui.model" />
+    </key>
+    <key name="android.template.-198328788">
+      <recent name="com.ruyiruyi.rylibrary.base" />
+    </key>
+    <key name="android.template.-270508921">
+      <recent name="com.haohai.platform.firelibrary.ui.activity" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Android App.app">
+    <configuration name="&lt;template&gt;" type="Applet" default="true" selected="false">
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+    </configuration>
+    <configuration default="true" type="TestNGTestDiscovery" factoryName="TestNG Test Discovery" changeList="All">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="SUITE_NAME" />
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="METHOD_NAME" />
+      <option name="GROUP_NAME" />
+      <option name="TEST_OBJECT" value="CLASS" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="OUTPUT_DIRECTORY" />
+      <option name="ANNOTATION_TYPE" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <option name="USE_DEFAULT_REPORTERS" value="false" />
+      <option name="PROPERTIES_FILE" />
+      <envs />
+      <properties />
+      <listeners />
+      <method />
+    </configuration>
+    <configuration name="&lt;template&gt;" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" default="true" selected="false">
+      <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m -ea" />
+    </configuration>
+    <configuration default="true" type="AndroidJUnit" factoryName="Android JUnit">
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
+      <module name="FireForestPlatform.app" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="" />
+      <option name="MODE" value="default_activity" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="SKIP_NOOP_APK_INSTALLATIONS" value="true" />
+      <option name="FORCE_STOP_RUNNING_APP" value="true" />
+      <option name="TARGET_SELECTION_MODE" value="SHOW_DIALOG" />
+      <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
+      <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+      </Hybrid>
+      <Java />
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Sample Java Methods" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY_CLASS" value="" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="appnaturalresource" type="AndroidRunConfigurationType" factoryName="Android App">
+      <module name="FireForestPlatform.appnaturalresource" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="" />
+      <option name="MODE" value="default_activity" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="SKIP_NOOP_APK_INSTALLATIONS" value="true" />
+      <option name="FORCE_STOP_RUNNING_APP" value="true" />
+      <option name="TARGET_SELECTION_MODE" value="SHOW_DIALOG" />
+      <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
+      <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+      </Hybrid>
+      <Java />
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Sample Java Methods" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY_CLASS" value="" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application">
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="TestNG">
+      <option name="TEST_OBJECT" value="CLASS" />
+      <option name="VM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <properties />
+      <listeners />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Android App.app" />
+      <item itemvalue="Android App.appnaturalresource" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8986f158-8764-40fc-b9ea-07116f378117" name="Default" comment="" />
+      <created>1638755371487</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1638755371487</updated>
+    </task>
+    <task id="LOCAL-00001" summary="base">
+      <created>1638755979312</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1638755979313</updated>
+    </task>
+    <task id="LOCAL-00002" summary="修复任务列表筛选，任务详情UI调整">
+      <created>1638837230657</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1638837230658</updated>
+    </task>
+    <task id="LOCAL-00003" summary="VPN计时断开，单点登录">
+      <created>1646095196379</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1646095196381</updated>
+    </task>
+    <task id="LOCAL-00004" summary="西海岸项目base">
+      <created>1646097199880</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1646097199880</updated>
+    </task>
+    <task id="LOCAL-00005" summary="西海岸项目 一期测试">
+      <created>1647594399835</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1647594399835</updated>
+    </task>
+    <task id="LOCAL-00006" summary="截屏、录像">
+      <created>1657777156452</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1657777156453</updated>
+    </task>
+    <task id="LOCAL-00007" summary="邹平市">
+      <created>1667550743034</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1667550743035</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
+    <servers />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.js" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
+    <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+      <collection />
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="base" />
+    <MESSAGE value="修复任务列表筛选，任务详情UI调整" />
+    <MESSAGE value="VPN计时断开，单点登录" />
+    <MESSAGE value="西海岸项目base" />
+    <MESSAGE value="西海岸项目 一期测试" />
+    <MESSAGE value="截屏、录像" />
+    <MESSAGE value="邹平市" />
+    <option name="LAST_COMMIT_MESSAGE" value="邹平市" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="418" y="192" width="592" height="490" key="find.popup" timestamp="1721877023396">
+      <screen x="0" y="25" width="1440" height="822" />
+    </state>
+    <state x="418" y="192" width="592" height="490" key="find.popup/0.25.1440.822/-1920.-55.1920.1055@0.25.1440.822" timestamp="1721877023396" />
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ArtifactsStructureConfigurable.UI">
+        <settings>
+          <artifact-editor />
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="FacetStructureConfigurable.UI">
+        <settings>
+          <last-edited>Invalid</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="GlobalLibrariesConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="JdkListConfigurable.UI">
+        <settings>
+          <last-edited>1.8</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ModuleStructureConfigurable.UI">
+        <settings>
+          <last-edited>app</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+                <option value="0.6" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectLibrariesConfigurable.UI">
+        <settings>
+          <last-edited>adapters-1.3.1</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>

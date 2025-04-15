@@ -1,0 +1,11 @@
+<resources>
+
+    <string name="app_name">邹平市森林防火预警平台</string>
+    <string name="app_title">邹平市森林防火预警平台</string>
+<!--    <string name="app_name">小店森林防火预警平台</string>-->
+<!--    <string name="app_title">小店森林防火预警平台</string>-->
+    <string name="yun_xin_key">e814a08c4bd96022aaa7bd9972f52637</string>
+
+    <!--    <string name="app_name">黑龙江森林防火指挥平台</string>
+    <string name="app_title">黑龙江森林防火指挥平台</string>  -->
+</resources>
