@@ -1,0 +1,3 @@
+include ':app', ':hhlibrary', ':platformmodel', ':videolibrary', ':firemodel', ':mapmodel', ':chatimmodel'
+include ':dsbridge'
+include ':filepicker'

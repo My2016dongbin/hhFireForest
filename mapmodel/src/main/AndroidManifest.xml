@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.haohai.platform.mapmodel">
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <application
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:supportsRtl="true">
+        <activity android:name=".activity.OrderPlanChooseResActivity"></activity>
+        <activity android:name=".activity.CheckPlanAndFilterActivity" />
+        <activity android:name=".activity.HistoryZZActivity" />
+        <activity android:name=".activity.PicActivity" />
+        <activity android:name=".activity.CheckDetailActivity" />
+        <activity android:name=".activity.HistoryActivity" />
+        <activity android:name=".activity.CheckplanActivity" />
+        <activity android:name=".activity.WeixingActivity" />
+        <activity android:name=".activity.ResourceAddActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity android:name=".activity.resadding.BaiduiMapActivity" />
+        <activity
+            android:name=".activity.PlayerActivity"
+            android:configChanges="keyboard|orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Full" />
+        <activity
+            android:name=".activity.PlayerRtspActivity"
+            android:configChanges="keyboard|orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Full" />
+        <activity android:name=".activity.ResourceCheckActivity" />
+        <activity android:name=".activity.ResourcezhengzhiActivity" />
+        <activity android:name=".activity.ResourceshenheActivity" />
+        <activity android:name=".activity.CompresiveCheckActivity" />
+        <activity android:name=".activity.AddStationActivity" />
+        <activity android:name=".activity.ComprehensivecheckListActivity" />
+        <activity android:name=".activity.ResourcesearchListActivity" />
+        <activity android:name=".activity.ResourceSearchActivity" />
+    </application>
+
+</manifest>
