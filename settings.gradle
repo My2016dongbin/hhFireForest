@@ -1,0 +1,2 @@
+include ':app', ':hhlibrary', ':platformmodel', ':videolibrary', ':firemodel', ':mapmodel', ':appnaturalresource'
+include ':dsbridge'
