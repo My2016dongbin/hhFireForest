@@ -1,0 +1,1 @@
+include ':app', ':hhlibrary', ':platformmodel', ':videolibrary', ':firemodel', ':mapmodel', ':chatimmodel', ':appnaturalresource'
