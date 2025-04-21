@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <View
+        android:background="@color/theme_primary"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"/>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:background="@color/theme_primary"
+        android:layout_height="60dp">
+        <ImageView
+            android:id="@+id/iv_back"
+            android:src="@drawable/ic_back"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="20dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"/>
+        <TextView
+            android:text="设置"
+            android:textSize="20dp"
+            android:textColor="@color/white"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_info"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:gravity="center_vertical"
+        android:layout_height="50dp">
+
+        <ImageView
+            android:src="@drawable/userinfos"
+            android:layout_width="26dp"
+            android:layout_height="26dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="5dp"
+            android:text="个人信息"
+            android:textColor="@color/c7"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+    <View
+        android:background="@color/gray1"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"/>
+    <LinearLayout
+        android:id="@+id/ll_password"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:gravity="center_vertical"
+        android:layout_height="45dp">
+
+        <ImageView
+            android:src="@drawable/changepass"
+            android:layout_width="26dp"
+            android:layout_height="26dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="5dp"
+            android:text="修改密码"
+            android:textColor="@color/c7"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+    <View
+        android:background="@color/gray1"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"/>
+
+    <LinearLayout
+        android:id="@+id/ll_exit"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:gravity="center_vertical"
+        android:layout_height="45dp">
+
+        <ImageView
+            android:src="@drawable/exits"
+            android:layout_width="26dp"
+            android:layout_height="26dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="5dp"
+            android:text="退出登录"
+            android:textColor="@color/c7"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+    <View
+        android:background="@color/gray1"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/tv_version"
+            android:gravity="bottom"
+            android:textSize="12sp"
+            android:textColor="@color/c6"
+            android:layout_marginBottom="20dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </FrameLayout>
+
+</LinearLayout>

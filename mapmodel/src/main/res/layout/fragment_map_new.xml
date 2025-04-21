@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:visibility="gone"
+        android:background="@color/theme_primary_top">
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="地图"
+            android:textColor="@color/c12"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/map_list_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="10dp"
+            android:padding="10dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_list_button" />
+
+
+        <ImageView
+            android:id="@+id/map_add_view"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical|right"
+            android:layout_marginRight="20dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_jia" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!--  <wendu.dsbridge.DWebView
+            android:id="@+id/dwebview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />-->
+
+        <com.baidu.mapapi.map.MapView
+            android:id="@+id/baidu_mapview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="40dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+
+
+            <!--设置-->
+            <LinearLayout
+                android:id="@+id/ll_signsetting"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:id="@+id/ll_setting"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/tv_hl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="护林"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/tv_gl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="管理"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+            <!--考勤记录-->
+            <LinearLayout
+                android:id="@+id/ll_signlist"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/ll_kqjl"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_kq"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="考勤"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+            <!--事件上报-->
+            <LinearLayout
+                android:id="@+id/ll_upload"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/ll_sjsb"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_shijian"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="事件"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/tv_sb"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="上报"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+            <!--卫星-->
+            <LinearLayout
+                android:id="@+id/weixing_layout"
+                android:layout_width="60dp"
+                android:layout_marginTop="10dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/weixing_button"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:gravity="center"
+                    android:text="卫星"
+                    android:textColor="@color/c12"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:id="@+id/weixing_button_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/weixing_list_view"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="火情"
+                            android:textColor="@color/c12"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="列表"
+                            android:textColor="@color/c12"
+                            android:textSize="16sp" />
+
+
+                    </LinearLayout>
+                    <!--<TextView
+                        android:id="@+id/weixing_list_view"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:gravity="center"
+                        android:text="火情     列表"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />-->
+                    <LinearLayout
+                        android:id="@+id/weixing_chaxun_ciew"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="火情"
+                            android:textColor="@color/c12"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="查询"
+                            android:textColor="@color/c12"
+                            android:textSize="16sp" />
+
+
+                    </LinearLayout>
+                    <!--<TextView
+                        android:id="@+id/weixing_chaxun_ciew"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:gravity="center"
+                        android:text="火情     查询"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />-->
+                    <LinearLayout
+                        android:id="@+id/weixing_shezhi_view"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="火情"
+                            android:textColor="@color/c12"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="设置"
+                            android:textColor="@color/c12"
+                            android:textSize="16sp" />
+
+
+                    </LinearLayout>
+                    <!--<TextView
+                        android:id="@+id/weixing_shezhi_view"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:gravity="center"
+                        android:text="卫星     设置"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />-->
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <!--计划烧除-->
+            <LinearLayout
+                android:id="@+id/ll_flame"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="计划"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="烧除"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+            <!--巡护轨迹-->
+            <LinearLayout
+                android:id="@+id/ll_line"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="巡护"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="轨迹"
+                        android:textColor="@color/c12"
+                        android:textSize="16sp" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/ziyuan_layout"
+                android:layout_width="50dp"
+                android:visibility="gone"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/ziyuan_button"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:gravity="center"
+                    android:text="资源"
+                    android:textColor="@color/c12"
+                    android:textSize="15sp"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/ziyuan_button_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/retype_view"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:gravity="center"
+                        android:text="资源"
+                        android:textColor="@color/c12"
+                        android:textSize="14sp" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/onebady_layout"
+                android:layout_width="50dp"
+                android:visibility="gone"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/onebody_button"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:gravity="center"
+                    android:text="报警     列表"
+                    android:textColor="@color/c12"
+                    android:textSize="15sp"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/onebody_button_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/onebody_view"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:gravity="center"
+                        android:text="报警"
+                        android:textColor="@color/c12"
+                        android:textSize="14sp" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ddrw_layout"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/ddrw_button"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:gravity="center"
+                    android:text="任务"
+                    android:textColor="@color/c12"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/statistics_layout"
+                android:layout_width="50dp"
+                android:visibility="gone"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_map_button"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/statistics_button"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:gravity="center"
+                    android:text="统计"
+                    android:textColor="@color/c12"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <!--当前位置-->
+            <FrameLayout
+                android:id="@+id/fl_cu"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_map_button2"
+                android:layout_width="44dp"
+                android:layout_height="44dp">
+                <ImageView
+                    android:layout_gravity="center"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/cu"/>
+            </FrameLayout>
+        </LinearLayout>
+
+
+        <Button
+            android:id="@+id/button_near"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="50dp"
+            android:text=" + "
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/button_far"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:text=" - "
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/warn_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/ic_warning"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/order_warn_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/ic_warning"
+            android:visibility="gone" />
+
+        <!--签到等功能按钮-->
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="65dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_sign"
+                android:layout_width="170dp"
+                android:layout_height="65dp"
+                android:background="@drawable/bg_sign"
+                android:gravity="center"
+                android:text="签到"
+                android:textColor="@color/black"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_sign_out"
+                android:layout_width="100dp"
+                android:layout_height="55dp"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="bottom"
+                android:layout_toRightOf="@+id/tv_sign"
+                android:background="@drawable/bg_sign_out"
+                android:gravity="center"
+                android:text="签退"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tv_setting"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:visibility="gone"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="6dp"
+                android:layout_marginBottom="3dp"
+                android:layout_toRightOf="@+id/tv_sign_out"
+                android:background="@drawable/exitings" />
+        </RelativeLayout>
+        <!--加载动画-->
+        <com.ruyiruyi.rylibrary.utils.DYLoadingView
+            android:id="@+id/dy3"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#33000000"
+            app:color1="#FF00EEEE"
+            app:duration="350"
+            app:pauseDuration="10"
+            app:color2="#FFFF4040"/>
+    </FrameLayout>
+</LinearLayout>

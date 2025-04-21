@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <View
+            android:background="@color/theme_primary"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"/>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:background="@color/theme_primary"
+            android:layout_height="60dp">
+            <ImageView
+                android:id="@+id/iv_back"
+                android:src="@drawable/ic_back"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="20dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+            <TextView
+                android:text="事件上报列表"
+                android:textSize="20dp"
+                android:textColor="@color/white"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <ImageView
+                android:id="@+id/iv_right"
+                android:src="@drawable/ic_add_grey"
+                android:layout_gravity="center_vertical|right"
+                android:layout_marginRight="10dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"/>
+        </FrameLayout>
+    </LinearLayout>
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refresh_layout"
+        android:layout_marginTop="80dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/listview"
+            android:background="@color/c1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <!--加载动画-->
+    <com.ruyiruyi.rylibrary.utils.DYLoadingView
+        android:id="@+id/dy3"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#33000000"
+        app:color1="#FF00EEEE"
+        app:duration="350"
+        app:pauseDuration="10"
+        app:color2="#FFFF4040"/>
+
+</FrameLayout>

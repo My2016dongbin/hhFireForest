@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fl_add"
+    android:layout_width="105dp"
+    android:layout_height="105dp">
+
+    <ImageView
+        android:id="@+id/iv_show"
+        android:paddingRight="5dp"
+        android:paddingTop="5dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:scaleType="fitXY"
+        android:layout_gravity="center"/>
+    <ImageView
+        android:id="@+id/iv_delete"
+        android:src="@drawable/icon_delete"
+        android:layout_gravity="end"
+        android:layout_width="20dp"
+        android:layout_height="20dp"/>
+
+</FrameLayout>
