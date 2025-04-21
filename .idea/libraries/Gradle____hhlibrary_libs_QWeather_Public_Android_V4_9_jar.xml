@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: ./hhlibrary/libs/QWeather_Public_Android_V4.9.jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/hhlibrary/libs/QWeather_Public_Android_V4.9.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
