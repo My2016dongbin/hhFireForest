@@ -1,5 +1,6 @@
 package com.haohai.platform.mapmodel.multitype;
 
+import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -10,7 +11,9 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.haohai.platform.mapmodel.R;
+import com.netease.lava.base.util.CommonUtils;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
+import com.ruyiruyi.rylibrary.utils.CommonUtil;
 
 import me.drakeet.multitype.ItemViewProvider;
 import rx.functions.Action1;
@@ -34,6 +37,7 @@ public class OneBodyFireViewBinder extends ItemViewProvider<OneBodyFire, OneBody
         return new ViewHolder(root);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onBindViewHolder(@NonNull ViewHolder holder, @NonNull final OneBodyFire oneBodyFire) {
         holder.textView1.setText("监控点名称 : " + oneBodyFire.getName());
@@ -43,7 +47,7 @@ public class OneBodyFireViewBinder extends ItemViewProvider<OneBodyFire, OneBody
         }catch (Exception e){
             holder.textView2.setText(str);
         }
-        holder.textView3.setText("经度、纬度 : " + oneBodyFire.getAlarmLongitude() +"、" + oneBodyFire.getAlarmLatitude());
+        holder.textView3.setText("经度、纬度 : " + CommonUtil.parseNull(oneBodyFire.getAlarmLongitude()+"、"+oneBodyFire.getAlarmLatitude(),"无"));
         if (oneBodyFire.getAddress()==null) {
             holder.textView4.setVisibility(View.GONE);
         }else {

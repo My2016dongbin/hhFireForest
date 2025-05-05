@@ -10,6 +10,8 @@ import android.util.Log;
 
 import com.ruyiruyi.rylibrary.db.DbConfig;
 
+import java.util.Objects;
+
 /**
  * Created by qc
  * on 2022/8/4.
@@ -132,5 +134,12 @@ public class CommonUtil {
 
         return intent;
 
+    }
+
+    public static String parseNull(String value, String def) {
+        if(value == null || Objects.equals(value, "null") || value.contains("null")){
+            return def;
+        }
+        return value;
     }
 }

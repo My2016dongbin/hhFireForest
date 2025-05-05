@@ -127,6 +127,7 @@ import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
 import com.ruyiruyi.rylibrary.service.BackgroundMp3Service;
 import com.ruyiruyi.rylibrary.utils.CommonData;
+import com.ruyiruyi.rylibrary.utils.CommonUtil;
 import com.ruyiruyi.rylibrary.utils.DYLoadingView;
 import com.ruyiruyi.rylibrary.utils.IntegerDefault0Adapter;
 import com.ruyiruyi.rylibrary.utils.LatLngChangeNew;
@@ -427,6 +428,8 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     private TextView tv_sign_out;
     private TextView tv_walk;
     private LinearLayout im_layout;
+    private String isHandle = "0";//"0"、""未处理；"1"、"1"真实；"1"、"0"疑似；""、""全部
+    private String isReal = "";//"0"、""未处理；"1"、"1"真实；"1"、"0"疑似；""、""全部
 
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
@@ -513,7 +516,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         currentFireFindTime = 3;
 
         getWeixingDataFromSetvice();
-        getonebodyDataFromSetvice(2);
+
+
+        fenleiTextView.setText("未处理");
+        getonebodyDataFromSetvice();
         getResourcesListFromService();
 
 
@@ -1290,7 +1296,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     @Override
                     public void call(Void aVoid) {
                         // removeMarkerBaiduMap();
-                        initOneBodyFireData();
+                        //initOneBodyFireData();//2025
                         onebodyListDialog.show();
                     }
                 });
@@ -1347,17 +1353,21 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     }
 
     private void initOneBodyFlyBaiduMap() {
-        double[] position = LatLngChangeNew.calWGS84toBD09(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
-        com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                position[0], position[1]);
-        MapStatus.Builder builder = new MapStatus.Builder();
-        builder.target(ll).zoom(15);
-        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+        try{
+            double[] position = LatLngChangeNew.calWGS84toBD09(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
+            com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
+                    position[0], position[1]);
+            MapStatus.Builder builder = new MapStatus.Builder();
+            builder.target(ll).zoom(15);
+            mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+        }catch (Exception e){
+            //
+        }
     }
 
     private void showOneBodyFenleiChangeDailog() {
         //默认选中第一个  //0疑似火情  1是真实火情  2是未处理 3是全部
-        final String[] items = {"全部", "未处理", "真实火点"};
+        final String[] items = {"全部", "未处理", "真实火点", "疑似火点"};
         isReleasList = 3;
         builder = new AlertDialog.Builder(getContext()).setIcon(R.mipmap.ic_launcher).setTitle("火情分类")
                 .setSingleChoiceItems(items, choose1, new DialogInterface.OnClickListener() {
@@ -1370,9 +1380,11 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Log.e(TAG, "onClick: choose1=" + choose1);
-                        oneBodyFireFenleiList.clear();
-                        /*if (choose1 == 3) {
+                        //oneBodyFireFenleiList.clear();//2025
+                        if (choose1 == 3) {
                             isReleasList = 0;
+                            isHandle = "1";
+                            isReal = "0";
                             fenleiTextView.setText("疑似火点");
                             for (int j = 0; j < oneBodyFireList.size(); j++) {
                                 if (oneBodyFireList.get(j).getIsReal()!=null) {
@@ -1383,10 +1395,13 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                                 }
                             }
                           //  currentPage = 1;
-                            initOneBodyFireData();
-                        } else */
+                            removeMarkerBaiduMap();
+                            getonebodyDataFromSetvice();
+                        } else
                         if (choose1 == 2) {
                             isReleasList = 1;
+                            isHandle = "1";
+                            isReal = "1";
                             fenleiTextView.setText("真实火点");
                             for (int j = 0; j < oneBodyFireList.size(); j++) {
                                 if (oneBodyFireList.get(j).getIsReal() != null) {
@@ -1398,8 +1413,11 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                             }
                             //   currentPage = 1;
                             removeMarkerBaiduMap();
+                            getonebodyDataFromSetvice();
                         } else if (choose1 == 1) {
                             isReleasList = 2;
+                            isHandle = "0";
+                            isReal = "";
                             fenleiTextView.setText("未处理");
                             for (int j = 0; j < oneBodyFireList.size(); j++) {
                                 if (oneBodyFireList.get(j).getIsReal()==null && (oneBodyFireList.get(j).getIsHandle()==null||oneBodyFireList.get(j).getIsHandle()!=1)) {
@@ -1408,14 +1426,17 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                             }
                             //   currentPage = 1;
                             removeMarkerBaiduMap();
+                            getonebodyDataFromSetvice();
                         } else {
                             isReleasList = 3;
+                            isHandle = "";
+                            isReal = "";
                             fenleiTextView.setText("全部");
                             oneBodyFireFenleiList.addAll(oneBodyFireList);
 
                             removeMarkerBaiduMap();
+                            getonebodyDataFromSetvice();
                         }
-                        //initWeixingData();
                     }
                 });
         builder.create().show();
@@ -1810,7 +1831,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     Log.i(TAG, "onLoadMore: "+currentPage);
                     progressDialog.dismiss();
                      isShowSearchDialog = true;
-                getonebodyDataFromSetvice(2);
+                getonebodyDataFromSetvice();
                 }*/
 
             }
@@ -1821,7 +1842,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 oneBodyFireList.clear();
                 oneBodyFireFenleiList.clear();
                 removeMarkerBaiduMap();
-                getonebodyDataFromSetvice(2);
+                getonebodyDataFromSetvice();
                 onebodySwipe.setRefreshing(false);
             }
         });
@@ -2309,13 +2330,9 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     /**
      * 从服务器获取一体机数据
      */
-    private void getonebodyDataFromSetvice(int isReal) {
+    private void getonebodyDataFromSetvice() {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Calendar c = Calendar.getInstance();
-
-        /*if (isShowSearchDialog) {
-            showDialogProgress(progressDialog, "查询中...");
-        }*/
 
         showDialogProgress(progressDialog, "查询中...");
 
@@ -2326,6 +2343,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             jsonObject.put("limit", 100);
             jsonObject.put("page", currentPage);
             dto.put("isReal", isReal);
+            dto.put("isHandle", isHandle);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -2347,7 +2365,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     JSONObject jsonObject1 = new JSONObject(result);
                     if (jsonObject1.getString("code").equals("200")) {
                         JSONArray data = jsonObject1.getJSONArray("data");
-                        //totalSize=data.getInt("totalSize");
                         JSONObject getJsonObj = data.getJSONObject(0);//获取json数组中的第一项
                         JSONArray dataList = getJsonObj.getJSONArray("dataList");
                         Log.e(TAG, "dataList: "+dataList);
@@ -2356,71 +2373,18 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                         lastPage= (totalSize + 50 -1) / 50;     //计算最大分页数
                         Log.e(TAG, "getonebodyDataonSuccess: "+lastPage);
                         Gson gson = new GsonBuilder()
-                                /*.registerTypeAdapter(Integer.class, new IntegerDefault0Adapter())
-                                .registerTypeAdapter(int.class, new IntegerDefault0Adapter())*/
                                 .create();
-                        if(isReal==2){
-                            oneBodyFireList.clear();
-                        }
                         List<OneBodyFire> oneBodyFireAllList = gson.fromJson(String.valueOf(dataList), new TypeToken<List<OneBodyFire>>() {
                         }.getType());
 
-                        Log.e(TAG, "onSuccess: getonebodyDataonSuccess oneBodyFireAllList.size() = " + oneBodyFireAllList.size() );
-                        /*//将所有疑似火情剔除
-                        for (int i = 0; i < oneBodyFireAllList.size(); i++) {
-                            if (oneBodyFireAllList.get(i).getIsReal()!=null) {
-                                if (oneBodyFireAllList.get(i).getIsReal() == 1){
-                                    if(oneBodyFireAllList.get(i).getId()!=null){
-                                        oneBodyFireList.add(oneBodyFireAllList.get(i));
-                                    }
-                                }
-                            }else {
-                                if(oneBodyFireAllList.get(i).getId()!=null && oneBodyFireAllList.get(i).getIsHandle()!=1){
-                                    oneBodyFireList.add(oneBodyFireAllList.get(i));
-                                }
-                            }
-                        }*/
+
+
+                        oneBodyFireList.clear();
                         oneBodyFireList.addAll(oneBodyFireAllList);
-                        Log.e(TAG, "onSuccess: getonebodyDataonSuccess oneBodyFireList.size() = " + oneBodyFireList.size() );
-                        /*isReleasList = 3;*/
                         oneBodyFireFenleiList.clear();
-                        /*oneBodyFireFenleiList.addAll(oneBodyFireList);*/
-                        if(isReal == 1){
-                            if(isReleasList == 2){
-                                fenleiTextView.setText("未处理");
-                                isReleasList = 2;
-                                choose1 = 1;
-                                for (int j = 0; j < oneBodyFireList.size(); j++) {
-                                    if (oneBodyFireList.get(j).getIsReal()==null && (oneBodyFireList.get(j).getIsHandle()==null||oneBodyFireList.get(j).getIsHandle()!=1)) {
-                                        oneBodyFireFenleiList.add(oneBodyFireList.get(j));
-                                    }
-                                }
-                            }else if(isReleasList == 1){
-                                fenleiTextView.setText("真实火点");
-                                isReleasList = 1;
-                                choose1 = 2;
-                                for (int j = 0; j < oneBodyFireList.size(); j++) {
-                                    if (oneBodyFireList.get(j).getIsReal() != null) {
-                                        if (oneBodyFireList.get(j).getIsReal() == 1) {
-                                            oneBodyFireFenleiList.add(oneBodyFireList.get(j));
-                                        }
+                        oneBodyFireFenleiList.addAll(oneBodyFireAllList);
 
-                                    }
-                                }
-                            }else{//isReleasList == 3
-                                fenleiTextView.setText("全部");
-                                isReleasList = 3;
-                                choose1 = 0;
-                                oneBodyFireFenleiList.addAll(oneBodyFireList);
-                            }
-
-                            Log.e(TAG, "onSuccess: getonebodyDataonSuccess oneBodyFireFenleiList.size() = " + oneBodyFireFenleiList.size() );
-                            initOneBodyFireData();
-                        }
-
-                        if(isReal == 2){
-                            getonebodyDataFromSetvice(1);
-                        }
+                        initOneBodyFireData();
 
                     } else {
                         Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
@@ -2469,18 +2433,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
      */
     private void initOneBodyFireData() {
         //往地图上打一体机火点
-        // initYitijiFireMap();  超图的方法
         initYitijiFireBiaduMap();
         //往列表上展示数据
 
         Log.e(TAG, "initOneBodyFireData:size== " + oneBodyFireFenleiList.size());
-       /* if (oneBodyFireFenleiList.size()==0&&currentPage==1){
-            onebodyItems.clear();
-        }else {
-            for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
-                onebodyItems.add(oneBodyFireFenleiList.get(i));
-            }
-        }*/
         onebodyItems.clear();
         if (oneBodyFireFenleiList.size() == 0) {
             onebodyItems.add(new Empty("暂无数据"));
@@ -2502,30 +2458,40 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         List<OverlayOptions> options = new ArrayList<OverlayOptions>();
         BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_red_fire);//默认森林防火
         for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
-            if(oneBodyFireFenleiList.get(i).getType() == null){
-                continue;
-            }
-            switch (oneBodyFireFenleiList.get(i).getType()){
-                case 2:
-                    btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_red_fire);//森林防火
-                    break;
-                case 4:
-                    btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_blue_fire);//海域监控
-                    break;
-                case 5:
-                    btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_yellow_fire);//国土报警
-                    break;
-            }
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(oneBodyFireFenleiList.get(i).getAlarmLatitude(), oneBodyFireFenleiList.get(i).getAlarmLongitude());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", oneBodyFireFenleiList.get(i).getId());
-            bundle.putInt("type", ONE_BODY);
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
+
+
+                if(oneBodyFireFenleiList.get(i).getType() == null){
+                    continue;
+                }
+                switch (oneBodyFireFenleiList.get(i).getType()){
+                    case 2:
+                        btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_red_fire);//森林防火
+                        break;
+                    case 4:
+                        btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_blue_fire);//海域监控
+                        break;
+                    case 5:
+                        btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_yellow_fire);//国土报警
+                        break;
+                }
+                com.baidu.mapapi.model.LatLng point;
+                try{
+                    double[] doubles = LatLngChangeNew.calWGS84toBD09(oneBodyFireFenleiList.get(i).getAlarmLatitude(), oneBodyFireFenleiList.get(i).getAlarmLongitude());
+                    point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
+                }catch (Exception e){
+                    //
+                    point = new com.baidu.mapapi.model.LatLng(0, 0);//2025
+                }
+                Bundle bundle = new Bundle();
+                bundle.putString("id", oneBodyFireFenleiList.get(i).getId());
+                bundle.putInt("type", ONE_BODY);
+                OverlayOptions option = new MarkerOptions()
+                        .position(point)
+                        .extraInfo(bundle)
+                        .icon(btm);
+                options.add(i, option);
+
+
         }
         optionsAllList.addAll(options);
         mBaiduMap.addOverlays(options);
@@ -3389,6 +3355,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     /**
      * 一体机火点详情
      */
+    @SuppressLint("SetTextI18n")
     private void initOneBodyFireModelData() {
         mingchengView.setText(currentOneBodyFire.getName());
         dizhiView.setText(currentOneBodyFire.getAddress());
@@ -3398,7 +3365,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             shijianView.setText(currentOneBodyFire.getAlarmDatetime());
             Log.e(TAG, "shijianView.setText: " + e + "：" + currentOneBodyFire.getAlarmDatetime());
         }
-        jingweiduView.setText(currentOneBodyFire.getAlarmLongitude() +"、" + currentOneBodyFire.getAlarmLatitude());
+        jingweiduView.setText(CommonUtil.parseNull(currentOneBodyFire.getAlarmLongitude()+"、"+currentOneBodyFire.getAlarmLatitude(),"无"));
         Glide.with(getContext()).load(currentOneBodyFire.getPicPath1().replace("10.10.2.11:10120","218.201.180.118:10121"))
                 .error(R.drawable.ic_no_pic)
                 .placeholder(R.drawable.ic_jaizai).into(yitijiOneView);
