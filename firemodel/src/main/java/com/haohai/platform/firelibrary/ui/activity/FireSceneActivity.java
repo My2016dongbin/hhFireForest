@@ -613,7 +613,7 @@ public class FireSceneActivity extends HhBaseActivity implements ChooseImageView
         }
         Log.e(TAG, "postFireToService: "+jsonObject);
         Log.e(TAG, "token: "+new DbConfig(this).getUser().getToken() );
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +  "oa//api/taskDetail");
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL +  "oa/api/taskDetail");
         params.setAsJsonContent(true);
         params.setBodyContent(jsonObject.toString());
         params.setConnectTimeout(10000);

@@ -2,16 +2,16 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/FireForestPlatform.iml" filepath="$PROJECT_DIR$/FireForestPlatform.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/FireForestPlatform.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/FireForestPlatform.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/appnaturalresource/FireForestPlatform.appnaturalresource.iml" filepath="$PROJECT_DIR$/.idea/modules/appnaturalresource/FireForestPlatform.appnaturalresource.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dsbridge/FireForestPlatform.dsbridge.iml" filepath="$PROJECT_DIR$/.idea/modules/dsbridge/FireForestPlatform.dsbridge.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/firemodel/FireForestPlatform.firemodel.iml" filepath="$PROJECT_DIR$/.idea/modules/firemodel/FireForestPlatform.firemodel.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hhlibrary/FireForestPlatform.hhlibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/hhlibrary/FireForestPlatform.hhlibrary.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mapmodel/FireForestPlatform.mapmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/mapmodel/FireForestPlatform.mapmodel.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/platformmodel/FireForestPlatform.platformmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/platformmodel/FireForestPlatform.platformmodel.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/third-zxing/FireForestPlatform.third-zxing.iml" filepath="$PROJECT_DIR$/.idea/modules/third-zxing/FireForestPlatform.third-zxing.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/videolibrary/FireForestPlatform.videolibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/videolibrary/FireForestPlatform.videolibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hhFireForest.iml" filepath="$PROJECT_DIR$/.idea/modules/hhFireForest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/appnaturalresource/hhFireForest.appnaturalresource.iml" filepath="$PROJECT_DIR$/.idea/modules/appnaturalresource/hhFireForest.appnaturalresource.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.iml" filepath="$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.iml" filepath="$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/third-zxing/hhFireForest.third-zxing.iml" filepath="$PROJECT_DIR$/.idea/modules/third-zxing/hhFireForest.third-zxing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.iml" />
     </modules>
   </component>
 </project>

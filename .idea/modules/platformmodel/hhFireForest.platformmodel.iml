@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id=":platformmodel" external.linked.project.path="$MODULE_DIR$/../../../platformmodel" external.root.project.path="$MODULE_DIR$/../../.." external.system.id="GRADLE" external.system.module.group="hhFireForest" external.system.module.version="unspecified" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="android-gradle" name="Android-Gradle">
+      <configuration>
+        <option name="GRADLE_PROJECT_PATH" value=":platformmodel" />
+        <option name="LAST_SUCCESSFUL_SYNC_AGP_VERSION" value="4.2.1" />
+        <option name="LAST_KNOWN_AGP_VERSION" value="4.2.1" />
+      </configuration>
+    </facet>
+    <facet type="android" name="Android">
+      <configuration>
+        <option name="SELECTED_BUILD_VARIANT" value="debug" />
+        <option name="ASSEMBLE_TASK_NAME" value="assembleDebug" />
+        <option name="COMPILE_JAVA_TASK_NAME" value="compileDebugSources" />
+        <afterSyncTasks>
+          <task>generateDebugSources</task>
+        </afterSyncTasks>
+        <option name="ALLOW_USER_CONFIGURATION" value="false" />
+        <option name="MANIFEST_FILE_RELATIVE_PATH" value="/src/main/AndroidManifest.xml" />
+        <option name="RES_FOLDER_RELATIVE_PATH" value="/src/main/res" />
+        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/../../../platformmodel/src/main/res;file://$MODULE_DIR$/../../../platformmodel/src/debug/res;file://$MODULE_DIR$/../../../platformmodel/build/generated/res/rs/debug;file://$MODULE_DIR$/../../../platformmodel/build/generated/res/resValues/debug" />
+        <option name="TEST_RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/../../../platformmodel/src/androidTest/res;file://$MODULE_DIR$/../../../platformmodel/src/androidTestDebug/res;file://$MODULE_DIR$/../../../platformmodel/build/generated/res/rs/androidTest/debug;file://$MODULE_DIR$/../../../platformmodel/build/generated/res/resValues/androidTest/debug" />
+        <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/src/main/assets" />
+        <option name="PROJECT_TYPE" value="1" />
+      </configuration>
+    </facet>
+  </component>
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
+    <output url="file://$MODULE_DIR$/../../../platformmodel/build/intermediates/javac/debug/classes" />
+    <output-test url="file://$MODULE_DIR$/../../../platformmodel/build/intermediates/javac/debugUnitTest/classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../../platformmodel">
+      <sourceFolder url="file://$MODULE_DIR$/../../../platformmodel/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../platformmodel/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../platformmodel/src/main/res" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../platformmodel/build/generated/ap_generated_sources/debug/out" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../platformmodel/build/generated/source/buildConfig/debug" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../platformmodel/build/generated/res/resValues/debug" type="java-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/../../../platformmodel/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/../../../platformmodel/build" />
+    </content>
+    <orderEntry type="jdk" jdkName="Android API 26 Platform" jdkType="Android SDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Gradle: ./platformmodel/libs/lechangeSDK.jar" level="project" />
+    <orderEntry type="library" name="Gradle: ./hhlibrary/libs/haohaiencode.jar" level="project" />
+    <orderEntry type="library" name="Gradle: ./hhlibrary/libs/lm_mtoken_tools_pkcs7.jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-annotations:26.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: android.arch.lifecycle:common:1.0.0" level="project" />
+    <orderEntry type="library" name="Gradle: android.arch.core:common:1.0.0" level="project" />
+    <orderEntry type="library" name="Gradle: io.reactivex.rxjava2:rxjava:2.2.8" level="project" />
+    <orderEntry type="library" name="Gradle: org.reactivestreams:reactive-streams:1.0.2" level="project" />
+    <orderEntry type="library" name="Gradle: io.reactivex:rxjava:1.1.4" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.bumptech.glide:glide:3.7.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.code.gson:gson:2.8.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.61" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.3.71" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.3.71" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.nineoldandroids:library:2.4.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.parse.bolts:bolts-tasks:1.4.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.rebound:rebound:0.3.8" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support.constraint:constraint-layout-solver:1.0.2" level="project" />
+    <orderEntry type="library" name="Gradle: junit:junit:4.12" level="project" />
+    <orderEntry type="library" name="Gradle: org.hamcrest:hamcrest-core:1.3" level="project" />
+    <orderEntry type="library" name="Gradle: com.nostra13.universalimageloader:universal-image-loader:1.9.5" level="project" />
+    <orderEntry type="library" name="Gradle: com.alibaba:arouter-annotation:1.0.4" level="project" />
+    <orderEntry type="library" name="Gradle: org.greenrobot:eventbus:3.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.okhttp3:okhttp:3.14.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.okio:okio:2.2.2" level="project" />
+    <orderEntry type="library" name="Gradle: com.rxjava.rxhttp:rxhttp-annotation:1.0.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.picasso:picasso:2.5.2" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.leakcanary:shark-android:2.3" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.leakcanary:shark:2.3" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.leakcanary:shark-graph:2.3" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.leakcanary:shark-hprof:2.3" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.leakcanary:leakcanary-object-watcher:2.3" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.leakcanary:shark-log:2.3" level="project" />
+    <orderEntry type="library" name="Gradle: ./videolibrary/libs/ijkplayer-java-release.aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support.constraint:constraint-layout:1.0.2@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:design:25.0.1@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:appcompat-v7:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:cardview-v7:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:recyclerview-v7:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.jakewharton.rxbinding:rxbinding:0.4.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.baoyz.pullrefreshlayout:library:1.2.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:animated-vector-drawable:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-vector-drawable:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.baoyz.swipemenulistview:library:1.3.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.alibaba:arouter-api:1.3.1@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:transition:25.0.1@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fresco:fresco:0.12.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fresco:drawee:0.12.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fresco:imagepipeline:0.12.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fresco:imagepipeline-base:0.12.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-v4:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:palette-v7:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-media-compat:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.chrisbanes:PhotoView:2.0.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-fragment:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-core-utils:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-core-ui:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-compat:26.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: android.arch.lifecycle:runtime:1.0.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.rxjava.rxhttp:rxhttp:1.1.6@aar" level="project" />
+    <orderEntry type="library" name="Gradle: io.reactivex.rxjava2:rxandroid:2.1.1@aar" level="project" />
+    <orderEntry type="library" name="Gradle: io.reactivex:rxandroid:1.2.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: org.xutils:xutils:3.3.36@aar" level="project" />
+    <orderEntry type="library" name="Gradle: me.drakeet.multitype:multitype:2.2.2@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.zhihu.android:matisse:0.4.3@aar" level="project" />
+    <orderEntry type="library" name="Gradle: ch.ielse:imagewatcher:1.0.3@aar" level="project" />
+    <orderEntry type="library" name="Gradle: de.hdodenhof:circleimageview:2.1.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: id.zelory:compressor:3.0.1@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.leakcanary:leakcanary-android:2.3@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.leakcanary:leakcanary-android-core:2.3@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.leakcanary:leakcanary-object-watcher-android-androidx:2.3@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.leakcanary:leakcanary-object-watcher-android-support-fragments:2.3@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.leakcanary:leakcanary-object-watcher-android:2.3@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fresco:fbcore:0.12.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.flyco.pageindicator:FlycoPageIndicator_Lib:1.0.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.malinskiy:materialicons:1.0.2@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.tbruyelle.rxpermissions2:rxpermissions:0.9.1@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.tencent.wup:wup:1.0.0.E-Release@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.tencent.jg:jg:1.1@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.tencent.tpns:tpns:1.2.0.3-release@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.tencent.tpns:xiaomi:1.2.1.0-release@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.tencent.tpns:huawei:1.2.1.0-release@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.tencent.tpns:meizu:1.2.2.0-release@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.tencent.tpns:oppo:1.2.2.0-release@aar" level="project" />
+    <orderEntry type="module" module-name="hhFireForest.hhlibrary" />
+    <orderEntry type="module" module-name="hhFireForest.videolibrary" />
+    <orderEntry type="module" module-name="hhFireForest.dsbridge" />
+  </component>
+</module>
