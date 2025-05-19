@@ -217,6 +217,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
 
 
 
+    //
     private void initView() {
         actionBar = (ActionBar) findViewById(R.id.action_bar);
         actionBar.setTitle("火情上报");
