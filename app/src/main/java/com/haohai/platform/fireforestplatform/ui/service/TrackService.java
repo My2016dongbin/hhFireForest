@@ -264,7 +264,7 @@ public class TrackService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        initBaiduLoc();
+//        initBaiduLoc();
 
         positionModelList = new ArrayList<>();
         initBaiduLoc();

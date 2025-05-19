@@ -34,6 +34,8 @@
       <sourceFolder url="file://$MODULE_DIR$/../../../appnaturalresource/src/androidTest/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../appnaturalresource/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../appnaturalresource/src/main/res" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../appnaturalresource/build/generated/source/buildConfig/debug" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../appnaturalresource/build/generated/res/resValues/debug" type="java-resource" />
       <excludeFolder url="file://$MODULE_DIR$/../../../appnaturalresource/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/../../../appnaturalresource/build" />
     </content>
