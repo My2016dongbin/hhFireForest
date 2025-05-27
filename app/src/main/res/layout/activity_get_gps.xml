@@ -1,0 +1,20 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}" >
+
+     <Button
+         android:id="@+id/bt_button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="获取海拔" />
+    
+    <TextView
+         android:id="@+id/tv_textview1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="具体信息"
+        android:layout_below="@id/bt_button1" />
+
+</RelativeLayout>

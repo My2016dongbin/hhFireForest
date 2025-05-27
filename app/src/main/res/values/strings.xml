@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">松之盾</string>
+    <string name="title_activity_main">松之盾</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="main_news">数据采集</string>
+    <string name="main_home">地图展示</string>
+    <string name="more">导航测试</string>
+    <string name="main_manage_date">数据上报</string>
+    <string name="main_friends">我的设置</string>
+    <string name="title_activity_view_data">ViewDataActivity</string>
+    <string name="title_activity_my_adapter">MyAdapter</string>
+    <string name="title_activity_view_data_table">数据查询</string>
+    <string name="localbutton">本机数据</string>
+    <string name="webbutton">历史数据</string>
+    <string name="title_activity_get_location">GetLocationActivity</string>
+    <string name="title_activity_baidu_test">BaiduTestActivity</string>
+    <string name="start_position">开始定位</string>
+    <string name="position">正在定位</string>
+    <string name="codeScan">二维码扫描</string>
+    <string name="scanResult">扫描结果：</string>
+    <string name="createCode">生成二维码</string>
+    <string name="codeContent">请填写生成二维码的内容</string>
+    <string name="title_activity_upload">UploadActivity</string>
+    <string name="title_activity_check_gprs">CheckGPRSActivity</string>
+    <string name="netWerk_0">有网络</string>
+    <string name="netWerk_1">没网络</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="title_activity_tt">TTActivity</string>
+    <string name="title_activity_login">松之盾</string>
+    <string name="title_activity_base">BaseActivity</string>
+    <string name="title_activity_llogin">松之盾</string>
+    <string name="title_activity_lupload">数据采集</string>
+    <string name="title_activity_cjchoose">CJChooseActivity</string>
+    <string name="title_activity_view_pics">ViewPicsActivity</string>
+    <string name="title_activity_get_gps">GetGPSActivity</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_empty">EmptyActivity</string>
+    <string name="title_activity_ls">LSActivity</string>
+    <string name="title_activity_river">RiverActivity</string>
+    <string name="title_activity_lscjchoose">LSCJChooseActivity</string>
+    <string name="title_activity_testbg">TestbgActivity</string>
+    <string name="title_activity_lscapture">LSCaptureActivity</string>
+    <string name="title_activity_view_cjdetail">ViewCJDetailActivity</string>
+    <string name="title_activity_view_cjlog_pic">ViewCJLogPicActivity</string>
+
+</resources>

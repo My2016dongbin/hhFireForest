@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.river.szdapp"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <!-- 粗略定位授权 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- 精细定位授权 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- 模拟定位授权 -->
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+    <!-- 网络访问授权 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- 模拟定位授权 -->
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission..ACCESS_FINE_LOCATION" />
+    <!-- 这个权限用于获取wifi的获取权限，wifi信息会用来进行网络定位 -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" >
+    </uses-permission>
+
+    <!-- 硬件加速对X5视频播放非常重要，建议开启 -->
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/szdlogo"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name=".Welcome"
+            android:alwaysRetainTaskState="true"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:theme="@style/Anim_style2" >
+        </activity>
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main" >
+        </activity>
+        <activity
+            android:name=".MainTabActivity"
+            android:label="@string/title_activity_main" >
+              <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            
+        </activity>
+        <activity
+            android:name=".ViewDataActivity"
+            android:label="@string/title_activity_view_data" >
+        </activity>
+        <activity
+            android:name=".MyAdapter"
+            android:label="@string/title_activity_my_adapter" >
+        </activity>
+        <activity
+            android:name=".ViewDataTableActivity"
+            android:label="@string/title_activity_view_data_table" >
+        </activity>
+        <activity
+            android:name=".GetLocationActivity"
+            android:label="@string/title_activity_get_location" >
+        </activity>
+        <activity
+            android:name=".BaiduTestActivity"
+            android:label="@string/title_activity_baidu_test" >
+        </activity>
+        <activity
+            android:name=".CaptureActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name=".UploadActivity"
+            android:label="@string/title_activity_upload" >
+        </activity>
+        <activity
+            android:name=".CheckGPRSActivity"
+            android:label="@string/title_activity_check_gprs" >
+        </activity>
+        <activity
+            android:name=".TestActivity"
+            android:label="@string/title_activity_test" >
+        </activity>
+        <activity
+            android:name=".TTActivity"
+            android:label="@string/title_activity_tt" >
+        </activity>
+        <activity
+            android:name=".LoginActivity"
+            android:label="@string/title_activity_login" >
+        </activity>
+        <activity
+            android:name=".BaseActivity"
+            android:label="@string/title_activity_base" >
+        </activity>
+        <activity
+            android:name=".LLoginActivity"
+            android:label="@string/title_activity_llogin" >
+        </activity>
+        <activity
+            android:name=".LUploadActivity"
+            android:label="@string/title_activity_lupload" >
+        </activity>
+        <activity
+            android:name=".CJChooseActivity"
+            android:label="@string/title_activity_cjchoose"
+            android:screenOrientation="portrait" >
+
+            <!-- 表示强制保持当前状态不被回收 -->
+
+        </activity>
+        <activity
+            android:name=".ViewPicsActivity"
+            android:label="@string/title_activity_view_pics" >
+        </activity>
+
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":remote" >
+        </service>
+
+        <activity
+            android:name=".GetGPSActivity"
+            android:label="@string/title_activity_get_gps" >
+        </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings" >
+        </activity>
+        <activity
+            android:name=".EmptyActivity"
+            android:label="@string/title_activity_empty" >
+        </activity>
+        <activity
+            android:name=".LSActivity"
+            android:label="@string/title_activity_ls" >
+        </activity>
+        <activity
+            android:name=".RiverActivity"
+            android:label="@string/title_activity_river" >
+        </activity>
+        <activity
+            android:name=".LSCJChooseActivity"
+            android:label="@string/title_activity_lscjchoose" >
+        </activity>
+        <activity
+            android:name=".TestbgActivity"
+            android:label="@string/title_activity_testbg" >
+        </activity>
+        <activity
+            android:name=".LSCaptureActivity"
+            android:label="@string/title_activity_lscapture"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name=".ViewCJDetailActivity"
+            android:label="@string/title_activity_view_cjdetail" >
+        </activity>
+        <activity
+            android:name=".ViewCJLogPicActivity"
+            android:label="@string/title_activity_view_cjlog_pic" >
+          
+        </activity>
+    </application>
+
+</manifest>

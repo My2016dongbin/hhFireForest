@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+     android:background="#F2F2F2"
+     
+   >
+    
+       <Button
+            android:id="@+id/Submit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+             android:textColor="#FFFFFF"            
+             android:background="#39B8B6"
+            android:text="我的设置"/>
+    
+       
+       
+         <LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="75dp"
+    android:orientation="vertical"
+    android:layout_gravity="center_horizontal"
+     
+     android:background="#F2F2F2"
+    android:padding="5dp">
+    </LinearLayout>
+    
+    <LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_gravity="center_horizontal"
+     
+      android:background="@drawable/mysettings"
+    android:padding="5dp">
+    </LinearLayout>
+	
+    <Button
+     android:id="@+id/button"   
+     android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="退出登录"
+      android:textColor="#FFFFFF"    
+    android:background="@drawable/sharp"
+    android:layout_marginTop="75dp"
+     android:layout_marginLeft="75px"
+      android:layout_marginRight="75px"
+   
+     />
+    
+    
+	 
+</LinearLayout>

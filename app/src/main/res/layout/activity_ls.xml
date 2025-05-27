@@ -1,0 +1,45 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+ 
+
+    <FrameLayout
+        android:id="@+id/frame_web_video"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+  <LinearLayout
+        android:id="@+id/loginPanel"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical"
+       
+        >
+    <com.tencent.smtt.sdk.WebView
+        android:id="@+id/web_filechooser"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+         android:layout_weight="3">
+
+    </com.tencent.smtt.sdk.WebView>
+    
+    
+    
+     <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="75dp"
+            android:layout_marginRight="75dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="18dp"
+            
+             android:background="@drawable/sharp"
+    android:layout_weight="1"
+            android:text="刷新"      
+             android:textColor="#FFFFFF"            
+            
+             />
+
+            </LinearLayout>
+</RelativeLayout>

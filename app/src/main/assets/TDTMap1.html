@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+
+
+    <style>
+        /*设置地图显示大小*/
+        #mapDiv {
+            width: 1200px;
+            height: 2000px;
+            position: relative;
+            float: left;
+        }
+    </style>
+
+    <script type="text/javascript" src="http://api.tianditu.gov.cn/api?v=4.0&tk=8c4333101b290e5d8a5f8c6eba7d324d"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=1.5&ak=9fb983ecd9b505f8fedcc9ab07c65e3e"></script>
+    <script type="text/javascript" src="http://developer.baidu.com/map/jsdemo/demo/convertor.js"></script>
+    <script type="text/javascript">
+
+
+       function showLocation(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            var ac=position.coords.accuracy;
+           // alert("Latitude : " + latitude + " Longitude: " + longitude+ " ac: " + ac/10);
+           onLoad(longitude,latitude,ac/10);
+         }
+
+         function errorHandler(err) {
+            if(err.code == 1) {
+               alert("Error: Access is denied!");
+            }else if( err.code == 2) {
+               alert("Error: Position is unavailable!");
+            }
+         }
+
+         function getLocation(){
+
+            if(navigator.geolocation){
+               // timeout at 60000 milliseconds (60 seconds)
+               var options = {timeout:60000};
+               navigator.geolocation.getCurrentPosition(showLocation, errorHandler, options);
+            }else{
+               alert("Sorry, browser does not support geolocation!");
+            }
+         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        $(document).ready(function () {
+         // alert('ls');
+          //onLoad();
+          getLocation();
+
+        });
+
+        var map, zoom = 15, points;
+        var marker, lable;
+        var bjd,bwd;
+        function onLoad(jd,wd,ac) {
+
+
+            var imageURL = "http://t0.tianditu.gov.cn/img_w/wmts?" +
+                "SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles" +
+                "&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=8c4333101b290e5d8a5f8c6eba7d324d";
+            //创建自定义图层对象
+            lay = new T.TileLayer(imageURL, { minZoom: 1, maxZoom: 18 });
+
+
+
+			 const imageURLT = "http://t0.tianditu.gov.cn/cia_w/wmts?" +
+            "SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles" +
+            "&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}" +
+            "&tk=8c4333101b290e5d8a5f8c6eba7d324d";
+
+
+           const lay2 = new T.TileLayer(imageURLT, { minZoom: 1, maxZoom: 18 });
+
+            var config = { layers: [lay, lay2] };
+
+
+           // var config = { layers: [lay] };
+
+
+
+            //初始化地图对象
+            map = new T.Map("mapDiv", config);
+            //设置显示地图的中心点和级别
+
+
+
+
+
+
+
+
+
+
+              map.centerAndZoom(new T.LngLat(jd,wd), zoom);
+
+
+
+                //创建图片对象
+            var icon = new T.Icon({
+                iconUrl: "http://api.tianditu.gov.cn/img/map/markerA.png",
+                iconSize: new T.Point(19, 27),
+                iconAnchor: new T.Point(10, 25)
+            });
+            //向地图上添加自定义标注
+            var marker = new T.Marker(new T.LngLat(jd, wd), {icon: icon});
+            map.addOverLay(marker);
+
+
+             var latlng1 = new T.LngLat(jd,wd);
+            var label1 = new T.Label({
+                text: "当前位置("+ac+")",
+                position: latlng1,
+                offset: new T.Point(-9, 0)
+            });
+            //创建地图文本对象
+            map.addOverLay(label1);
+
+
+
+
+
+
+
+
+
+            //map.centerAndZoom(new T.LngLat(116.40969, 39.94940), zoom);
+            //points = [];
+            //points.push(new T.LngLat(116.41136, 39.97569));
+            //points.push(new T.LngLat(116.411794, 39.9068));
+            //points.push(new T.LngLat(116.32969, 39.92940));
+            //points.push(new T.LngLat(116.385438, 39.90610));
+            ////创建线对象
+            //var line = new T.Polyline(points);
+            ////向地图上添加线
+            //map.addOverLay(line);
+
+            LoadLines(map);
+
+
+
+        }
+
+
+        function LoadLines(map) {
+		alert('ls');
+alert(GetQueryString('UserID'));
+            $.ajax({
+                url: "http://139.129.19.220:7030/api/SZDLog",
+                data: {
+                    //ID: GetQueryString('ID')
+                   // UserID:GetQueryString('UserID')
+                  UserID:'3'
+                },
+                type: "get",
+                success: function (e) {
+
+                   // alert(e);
+                    var obj = JSON.parse(e);
+                   // alert(obj);
+                    if (obj.code == 0) {
+                        points = [];
+                        for (j = 0, len = obj.data.length; j < len; j++) {
+                          //  points.push(new T.LngLat(e.lines[j].JD, e.lines[j].WD));
+
+
+
+                            //文字
+                            marker = new T.Marker(new T.LngLat(obj.data[j].JD, obj.data[j].WD));// 创建标注
+                            map.addOverLay(marker);
+                            marker.addEventListener("click", river);
+
+
+
+                        }
+
+
+						 for (k = 0, len = obj.pcpoint.length; k < len; k++) {
+                          //  points.push(new T.LngLat(e.lines[j].JD, e.lines[j].WD));
+						 //创建图片对象
+								var icon = new T.Icon({
+
+									iconUrl: "http://139.129.19.220:7030/content/images/yellow.png",
+									iconSize: new T.Point(19, 27),
+									iconAnchor: new T.Point(10, 25)
+								});
+								//向地图上添加自定义标注
+								var marker = new T.Marker(new T.LngLat(obj.pcpoint[k].JD, obj.pcpoint[k].WD), {icon: icon});
+								map.addOverLay(marker);
+								marker.addEventListener("click", river);
+
+
+
+
+                        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        //创建线对象
+                        var line = new T.Polyline(points);
+                        //向地图上添加线
+                        map.addOverLay(line);
+
+
+
+
+
+                    }
+                    else {
+                        alert('加载数据失败');
+                    }
+                }
+            });
+        }
+
+
+        function river(e) {
+            var p = e.target;
+            if (p instanceof T.Marker) {
+               // alert("该覆盖物是点，点的坐标是：" + p.getLngLat().lng + "," + p.getLngLat().lat);
+                var gpsPoint = new BMap.Point(p.getLngLat().lng, p.getLngLat().lat);
+
+
+
+			   setTimeout(function(){
+    BMap.Convertor.translate(gpsPoint,0,riveree);     //真实经纬度转成百度坐标
+}, 4000);
+			    //BMap.Convertor.translate(gpsPoint,0,riveree);
+                //location.href = "http://api.map.baidu.com/marker?location=" + p.getLngLat().lat + "," + p.getLngLat().lng +"&title=采集点&output=html";
+               //location.href = "http://api.map.baidu.com/marker?location="+ bwd+ "," +bjd +"&title=采集点&output=html";
+            }
+        }
+
+              //坐标转换完之后的回调函数
+riveree = function (point){
+alert(point.lng + "," + point.lat);
+
+    location.href="http://www.163.com";
+   // var urls= "http://api.map.baidu.com/marker?location=" + point.lat + "," + point.lng +"&title=采集点&output=html";
+   bjd=point.lng;
+   bwd=point.lat;
+	//location.href = "http://api.map.baidu.com/marker?location=" + point.lat + "," + point.lng +"&title=采集点&output=html";
+}
+
+
+
+
+
+           function GetQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return unescape(r[2]); return null;
+    }
+
+        </script>
+
+
+
+</head >
+<body>
+<!--地图容器-->
+<div id="mapDiv"></div>
+</body>
+</html >

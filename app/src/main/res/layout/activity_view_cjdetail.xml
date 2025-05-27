@@ -1,0 +1,77 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"  
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"   
+   tools:context=".MainActivity" 
+      android:background="#F2F2F2">
+       <Button
+            android:id="@+id/rrr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+             android:textColor="#FFFFFF"            
+             android:background="#39B8B6"
+            android:text="查看采集详情"/>
+
+    <ScrollView  
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent" 
+    android:scrollbars="vertical" 
+    android:layout_below="@+id/rrr"
+    android:fadingEdge="vertical"
+    > 
+    
+    <LinearLayout
+        android:id="@+id/riverPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical"
+        android:layout_marginTop="10dp"
+      > 
+      
+         <TextView
+            android:id="@+id/tvContents"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+          
+            android:text="11" 
+            android:layout_marginTop="5dp"
+            android:textSize="20dp"/>
+         
+          <Button
+            android:id="@+id/btnViewDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="75dp"
+            android:layout_marginRight="75dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="18dp"
+            
+             android:background="@drawable/sharp"
+   
+            android:text="查看图片"      
+             android:textColor="#FFFFFF"            
+            
+             />
+          
+           <Button
+            android:id="@+id/btnBack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="75dp"
+            android:layout_marginRight="75dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="18dp"
+            
+             android:background="@drawable/sharp"
+   
+            android:text="返回"      
+             android:textColor="#FFFFFF"            
+            
+             />
+
+    </LinearLayout>
+    
+    </ScrollView> 
+
+</RelativeLayout>

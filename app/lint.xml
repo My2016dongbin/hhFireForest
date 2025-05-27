@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <issue id="ContentDescription" severity="ignore" />
+    <issue id="HardcodedText" severity="ignore" />
+    <issue id="NewApi">
+        <ignore path="src/com/river/szdapp/LUploadActivity.java" />
+    </issue>
+    <issue id="RtlHardcoded" severity="ignore" />
+</lint>

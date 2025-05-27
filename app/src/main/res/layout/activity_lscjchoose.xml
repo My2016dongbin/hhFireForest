@@ -1,0 +1,25 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+     android:background="#f2f2f2" >
+    
+         <Button
+            android:id="@+id/Submit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+             android:textColor="#FFFFFF"            
+             android:background="#39B8B6"
+            android:text="数据采集"/>
+
+    <ListView
+        android:id="@+id/listView1"
+        android:divider="#f2f2f2"
+        android:dividerHeight="15dp"
+         android:layout_marginTop="60dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" 
+         android:background="#FFFFFF"
+        />
+
+</RelativeLayout>
