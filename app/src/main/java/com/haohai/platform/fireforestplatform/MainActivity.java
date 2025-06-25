@@ -305,7 +305,7 @@ public class MainActivity extends BaseFragmentActivity implements NetworkChangeR
             private boolean serviceStatus = false;
             private void initBDTrace() {
                 // 轨迹服务ID
-                long serviceId = 235910;
+                long serviceId = 241948;
                 // 设备标识
                 String id = new DbConfig(this).getUser().getId();
                 String entityName = id+"";
