@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="Gradle: com.tencent.wup:wup:1.0.0.E-Release@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/7e8f7ef3ff4868cba50cc698bdcdfb9c/wup-1.0.0.E-Release/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/7e8f7ef3ff4868cba50cc698bdcdfb9c/wup-1.0.0.E-Release/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/7e8f7ef3ff4868cba50cc698bdcdfb9c/wup-1.0.0.E-Release/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/7e8f7ef3ff4868cba50cc698bdcdfb9c/wup-1.0.0.E-Release/jars/libs/wup-1.0.0.E-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.tencent.wup/wup/1.0.0.E-Release/5e1fad4e31105966a14d0c84868e996906f352a4/wup-1.0.0.E-Release-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.tencent.wup/wup/1.0.0.E-Release/cc63d9ccc4fe876c5cd0f10fed0b035742f6e8c4/wup-1.0.0.E-Release-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

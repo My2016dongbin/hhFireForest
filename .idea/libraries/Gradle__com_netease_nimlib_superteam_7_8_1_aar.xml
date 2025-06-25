@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Gradle: com.netease.nimlib:superteam:7.8.1@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/cb11b6531392db0ce79310df10d7db34/superteam-7.8.1/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/cb11b6531392db0ce79310df10d7db34/superteam-7.8.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/cb11b6531392db0ce79310df10d7db34/superteam-7.8.1/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.netease.nimlib/superteam/7.8.1/3f43e51926cd84144031d310b5b69dbfea791251/superteam-7.8.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.netease.nimlib/superteam/7.8.1/6d8419eaad7bcd0d0e9421e26a16dcb6eab8cc91/superteam-7.8.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

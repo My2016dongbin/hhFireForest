@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: ./hhlibrary/libs/BaiduTraceSDK_v3_2_1.jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/hhlibrary/libs/BaiduTraceSDK_v3_2_1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
