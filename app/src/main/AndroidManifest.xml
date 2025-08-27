@@ -119,7 +119,7 @@
         <!-- 百度地图key -->
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="BdRG8vH5O9atmVzMxEFkRFehPBUZUpk3" />
+            android:value="ZtMu7Uh8tZuY3dNYdE8G99BlRe531Tbl" />
 
         <receiver android:name=".ui.receiver.TengxunReceiver">
             <intent-filter>
