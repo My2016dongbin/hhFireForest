@@ -142,4 +142,12 @@ public class CommonUtil {
         }
         return value;
     }
+    public static String parsePointSplit(String value, int number) {
+        try{
+            int index = value.indexOf(".");
+            return value.substring(0,index+1+number);
+        }catch (Exception e){
+            return value;
+        }
+    }
 }

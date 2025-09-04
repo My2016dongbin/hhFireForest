@@ -324,7 +324,7 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
         // 请求标识
         int tag = 1;
         // 轨迹服务ID
-        long serviceId = 241948;
+        long serviceId = 235910;
         // 设备标识
         String entityName = chooseUserId;
         // 创建历史轨迹请求实例
@@ -418,6 +418,36 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
 
         // 查询轨迹
         CommonData.mTraceClient.queryHistoryTrack(historyTrackRequest, mTrackListener);
+
+
+    }
+
+    private void postData2(){
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "oa/api/trajectory/userTrajectoryByTime");
+        params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
+        params.addParameter("id",new DbConfig(this).getUser().getId());
+        params.addParameter("time","2025-09-04");
+        x.http().get(params, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e(TAG,"postData " + result);
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
+            }
+        });
     }
 
     private String parseSix(String str) {

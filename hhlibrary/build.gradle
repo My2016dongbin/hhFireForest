@@ -122,5 +122,11 @@ dependencies {
 
     api 'com.kongzue.dialog:dialog:2.5.2'
 
+    //3D地图so及jar
+    //api 'com.amap.api:3dmap:7.1.0'
+    //定位功能
+    //api 'com.amap.api:location:6.5.0'
+    //搜索功能
+    api 'com.amap.api:search:9.7.1'
 
 }

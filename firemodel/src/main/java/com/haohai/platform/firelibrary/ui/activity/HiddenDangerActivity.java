@@ -52,6 +52,7 @@ import com.ruyiruyi.rylibrary.db.Area;
 import com.ruyiruyi.rylibrary.db.DbConfig;
 import com.ruyiruyi.rylibrary.db.Requestaddress;
 import com.ruyiruyi.rylibrary.ui.cell.WheelView;
+import com.ruyiruyi.rylibrary.utils.CommonUtil;
 import com.ruyiruyi.rylibrary.utils.LatLngChangeNew;
 import com.ruyiruyi.rylibrary.utils.image.ImagPagerUtil;
 import com.ruyiruyi.rylibrary.android.rx.rxbinding.RxViewAction;
@@ -302,7 +303,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                     @Override
                     public void call(Void aVoid) {
                         LatLngChangeNew latLngChangeNew = new LatLngChangeNew();
-                        double[] doubles = latLngChangeNew.calWGS84toBD09(Double.parseDouble(String.valueOf(currentLatitude)), Double.parseDouble(String.valueOf(currentLongitude)));
+                        double[] doubles = latLngChangeNew.calWGS84toGCJ02(Double.parseDouble(String.valueOf(currentLatitude)), Double.parseDouble(String.valueOf(currentLongitude)));
                         Intent intent = new Intent(getApplicationContext(), FireMapActivity.class);
                         Log.e(TAG, "call: " + currentLongitude);
                         Log.e(TAG, "call: " + currentLatitude);
@@ -1106,7 +1107,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
             cityAddress = data.getStringExtra("cityAddress");
             currentCity = data.getStringExtra("city");
             LatLngChangeNew latLngChangeNew = new LatLngChangeNew();
-            double[] doubles = latLngChangeNew.calBD09toWGS84(Double.parseDouble(latitude), Double.parseDouble(longitude));
+            double[] doubles = latLngChangeNew.calGCJ02toWGS84(Double.parseDouble(latitude), Double.parseDouble(longitude));
             if (!currentCity.isEmpty()) {
                 String currentCiryParentId = "";
                 String currentCiryId = "";
@@ -1140,8 +1141,8 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
 
             addressView.setText(cityAddress);
             addressView.setSelection(cityAddress.length());
-            jingduView.setText(doubles[1]+"");
-            weiduView.setText(doubles[0]+"");
+            jingduView.setText(CommonUtil.parsePointSplit(doubles[1]+"",6));
+            weiduView.setText(CommonUtil.parsePointSplit(doubles[0]+"",6));
 //            Toast.makeText(this, "经度=" + longitude + "纬度=" + latitude + "cityAddress=" + cityAddress, Toast.LENGTH_SHORT).show();
         }
 

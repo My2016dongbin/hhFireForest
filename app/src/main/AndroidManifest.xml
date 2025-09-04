@@ -171,12 +171,12 @@
         <!-- 高德地图的key 跟服务 -->
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="b5bdf64c41f0b28bfa36286e1fb46972" />
+            android:value="cdc1e2a53e2ad60a59a04ed6cd6ac3bb" />
 
         <!-- 百度地图key -->
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="Jp3JUDsrHGmKe3ImBiui2Tk0zRHCKCfI" />
+            android:value="ZtMu7Uh8tZuY3dNYdE8G99BlRe531Tbl" />
 
         <receiver android:name=".ui.receiver.TengxunReceiver">
             <intent-filter>

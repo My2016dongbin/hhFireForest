@@ -58,6 +58,7 @@ import com.ruyiruyi.rylibrary.image.ImageUtils;
 import com.ruyiruyi.rylibrary.request.RequestUtils;
 import com.ruyiruyi.rylibrary.route.RouteUtils;
 import com.ruyiruyi.rylibrary.ui.cell.WheelView;
+import com.ruyiruyi.rylibrary.utils.CommonUtil;
 import com.ruyiruyi.rylibrary.utils.GifSizeFilter;
 import com.ruyiruyi.rylibrary.utils.LatLngChangeNew;
 import com.tbruyelle.rxpermissions2.RxPermissions;
@@ -271,7 +272,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                     @Override
                     public void call(Void aVoid) {
                         LatLngChangeNew latLngChangeNew = new LatLngChangeNew();
-                        double[] doubles = latLngChangeNew.calWGS84toBD09(Double.parseDouble(String.valueOf(currentLatitude)), Double.parseDouble(String.valueOf(currentLongitude)));
+                        double[] doubles = latLngChangeNew.calWGS84toGCJ02(Double.parseDouble(String.valueOf(currentLatitude)), Double.parseDouble(String.valueOf(currentLongitude)));
                         Intent intent = new Intent(getApplicationContext(), FireMapActivity.class);
                         intent.putExtra("longitude_double", doubles[1]);
                         intent.putExtra("latitude_double", doubles[0]);
@@ -766,7 +767,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
             cityAddress = data.getStringExtra("cityAddress");
             currentCity = data.getStringExtra("city");
             LatLngChangeNew latLngChangeNew = new LatLngChangeNew();
-            double[] doubles = latLngChangeNew.calBD09toWGS84(Double.parseDouble(latitude), Double.parseDouble(longitude));
+            double[] doubles = latLngChangeNew.calGCJ02toWGS84(Double.parseDouble(latitude), Double.parseDouble(longitude));
             if (!currentCity.isEmpty()) {
                 String currentCiryParentId = "";
                 String currentCiryId = "";
@@ -802,8 +803,8 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
 
             addressView.setText(cityAddress);
             addressView.setSelection(cityAddress.length());
-            jingduView.setText(doubles[1]+"");
-            weiduView.setText(doubles[0]+"");
+            jingduView.setText(CommonUtil.parsePointSplit(doubles[1]+"",6));
+            weiduView.setText(CommonUtil.parsePointSplit(doubles[0]+"",6));
 //            Toast.makeText(this, "经度=" + longitude + "纬度=" + latitude + "cityAddress=" + cityAddress, Toast.LENGTH_SHORT).show();
         } else if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
             List<Uri> uriList = Matisse.obtainResult(data);
