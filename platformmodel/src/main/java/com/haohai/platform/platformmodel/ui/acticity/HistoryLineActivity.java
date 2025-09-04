@@ -423,10 +423,11 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
     }
 
     private void postData2(){
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "oa/api/trajectory/userTrajectoryByTime");
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "oa/api/trajectory/userTrajectoryByTime/"+new DbConfig(this).getUser().getId());
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
         params.addParameter("id",new DbConfig(this).getUser().getId());
         params.addParameter("time","2025-09-04");
+        Log.e(TAG,"postData " + params);
         x.http().get(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
