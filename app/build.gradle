@@ -2,8 +2,8 @@ plugins {
     id 'com.android.application'
 }
 
-def VERSION_CODE = 42
-def VERSION_NAME = "1.4.2"
+def VERSION_CODE = 43
+def VERSION_NAME = "1.4.3"
 
 def keystoreFilepath = ''
 def keyfile = file('s.keystore.temp')

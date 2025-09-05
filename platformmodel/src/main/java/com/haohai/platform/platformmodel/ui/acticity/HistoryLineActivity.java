@@ -35,40 +35,24 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.amap.api.maps.AMap;
+import com.amap.api.maps.CameraUpdateFactory;
+import com.amap.api.maps.model.BitmapDescriptor;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.LatLngBounds;
+import com.amap.api.maps.model.MarkerOptions;
+import com.amap.api.maps.model.Polyline;
+import com.amap.api.maps.model.PolylineOptions;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
-import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.BitmapDescriptor;
-import com.baidu.mapapi.map.BitmapDescriptorFactory;
-import com.baidu.mapapi.map.InfoWindow;
-import com.baidu.mapapi.map.MapPoi;
-import com.baidu.mapapi.map.MapStatus;
-import com.baidu.mapapi.map.MapStatusUpdateFactory;
-import com.baidu.mapapi.map.MapView;
-import com.baidu.mapapi.map.Marker;
-import com.baidu.mapapi.map.MarkerOptions;
-import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
-import com.baidu.mapapi.map.OverlayOptions;
-import com.baidu.mapapi.map.Polyline;
-import com.baidu.mapapi.map.PolylineOptions;
-import com.baidu.mapapi.map.TextOptions;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.trace.api.track.HistoryTrackRequest;
-import com.baidu.trace.api.track.HistoryTrackResponse;
-import com.baidu.trace.api.track.OnTrackListener;
-import com.baidu.trace.api.track.SupplementContent;
-import com.baidu.trace.api.track.SupplementMode;
-import com.baidu.trace.api.track.TrackPoint;
-import com.baidu.trace.model.ProcessOption;
-import com.baidu.trace.model.TransportMode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.haohai.ledge.videolibrary.utils.CommonUtil;
 import com.haohai.platform.platformmodel.ui.Multitype.Empty;
-import com.haohai.platform.mapmodel.multitype.OneBodyFire;
 import com.haohai.platform.platformmodel.R;
 import com.haohai.platform.platformmodel.ui.Multitype.EmptyViewBinder;
 import com.haohai.platform.platformmodel.ui.Multitype.PersonViewBinder;
@@ -119,8 +103,6 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
     TextView info_text;
     ImageView iv_back;
     TextView tv_find;
-    private MapView baiduMapView;
-    private BaiduMap mBaiduMap;
     private LocationClient mLocationClient;
     private DYLoadingView dy3;
     private Dialog searchDialog;
@@ -149,50 +131,21 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
     private TextView result_time;
     private TextView result_start;
     private TextView result_end;
-    private int status = 0;//0未查询 1日期 2查询结束
-    private BDAbstractLocationListener mListener = new BDAbstractLocationListener() {
 
-        /**
-         * 定位请求回调函数
-         *
-         * @param location 定位结果
-         */
-        @Override
-        public void onReceiveLocation(BDLocation location) {
-            mBaiduMap.getUiSettings().setCompassEnabled(true);
-            // MapView 销毁后不在处理新接收的位置
-            if (location == null || baiduMapView == null) {
-                return;
-            }
-            mCurrentLat = location.getLatitude();
-            mCurrentLon = location.getLongitude();
-            mCurrentAccracy = location.getRadius();
-            myLocationData = new MyLocationData.Builder()
-                    .accuracy(mCurrentAccracy)// 设置定位数据的精度信息，单位：米
-                    .direction(mCurrentDirection)// 此处设置开发者获取到的方向信息，顺时针0-360
-                    .latitude(mCurrentLat)
-                    .longitude(mCurrentLon)
-                    .build();
-            mBaiduMap.setMyLocationData(myLocationData);
-            if (location.getLocType() == BDLocation.TypeGpsLocation
-                    || location.getLocType() == BDLocation.TypeNetWorkLocation
-                    || location.getLocType() == BDLocation.TypeOffLineLocation) {
-                if (isFirstLoc) {
-                    isFirstLoc = false;
-                    LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
-                    MapStatus.Builder builder = new MapStatus.Builder();
-                    builder.target(ll).zoom(18.0f);
-                    mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-                }
-            }
-        }
-    };
+    private com.amap.api.maps.MapView aMapView;
+    private com.amap.api.maps.AMap aMap;
+    private int status = 0;//0未查询 1日期 2查询结束
     private String TAG = HistoryLineActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history_line);
+        aMapView = ((com.amap.api.maps.MapView) findViewById(com.haohai.platform.mapmodel.R.id.aMapView));
+        aMapView.onCreate(savedInstanceState);
+        aMap = aMapView.getMap();
+        aMap.setMapType(AMap.MAP_TYPE_SATELLITE);
+        flyBaiduMap(36.195139,117.098229);//泰安市
         mHandler = new Handler(getMainLooper());
         init();
         initTree();
@@ -259,7 +212,6 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
     private void startLocation() {
         // 定位初始化
         mLocationClient = new LocationClient(this);
-        mLocationClient.registerLocationListener(mListener);
         LocationClientOption locationClientOption = new LocationClientOption();
         // 可选，设置定位模式，默认高精度 LocationMode.Hight_Accuracy：高精度；
         locationClientOption.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
@@ -293,145 +245,61 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
 
     private List<LatLng> lineList = new ArrayList<>();
     private List<String> timeList = new ArrayList<>();
-    private List<LatLng> allList = new ArrayList<>();
+    private List<com.amap.api.maps.model.LatLng> allList = new ArrayList<>();
     private double distance = 0;
 
     private String searchId;
-    private void postData() {
-        searchId = new DbConfig(this).getUser().getId();
-        showDY3();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                hideDY3();
-            }
-        },3000);
-        mBaiduMap.clear();
-        timeList.clear();
-        allList.clear();
-        SimpleDateFormat smf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date startDate = new Date();
-        Date endDate = new Date();
-        try {
-            startDate = smf.parse(tv_date.getText().toString() + " " + tv_start.getText().toString());
-            endDate = smf.parse(tv_date_end.getText().toString() + " " + tv_end.getText().toString());
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        long[] longs = MapHelper.timeDistance(startDate.getTime(), endDate.getTime());
 
-        //百度鹰眼轨迹查询
-        // 请求标识
-        int tag = 1;
-        // 轨迹服务ID
-        long serviceId = 235910;
-        // 设备标识
-        String entityName = chooseUserId;
-        // 创建历史轨迹请求实例
-        HistoryTrackRequest historyTrackRequest = new HistoryTrackRequest(tag, serviceId, entityName);
-
-        // 开始时间 时间戳
-        long startTime = parseDate(startDate.getTime());
-        Log.e(TAG, "postData: startTime " + startTime );
-        // 结束时间 时间戳
-        long endTime = parseDate(endDate.getTime());
-        // 设置开始时间
-        historyTrackRequest.setStartTime(startTime);
-        // 设置结束时间
-        historyTrackRequest.setEndTime(endTime);
-
-
-        // 设置需要纠偏
-        historyTrackRequest.setProcessed(true);
-        //设置断点补偿
-        historyTrackRequest.setSupplementContent(SupplementContent.distance_and_points);
-
-
-        // 创建纠偏选项实例
-        ProcessOption processOption = new ProcessOption();
-        // 设置需要去噪
-        processOption.setNeedDenoise(true);
-        // 设置需要抽稀
-        processOption.setNeedVacuate(true);
-        // 设置需要绑路
-        processOption.setNeedMapMatch(true);
-        // 设置精度过滤值(定位精度大于100米的过滤掉)
-        processOption.setRadiusThreshold(100);
-        // 设置交通方式
-        processOption.setTransportMode(TransportMode.walking);
-        // 设置纠偏选项
-        historyTrackRequest.setProcessOption(processOption);
-
-
-        // 设置里程填充方式
-        historyTrackRequest.setSupplementMode(SupplementMode.walking);
-
-
-        // 初始化轨迹监听器
-        OnTrackListener mTrackListener = new OnTrackListener() {
-            // 历史轨迹回调
-            @Override
-            public void onHistoryTrackCallback(HistoryTrackResponse response) {
-                if((longs[0] * 24 + longs[1])>24 || ((longs[0] * 24 + longs[1])==24)&&(longs[2]>0||longs[3]>0)){
-                    Toast.makeText(HistoryLineActivity.this, "查询时间不能超过24小时", Toast.LENGTH_SHORT).show();
-                    fl_bar.setVisibility(View.GONE);
-                    return;
-                }
-
-                Log.e(TAG, "onHistoryTrackCallback: points = " + response.trackPoints.size() + " | "  + response.trackPoints );
-                List<LatLng> list = new ArrayList<>();
-                for (int i = 0; i < response.trackPoints.size(); i++) {
-                    TrackPoint trackPoint = response.trackPoints.get(i);
-                    if(trackPoint.getSpeed()<200){
-                        com.baidu.trace.model.LatLng location = trackPoint.getLocation();
-                        LatLng latLng = new LatLng(location.latitude,location.longitude);
-                        list.add(latLng);
-                        allList.add(latLng);
-                        timeList.add(trackPoint.getCreateTime());
-                    }
-                }
-                result_km.setText(parseSix(response.getDistance() + "") + "m");
-
-                drawPolyLine(list);
-
-
-                searchDialog.dismiss();
-                tv_result_title.setText(tv_date.getText().toString() + "~" + tv_date_end.getText().toString() + "巡护轨迹");
-                result_time.setText((longs[0] * 24 + longs[1]) + ":" + longs[2] + ":" + longs[3]);
-                result_start.setText(tv_start.getText().toString());
-                result_end.setText(tv_end.getText().toString());
-                resultDialog.show();
-
-                //轨迹Bar数据初始化
-                bar.setMin(0f);
-                bar.setMax(timeList.size()*1.0f - 1);
-                Log.e(TAG, "onSuccess: timeList " + timeList );
-                if(timeList.isEmpty()){
-                    fl_bar.setVisibility(View.GONE);
-                }else{
-                    fl_bar.setVisibility(View.VISIBLE);
-                    bar.setProgress(timeList.size()-1);
-                    flyBaiduMap(allList.get(allList.size()-1).latitude,allList.get(allList.size()-1).longitude);
-                }
-            }
-        };
-
-        // 查询轨迹
-        CommonData.mTraceClient.queryHistoryTrack(historyTrackRequest, mTrackListener);
-
-
-    }
-
-    private void postData2(){
+    private void postData(){
         RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "oa/api/trajectory/userTrajectoryByTime/"+new DbConfig(this).getUser().getId());
         params.addHeader("Authorization", "bearer " + new DbConfig(this).getUser().getToken());
         params.addParameter("id",new DbConfig(this).getUser().getId());
-        params.addParameter("time","2025-09-04");
+        params.addParameter("time",tv_date.getText().toString());
         Log.e(TAG,"postData " + params);
-        x.http().get(params, new Callback.CommonCallback<String>() {
+        x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 Log.e(TAG,"postData " + result);
+                try {
+                    JSONObject jsonObject = new JSONObject(result);
+                    JSONArray data = jsonObject.getJSONArray("data");
+
+                    List<com.amap.api.maps.model.LatLng> list = new ArrayList<>();
+                    for (int i = 0; i < data.length(); i++) {
+                        JSONObject obj = (JSONObject) data.get(i);
+                        JSONObject position = obj.getJSONObject("position");
+                        com.amap.api.maps.model.LatLng latLng = new com.amap.api.maps.model.LatLng(position.getDouble("lat"),position.getDouble("lng"));
+                        list.add(latLng);
+                        allList.add(latLng);
+                        timeList.add(obj.getString("offlineUploadTime"));
+                    }
+                    //result_km.setText("1024" + "m");
+
+                    drawPolyLine(list);
+
+
+                    searchDialog.dismiss();
+                    /*tv_result_title.setText(tv_date.getText().toString() + "巡护轨迹");
+                    //result_time.setText((longs[0] * 24 + longs[1]) + ":" + longs[2] + ":" + longs[3]);
+                    result_start.setText(tv_start.getText().toString());
+                    result_end.setText(tv_end.getText().toString());
+                    resultDialog.show();
+
+                    //轨迹Bar数据初始化
+                    bar.setMin(0f);
+                    bar.setMax(timeList.size()*1.0f - 1);
+                    Log.e(TAG, "onSuccess: timeList " + timeList );
+                    if(timeList.isEmpty()){
+                        fl_bar.setVisibility(View.GONE);
+                    }else{
+                        fl_bar.setVisibility(View.VISIBLE);
+                        bar.setProgress(timeList.size()-1);
+                        flyBaiduMap(allList.get(allList.size()-1).latitude,allList.get(allList.size()-1).longitude);
+                    }*/
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -471,229 +339,64 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
     private BitmapDescriptor mBitmapCar = BitmapDescriptorFactory.fromResource(R.drawable.icon_car);
     private BitmapDescriptor mBitmapStart = BitmapDescriptorFactory.fromResource(R.drawable.ic_qi);
     private BitmapDescriptor mBitmapEnd = BitmapDescriptorFactory.fromResource(R.drawable.ic_zhong);
-    private Polyline mPolyline;
-    private Marker mMoveMarker;
     private Handler mHandler;
     // 通过设置间隔时间和距离可以控制速度和图标移动的距离
     private static final int TIME_INTERVAL = 30;
     private static final double DISTANCE = 0.000005;
 
+
+    private Polyline polyline; // 保存上一次的轨迹线
+
     /**
      * 绘制轨迹
      */
     @SuppressLint("SetTextI18n")
-    private void drawPolyLine(List<LatLng> list) {
-        /*List<Integer> indexList = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
-            if(i+1 <= list.size()-1){
-                LatLng latLngL = list.get(i);
-                LatLng latLngR = list.get(i+1);
-                if(MapHelper.distance(latLngL.longitude,latLngL.latitude,latLngR.longitude,latLngR.latitude) > 5){
-                    indexList.add(i);
-                }
-            }
-        }
-        for (int i = 0; i < indexList.size(); i++) {//[0,10,20,33,60]
-            //[start~0,0~10,10~20,20~33,33~60,60~end]
-            if(i == 0){
-                List<LatLng> subList = list.subList(0,indexList.get(i));
-                // 绘制纹理PolyLine
-                PolylineOptions polylineOptions =
-                        new PolylineOptions().points(subList).width(26).customTexture(mGreenTexture)
-                                .dottedLine(false);
-                mPolyline = (Polyline) mBaiduMap.addOverlay(polylineOptions);
-            }
-            if(i > 0){
-                List<LatLng> subList = list.subList(indexList.get(i-1),indexList.get(i));
-                // 绘制纹理PolyLine
-                PolylineOptions polylineOptions =
-                        new PolylineOptions().points(subList).width(26).customTexture(mGreenTexture)
-                                .dottedLine(false);
-                mPolyline = (Polyline) mBaiduMap.addOverlay(polylineOptions);
-            }
-            if(i == indexList.size()-1){
-                List<LatLng> subList = list.subList(indexList.get(i),list.size());
-                // 绘制纹理PolyLine
-                PolylineOptions polylineOptions =
-                        new PolylineOptions().points(subList).width(26).customTexture(mGreenTexture)
-                                .dottedLine(false);
-                mPolyline = (Polyline) mBaiduMap.addOverlay(polylineOptions);
-            }
-        }*/
-        // 绘制纹理PolyLine
-        /*PolylineOptions polylineOptions =
-                new PolylineOptions().points(list).width(26).customTexture(mGreenTexture)
-                        .dottedLine(false);
-        mPolyline = (Polyline) mBaiduMap.addOverlay(polylineOptions);*/
-
-        if(list.size()<2){
-            Toast.makeText(this, "轨迹点位数据太少请稍后重试", Toast.LENGTH_SHORT).show();
+    private void drawPolyLine(List<com.amap.api.maps.model.LatLng> list) {
+        if (list == null || list.size() < 2) {
+            Toast.makeText(this, "轨迹点位数据太少，请稍后重试", Toast.LENGTH_SHORT).show();
             return;
         }
-        OverlayOptions ooPolyline = new PolylineOptions().width(14).color(0xFF0099E1).points(list);
-        mPolyline = (Polyline) mBaiduMap.addOverlay(ooPolyline);
-        mPolyline.setIsKeepScale(false);
-        /*List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        for (int i = 0; i < list.size(); i++) {
-            Bundle bundle = new Bundle();
-            bundle.putInt("index", i);
-            OverlayOptions option = new MarkerOptions()
-                    .position(list.get(i))
-                    .extraInfo(bundle)
-                    .icon(BitmapDescriptorFactory.fromResource(com.haohai.platform.mapmodel.R.drawable.ic_blue_fire_));
-            options.add(i, option);
+
+        aMap.clear();
+        // 清除旧的轨迹线（避免把其他 Marker 也清了）
+        if (polyline != null) {
+            polyline.remove();
         }
-        mBaiduMap.addOverlays(options);*/
-        mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                try{
-                    Bundle bundle = marker.getExtraInfo();
-                    int index = bundle.getInt("index");
-                    InfoWindow mInfoWindow;
-                    //构造InfoWindow
-                    View view = LayoutInflater.from(HistoryLineActivity.this).inflate(R.layout.history_info, null);
-                    TextView info_index = view.findViewById(R.id.info_index);
-                    TextView info_text = view.findViewById(R.id.info_text);
-                    info_index.setText(index + "");
-                    info_text.setText(timeList.get(index).substring(5, 19));
-                    //构造InfoWindow
-                    mInfoWindow = new InfoWindow(view, marker.getPosition(), -100);
-                    //使InfoWindow生效
-                    mBaiduMap.showInfoWindow(mInfoWindow);
-                }catch (Exception e){
-                    Log.e(TAG, "onMarkerClick: " + e );
-                }
 
-                return false;
-            }
-        });
-        mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                for (int i = 0; i < list.size(); i++) {
-                    LatLng model = list.get(i);
-                    double distance = CommonUtil.distance(model.longitude, model.latitude, latLng.longitude, latLng.latitude);
-                    Log.e(TAG, "onMapClick: distance = " + distance );
-                    if(distance <= 0.1){
-                        InfoWindow mInfoWindow;
-                        //构造InfoWindow
-                        View view = LayoutInflater.from(HistoryLineActivity.this).inflate(R.layout.history_info, null);
-                        TextView info_index = view.findViewById(R.id.info_index);
-                        TextView info_text = view.findViewById(R.id.info_text);
-                        info_index.setText(i + "");
-                        info_text.setText(timeList.get(i).substring(5, 19));
-                        //构造InfoWindow
-                        mInfoWindow = new InfoWindow(view, latLng, -100);
-                        //使InfoWindow生效
-                        mBaiduMap.showInfoWindow(mInfoWindow);
-                        return;
-                    }
-                }
-            }
+        // 设置折线样式
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .addAll(list)
+                .color(0xFF1E90FF) // 轨迹线颜色 (深蓝)
+                .width(12f)        // 轨迹线宽度
+                .setUseTexture(true) // 支持纹理（如果要画虚线/箭头）
+                .geodesic(true);     // 大地曲线，更符合地理实际
 
-            @Override
-            public boolean onMapPoiClick(MapPoi mapPoi) {
-                return false;
-            }
-        });
+        // 添加轨迹线
+        polyline = aMap.addPolyline(polylineOptions);
 
-        // 添加小车marker
-        OverlayOptions markerOptions = new MarkerOptions()
-                .flat(true)
-                .anchor(0.5f, 0.5f)
-                .icon(mBitmapCar).
-                        position(list.get(0))
-                .rotate((float) getAngle(0));
-        //mMoveMarker = (Marker) mBaiduMap.addOverlay(markerOptions);
-        //绘制起点终点
-        Bundle bundle = new Bundle();
-        bundle.putInt("index", 0);
-        OverlayOptions markerOptionsStart = new MarkerOptions()
-                .icon(mBitmapStart).extraInfo(bundle).position(list.get(0));
-        mBaiduMap.addOverlay(markerOptionsStart);
-        Bundle bundleEnd = new Bundle();
-        bundleEnd.putInt("index", list.size()-1);
-        OverlayOptions markerOptionsEnd = new MarkerOptions()
-                .icon(mBitmapEnd).extraInfo(bundleEnd).position(list.get(list.size() - 1));
-        mBaiduMap.addOverlay(markerOptionsEnd);
+        // 起点 Marker
+        aMap.addMarker(new MarkerOptions()
+                .position(list.get(0))
+                .snippet("")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
 
-        //默认显示最后一条info
-        InfoWindow mInfoWindow;
-        //构造InfoWindow
-        View view = LayoutInflater.from(HistoryLineActivity.this).inflate(R.layout.history_info, null);
-        TextView info_index = view.findViewById(R.id.info_index);
-        TextView info_text = view.findViewById(R.id.info_text);
-        info_index.setText(list.size()-1 + "");
-        info_text.setText(timeList.get(list.size()-1).substring(5, 19));
-        //构造InfoWindow
-        mInfoWindow = new InfoWindow(view, list.get(list.size()-1), -100);
-        //使InfoWindow生效
-        mBaiduMap.showInfoWindow(mInfoWindow);
+        // 终点 Marker
+        aMap.addMarker(new MarkerOptions()
+                .position(list.get(list.size() - 1))
+                .snippet("")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
-/*        int dex = 0;
-        dex = list.size()/30;
-        for (int i = 0; i < list.size(); i++) {
-            if(dex!=0 && i%dex!=0){
-                continue;
-            }
-            InfoWindow mInfoWindow;
-            //构造InfoWindow
-            View view = LayoutInflater.from(HistoryLineActivity.this).inflate(R.layout.history_info, null);
-            TextView info_index = view.findViewById(R.id.info_index);
-            TextView info_text = view.findViewById(R.id.info_text);
-            //drawBitMap(timeList.get(i).substring(5, 19));
-            info_index.setText(i + "");
-            info_text.setText(timeList.get(i).substring(5, 19));
-            *//*info_index.setText(i + "");
-            info_text.setText(timeList.get(i).substring(5, 19));
-            ll_bitmaps.buildDrawingCache();
-            Bitmap bitmap = ll_bitmaps.getDrawingCache();
-            info_show.setImageBitmap(bitmap);*//*
-
-            //bitmap.recycle();
-
-            *//*mBaiduMap.addOverlay(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromBitmap(bitmap)).
-                            position(list.get(i)));*//*
-
-            //构造InfoWindow
-            mInfoWindow = new InfoWindow(view, list.get(i), -100);
-            //使InfoWindow生效
-            mBaiduMap.showInfoWindow(mInfoWindow);
-
-        }*/
+        // 自动缩放到轨迹范围
+        LatLngBounds.Builder boundsBuilder = LatLngBounds.builder();
+        for (com.amap.api.maps.model.LatLng latLng : list) {
+            boundsBuilder.include(latLng);
+        }
+        aMap.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100));
     }
+
 
     BitmapDescriptor mIconMarker;
     Bitmap bitmap;
-
-    private void drawBitMap(String str) {
-        BitmapDescriptor mIconMarker = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher);
-        float scale = this.getResources().getDisplayMetrics().density;
-        Log.e("scale", "=" + scale);
-        int width = mIconMarker.getBitmap().getWidth(), height = mIconMarker.getBitmap().getHeight();//marker的获取宽高
-        bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444); //建立一个空的Bitmap
-        bitmap = scaleWithWH(bitmap, width * scale, height * scale);//缩放
-        //画笔进行添加文字（强烈推荐启舰的自定义控件三部曲http://blog.csdn.net/harvic880925/article/details/50995268）
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);//抗锯齿
-        paint.setDither(true); // 获取跟清晰的图像采样
-        paint.setFilterBitmap(true);// 过滤
-        paint.setColor(Color.RED);
-        paint.setTextSize(14 * scale);
-
-        Rect bounds = new Rect();
-        paint.getTextBounds(str, 0, str.length(), bounds);//获取文字的范围
-        //文字在mMarker中展示的位置
-        float paddingLeft = (bitmap.getWidth() - bounds.width()) / 2;//在中间
-        float paddingTop = (bitmap.getHeight() / scale);//在顶部
-
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawText(str, paddingLeft, paddingTop, paint);
-
-        //合并两个bitmap为一个
-        canvas.drawBitmap(mIconMarker.getBitmap(), paddingLeft, paddingTop, null);//marker的位置
-    }
 
     private Bitmap scaleWithWH(Bitmap src, double w, double h) {
         if (w == 0 || h == 0 || src == null) {
@@ -714,34 +417,10 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
         }
     }
 
-    private void gc() {
-        if (bitmap != null) {// 回收并且置为null
-            bitmap.recycle();
-            bitmap = null;
-        }
-        System.gc();
-    }
-
     private void flyBaiduMap(double lat, double lng) {
         //飞到精确点上
-        com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                lat, lng);
-        MapStatus.Builder builder = new MapStatus.Builder();
-        builder.target(ll).zoom(20);
-        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+        aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new com.amap.api.maps.model.LatLng(lat,lng),16));
 
-    }
-
-    /**
-     * 根据点获取图标转的角度
-     */
-    private double getAngle(int startIndex) {
-        if ((startIndex + 1) >= mPolyline.getPoints().size()) {
-            return -1.0;
-        }
-        LatLng startPoint = mPolyline.getPoints().get(startIndex);
-        LatLng endPoint = mPolyline.getPoints().get(startIndex + 1);
-        return getAngle(startPoint, endPoint);
     }
 
     /**
@@ -785,88 +464,6 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
 
     private int loopTag = 0;//防止跳点前一次轨迹
 
-    /**
-     * 循环进行移动逻辑
-     */
-    public void moveLooper(int loop) {
-        new Thread() {
-            public void run() {
-                while (true) {
-                    for (int i = 0; i < lineList.size() - 1; i++) {
-                        if (loop != loopTag) {
-                            return;
-                        }
-                        final LatLng startPoint = lineList.get(i);
-                        final LatLng endPoint = lineList.get(i + 1);
-                        mMoveMarker.setPosition(startPoint);
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                // refresh marker's rotate
-                                if (baiduMapView == null) {
-                                    return;
-                                }
-                                mMoveMarker.setRotate((float) getAngle(startPoint, endPoint));
-                            }
-                        });
-                        double slope = getSlope(startPoint, endPoint);
-                        // 是不是正向的标示
-                        boolean isYReverse = (startPoint.latitude > endPoint.latitude);
-                        boolean isXReverse = (startPoint.longitude > endPoint.longitude);
-                        double intercept = getInterception(slope, startPoint);
-                        double xMoveDistance =
-                                isXReverse ? getXMoveDistance(slope) : -1 * getXMoveDistance(slope);
-                        double yMoveDistance =
-                                isYReverse ? getYMoveDistance(slope) : -1 * getYMoveDistance(slope);
-
-                        for (double j = startPoint.latitude, k = startPoint.longitude;
-                             !((j > endPoint.latitude)
-                                     ^ isYReverse)
-                                     && !((k > endPoint.longitude)
-                                     ^ isXReverse); ) {
-                            LatLng latLng = null;
-
-                            if (slope == Double.MAX_VALUE) {
-                                latLng = new LatLng(j, k);
-                                j = j - yMoveDistance;
-                            } else if (slope == 0.0) {
-                                latLng = new LatLng(j, k - xMoveDistance);
-                                k = k - xMoveDistance;
-                            } else {
-                                latLng = new LatLng(j, (j - intercept) / slope);
-                                j = j - yMoveDistance;
-                            }
-
-                            final LatLng finalLatLng = latLng;
-                            if (finalLatLng.latitude == 0 && finalLatLng.longitude == 0) {
-                                continue;
-                            }
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (baiduMapView == null) {
-                                        return;
-                                    }
-                                    if (loop != loopTag) {
-                                        return;
-                                    }
-                                    mMoveMarker.setPosition(finalLatLng);
-                                    // 设置 Marker 覆盖物的位置坐标,并同步更新与Marker关联的InfoWindow的位置坐标.
-                                    mMoveMarker.setPositionWithInfoWindow(finalLatLng);
-                                }
-                            });
-                            try {
-                                Thread.sleep(TIME_INTERVAL);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            }
-
-        }.start();
-    }
 
 
     /**
@@ -900,15 +497,13 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
     @Override
     protected void onPause() {
         super.onPause();
-        if (null != baiduMapView) {
-            baiduMapView.onPause();
-        }
+        aMapView.onPause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        baiduMapView.onResume();
+        aMapView.onResume();
     }
 
     @Override
@@ -927,13 +522,13 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
             mGreenTexture.recycle();
         }
 
-        if (null != mBaiduMap) {
-            mBaiduMap.clear();
-        }
+        aMapView.onDestroy();
+    }
 
-        if (null != baiduMapView) {
-            baiduMapView.onDestroy();
-        }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        aMapView.onSaveInstanceState(outState);
     }
 
     @Override
@@ -966,10 +561,6 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
     public class MyLocationListener extends BDAbstractLocationListener {
         @Override
         public void onReceiveLocation(BDLocation location) {
-            //mapView 销毁后不在处理新接收的位置
-            if (location == null || baiduMapView == null) {
-                return;
-            }
             MyLocationData locData = new MyLocationData.Builder()
                     .accuracy(location.getRadius())
                     // 此处设置开发者获取到的方向信息，顺时针0-360
@@ -977,57 +568,19 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
                     .latitude(location.getLatitude())
                     .longitude(location.getLongitude())
                     .build();
-            mBaiduMap.setMyLocationData(locData);
+            //mBaiduMap.setMyLocationData(locData);
         }
     }
 
     private int searchPage = 0;//0 时间选择  1 用户选择
     private void init() {
         chooseUserId = new DbConfig(this).getUser().getId();//默认本账号UserId
-        fl_bar = findViewById(R.id.fl_bar);
-        bar = findViewById(R.id.bar);
-        bar.setOnSeekChangeListener(new OnSeekChangeListener() {
-            @Override
-            public void onSeeking(SeekParams seekParams) {
-                float progressFloat = seekParams.progressFloat;
-                int index = (int) (progressFloat/1);
-                if(index > allList.size()-1){
-                    index = allList.size()-1;
-                }
-                Log.e(TAG, "onSeeking: progressFloat " + progressFloat );
-                Log.e(TAG, "onSeeking: index " + index );
-                InfoWindow mInfoWindow;
-                //构造InfoWindow
-                View view = LayoutInflater.from(HistoryLineActivity.this).inflate(R.layout.history_info, null);
-                TextView info_index = view.findViewById(R.id.info_index);
-                TextView info_text = view.findViewById(R.id.info_text);
-                info_index.setText(index + "");
-                info_text.setText(timeList.get(index).substring(5, 19));
-                //构造InfoWindow
-                mInfoWindow = new InfoWindow(view, allList.get(index), -100);
-                //使InfoWindow生效
-                mBaiduMap.showInfoWindow(mInfoWindow);
-
-                flyBaiduMap(allList.get(index).latitude,allList.get(index).longitude);
-            }
-
-            @Override
-            public void onStartTrackingTouch(IndicatorSeekBar seekBar) {
-                Log.e(TAG, "onSeeking start : " + seekBar.getMin());
-            }
-
-            @Override
-            public void onStopTrackingTouch(IndicatorSeekBar seekBar) {
-                Log.e(TAG, "onSeeking stop : " + seekBar.getMax());
-            }
-        });
         ll_bitmaps = findViewById(R.id.ll_bitmaps);
         info_show = findViewById(R.id.info_show);
         info_index = findViewById(R.id.info_index);
         info_text = findViewById(R.id.info_text);
         iv_back = findViewById(R.id.iv_back);
         tv_find = findViewById(R.id.tv_find);
-        baiduMapView = findViewById(R.id.baidu_mapview);
         dy3 = findViewById(R.id.dy3);
         RxViewAction.clickNoDouble(iv_back).subscribe(new Action1<Void>() {
             @Override
@@ -1045,25 +598,11 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
         });
         date = new StringBuffer();
         endDate = new StringBuffer();
-        baiduMapView.showZoomControls(false);
-        mBaiduMap = baiduMapView.getMap();
-        //显示卫星图层
-        mBaiduMap.setMapType(BaiduMap.MAP_TYPE_SATELLITE);
-        mBaiduMap.setMyLocationEnabled(true);
-        MyLocationConfiguration myLocationConfiguration =
-                new MyLocationConfiguration(MyLocationConfiguration.LocationMode.NORMAL, true, null);
-        mBaiduMap.setMyLocationConfiguration(myLocationConfiguration);
-        mBaiduMap.getUiSettings().setCompassEnabled(false);
         // 获取传感器管理服务
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         // 为系统的方向传感器注册监听器
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
                 SensorManager.SENSOR_DELAY_UI);
-
-        //只显示道路 不显示其他标注
-        mBaiduMap.showMapPoi(true);
-        //设置最大最小缩放等级
-        mBaiduMap.setMaxAndMinZoomLevel(18, 5);
 
 
         //定位初始化
@@ -1186,7 +725,7 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
         WindowManager.LayoutParams fireListLp = fireListWindow.getAttributes();
         WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         int height = wm.getDefaultDisplay().getHeight();
-        fireListLp.height = (int) (height * 0.5);
+        fireListLp.height = (int) (height * 0.3);
         fireListWindow.setAttributes(fireListLp);
         searchDialog.setCanceledOnTouchOutside(true);
         searchDialog.show();
@@ -1259,7 +798,7 @@ public class HistoryLineActivity extends HhBaseActivity implements SensorEventLi
                     .direction(mCurrentDirection)
                     .latitude(mCurrentLat)
                     .longitude(mCurrentLon).build();
-            mBaiduMap.setMyLocationData(myLocationData);
+            //mBaiduMap.setMyLocationData(myLocationData);
         }
         lastX = x;
     }

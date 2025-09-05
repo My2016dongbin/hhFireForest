@@ -10,9 +10,9 @@
     {
       "type": "SINGLE",
       "filters": [],
-      "versionCode": 41,
-      "versionName": "1.4.1",
-      "outputFile": "taian-1.4.1.apk"
+      "versionCode": 43,
+      "versionName": "1.4.3",
+      "outputFile": "taian-1.4.3.apk"
     }
   ]
 }
