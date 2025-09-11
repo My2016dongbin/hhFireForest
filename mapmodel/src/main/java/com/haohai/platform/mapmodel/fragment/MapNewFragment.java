@@ -1287,18 +1287,22 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             starjingdu = jingweiList.get(0);
         }
 
-        LatLng latLng = new LatLngChange().transformFromWGSToGCJ(new LatLng(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude()));
+        try{
+            LatLng latLng = new LatLngChange().transformFromWGSToGCJ(new LatLng(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude()));
 
-        Log.e(TAG, "call: starweidu=" + starweidu);
-        Log.e(TAG, "call:starjingdu= " + starjingdu);
+            Log.e(TAG, "call: starweidu=" + starweidu);
+            Log.e(TAG, "call:starjingdu= " + starjingdu);
 
-        Poi start = new Poi("", new com.amap.api.maps.model.LatLng(Double.parseDouble(starweidu), Double.parseDouble(starjingdu)), "");
-        Poi end = new Poi(currentOneBodyFire.getName(), new com.amap.api.maps.model.LatLng(latLng.latitude, latLng.longitude), "");
-        AmapNaviParams params = new AmapNaviParams(start, null, end, AmapNaviType.DRIVER, AmapPageType.ROUTE);
-        params.setUseInnerVoice(true);
-        Log.e(TAG, "call: start" + starweidu);
-        Log.e(TAG, "call: end" + latLng.latitude);
-        AmapNaviPage.getInstance().showRouteActivity(getContext(), params, MapNewFragment.this);
+            Poi start = new Poi("", new com.amap.api.maps.model.LatLng(Double.parseDouble(starweidu), Double.parseDouble(starjingdu)), "");
+            Poi end = new Poi(currentOneBodyFire.getName(), new com.amap.api.maps.model.LatLng(latLng.latitude, latLng.longitude), "");
+            AmapNaviParams params = new AmapNaviParams(start, null, end, AmapNaviType.DRIVER, AmapPageType.ROUTE);
+            params.setUseInnerVoice(true);
+            Log.e(TAG, "call: start" + starweidu);
+            Log.e(TAG, "call: end" + latLng.latitude);
+            AmapNaviPage.getInstance().showRouteActivity(getContext(), params, MapNewFragment.this);
+        }catch (Exception e){
+            //
+        }
     }
 
     private String parse9(String str) {
@@ -1312,12 +1316,16 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     }
 
     private void initOneBodyFlyBaiduMap() {
-        double[] position = LatLngChangeNew.calWGS84toBD09(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
-        com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                position[0], position[1]);
-        MapStatus.Builder builder = new MapStatus.Builder();
-        builder.target(ll).zoom(15);
-        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+        try{
+            double[] position = LatLngChangeNew.calWGS84toBD09(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
+            com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
+                    position[0], position[1]);
+            MapStatus.Builder builder = new MapStatus.Builder();
+            builder.target(ll).zoom(15);
+            mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+        }catch (Exception e){
+            //
+        }
     }
 
     private void showOneBodyFenleiChangeDailog() {
@@ -2063,6 +2071,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
     //高德
     private void openGaoDeMap() {
+        try{
         double[] doubles = LatLngChangeNew.calWGS84toGCJ02(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
         if (MapUtil.isGdMapInstalled()) {
             MapUtil.openGaoDeNavi(getActivity(), 0, 0, null, doubles[0], doubles[1], currentOneBodyFire.getName());
@@ -2070,10 +2079,14 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             //这里必须要写逻辑，不然如果手机没安装该应用，程序会闪退，这里可以实现下载安装该地图应用
             Toast.makeText(getActivity(), "尚未安装高德地图", Toast.LENGTH_SHORT).show();
         }
+        }catch (Exception e){
+            //
+        }
     }
 
     //百度
     private void openBaiDuMap() {
+        try{
         double[] doubles = LatLngChangeNew.calWGS84toBD09(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
         if (MapUtil.isBaiduMapInstalled()) {
             MapUtil.openBaiDuNavi(getActivity(), 0, 0, null, doubles[0], doubles[1], currentOneBodyFire.getName());
@@ -2081,10 +2094,14 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             //这里必须要写逻辑，不然如果手机没安装该应用，程序会闪退，这里可以实现下载安装该地图应用
             Toast.makeText(getActivity(), "尚未安装百度地图", Toast.LENGTH_SHORT).show();
         }
+        }catch (Exception e){
+            //
+        }
     }
 
     //腾讯
     private void openTencentMap() {
+        try{
         double[] doubles = LatLngChangeNew.calWGS84toGCJ02(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
         if (MapUtil.isTencentMapInstalled()) {
             MapUtil.openTencentMap(getActivity(), 0, 0, null, doubles[0], doubles[1], currentOneBodyFire.getName());
@@ -2092,10 +2109,14 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             //这里必须要写逻辑，不然如果手机没安装该应用，程序会闪退，这里可以实现下载安装该地图应用
             Toast.makeText(getActivity(), "尚未安装腾讯地图", Toast.LENGTH_SHORT).show();
         }
+        }catch (Exception e){
+            //
+        }
     }
 
     //分享到微信
     private void openShareTencent() {
+        try{
         double[] doubles = LatLngChangeNew.calWGS84toGCJ02(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
         WeChatShareUtils instance = WeChatShareUtils.getInstance(getActivity());
         if(instance.isSupportWX()){
@@ -2106,6 +2127,9 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             instance.shareUrl(url,title,bitmap,desc, SendMessageToWX.Req.WXSceneSession);
         }else{
             Toast.makeText(getActivity(), "手机微信版本不支持分享功能", Toast.LENGTH_SHORT).show();
+        }
+        }catch (Exception e){
+            //
         }
     }
 
@@ -2710,16 +2734,20 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_yellow_fire);//国土报警
                     break;
             }
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(oneBodyFireFenleiList.get(i).getAlarmLatitude(), oneBodyFireFenleiList.get(i).getAlarmLongitude());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", oneBodyFireFenleiList.get(i).getId());
-            bundle.putInt("type", ONE_BODY);
-            OverlayOptions option = new MarkerOptions()
-                    .position(point)
-                    .extraInfo(bundle)
-                    .icon(btm);
-            options.add(i, option);
+            try{
+                double[] doubles = LatLngChangeNew.calWGS84toBD09(oneBodyFireFenleiList.get(i).getAlarmLatitude(), oneBodyFireFenleiList.get(i).getAlarmLongitude());
+                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
+                Bundle bundle = new Bundle();
+                bundle.putString("id", oneBodyFireFenleiList.get(i).getId());
+                bundle.putInt("type", ONE_BODY);
+                OverlayOptions option = new MarkerOptions()
+                        .position(point)
+                        .extraInfo(bundle)
+                        .icon(btm);
+                options.add(i, option);
+            }catch (Exception e){
+                //
+            }
         }
         optionsAllList.addAll(options);
         mBaiduMap.addOverlays(options);
@@ -2751,9 +2779,13 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         if (oneBodyFireFenleiList.size() > 0) {
             List<MapModel> mapModelList = new ArrayList<>();
             for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
-                OneBodyFire.Dto oneBodyFire = oneBodyFireFenleiList.get(i);
-                MapModel mapModel = new MapModel(oneBodyFire.getId(), oneBodyFire.getName(), new MapPosition(oneBodyFire.getAlarmLongitude(), oneBodyFire.getAlarmLatitude(), 0.00), "ic_onebody");
-                mapModelList.add(mapModel);
+                try{
+                    OneBodyFire.Dto oneBodyFire = oneBodyFireFenleiList.get(i);
+                    MapModel mapModel = new MapModel(oneBodyFire.getId(), oneBodyFire.getName(), new MapPosition(oneBodyFire.getAlarmLongitude(), oneBodyFire.getAlarmLatitude(), 0.00), "ic_onebody");
+                    mapModelList.add(mapModel);
+                }catch (Exception e){
+                    //
+                }
             }
 
            /* Log.e(TAG, "initWeixingMap: " + new Gson().toJson(mapModelList));
@@ -3347,11 +3379,15 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
      * 资源点详情
      */
     private void initresourceFireModelData() {
-        mingchengView.setText(currentOneBodyFire.getName());
-        dizhiView.setText(currentOneBodyFire.getAddress());
-        shijianView.setText(currentOneBodyFire.getAlarmDatetime().replace("T", " ").substring(0, currentOneBodyFire.getAlarmDatetime().indexOf(".")));
-        jingweiduView.setText(currentOneBodyFire.getAlarmLongitude() + "、" + currentOneBodyFire.getAlarmLatitude());
-        oneBodyFireDialog.show();
+        try{
+            mingchengView.setText(currentOneBodyFire.getName());
+            dizhiView.setText(currentOneBodyFire.getAddress());
+            shijianView.setText(currentOneBodyFire.getAlarmDatetime().replace("T", " ").substring(0, currentOneBodyFire.getAlarmDatetime().indexOf(".")));
+            jingweiduView.setText(currentOneBodyFire.getAlarmLongitude() + "、" + currentOneBodyFire.getAlarmLatitude());
+            oneBodyFireDialog.show();
+        }catch (Exception e){
+            //
+        }
     }
 
     /**
@@ -3364,11 +3400,11 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             posObj.put("lat", currentOneBodyFire.getAlarmLatitude());
             posObj.put("lng", currentOneBodyFire.getAlarmLongitude());
             jsonObject.put("position", posObj);
+            Log.i("GPSposition", jsonObject.toString());
+            flyBaiduMap(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.i("GPSposition", jsonObject.toString());
-        flyBaiduMap(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
         /*dWebView.callHandler("GPSflyto", new Object[]{new Gson().toJson(jsonObject.toString())}, new OnReturnValue<String>() {
             @Override
             public void onValue(String retValue) {
