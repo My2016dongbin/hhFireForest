@@ -303,7 +303,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                     @Override
                     public void call(Void aVoid) {
                         Intent intent = new Intent(getApplicationContext(), FireMapActivity.class);
-                        double[] doubles = LatLngChangeNew.calWGS84toBD09(currentLatitude, currentLongitude);
+                        double[] doubles = LatLngChangeNew.calWGS84toGCJ02(currentLatitude, currentLongitude);
                         intent.putExtra("longitude_double", doubles[1]);
                         intent.putExtra("latitude_double", doubles[0]);
                         startActivityForResult(intent, MAP_REUEST_CODE);
