@@ -272,7 +272,7 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
                     @Override
                     public void call(Void aVoid) {
                         Intent intent = new Intent(getApplicationContext(), FireMapActivity.class);
-                        double[] doubles = LatLngChangeNew.calWGS84toBD09(currentLatitude, currentLongitude);
+                        double[] doubles = LatLngChangeNew.calWGS84toGCJ02(currentLatitude, currentLongitude);
                         intent.putExtra("longitude_double", doubles[1]);
                         intent.putExtra("latitude_double", doubles[0]);
                         startActivityForResult(intent, MAP_REUEST_CODE);
@@ -765,32 +765,36 @@ public class FireAddActivity extends HhBaseActivity implements DatePicker.OnDate
             latitude = data.getStringExtra("latitude");
             cityAddress = data.getStringExtra("cityAddress");
             currentCity = data.getStringExtra("city");
-            if (!currentCity.isEmpty()){
-                String p = data.getStringExtra("PROVINCE");
-                String c = data.getStringExtra("CITY");
-                String s = data.getStringExtra("DISTRICT");
-                initAreaById(p);
-                String c_id = "";
-                String s_id = "";
-                for (int i = 0; i < allAreaList.size(); i++) {
-                    if(Objects.equals(allAreaList.get(i).getName(), c)){
-                        c_id = allAreaList.get(i).getId();
+            try{
+                if (!currentCity.isEmpty()){
+                    String p = data.getStringExtra("PROVINCE");
+                    String c = data.getStringExtra("CITY");
+                    String s = data.getStringExtra("DISTRICT");
+                    initAreaById(p);
+                    String c_id = "";
+                    String s_id = "";
+                    for (int i = 0; i < allAreaList.size(); i++) {
+                        if(Objects.equals(allAreaList.get(i).getName(), c)){
+                            c_id = allAreaList.get(i).getId();
+                        }
                     }
-                }
-                for (int i = 0; i < allAreaList.size(); i++) {
-                    if(Objects.equals(allAreaList.get(i).getName(), s)){
-                        s_id = allAreaList.get(i).getId();
+                    for (int i = 0; i < allAreaList.size(); i++) {
+                        if(Objects.equals(allAreaList.get(i).getName(), s)){
+                            s_id = allAreaList.get(i).getId();
+                        }
                     }
+                    initShiByShiId(shengList.get(shengSelectIndex-1).getId(),c_id);
+                    initquByQuId(shiList.get(shiSelectIndex-1).getId(),s_id);
+
+                    shengText.setText(p);
+                    shiText.setText(c);
+                    quText.setText(s);
+
+                    fromMap = true;
+
                 }
-                initShiByShiId(shengList.get(shengSelectIndex-1).getId(),c_id);
-                initquByQuId(shiList.get(shiSelectIndex-1).getId(),s_id);
-
-                shengText.setText(p);
-                shiText.setText(c);
-                quText.setText(s);
-
-                fromMap = true;
-
+            }catch (Exception e){
+                //
             }
 
             addressView.setText(cityAddress);

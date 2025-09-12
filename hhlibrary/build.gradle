@@ -119,4 +119,6 @@ dependencies {
     implementation 'com.haibin:calendarview:3.6.8'//日历
     implementation 'com.hyman:flowlayout-lib:1.1.2'//流式布局插件
 
+    api 'com.amap.api:search:9.7.1'
+
 }
