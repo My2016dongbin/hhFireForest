@@ -45,16 +45,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-          <!--<wendu.dsbridge.DWebView
-            android:id="@+id/dwebview"
+        <com.amap.api.maps.MapView
+            android:id="@+id/aMapView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />-->
-
-        <com.baidu.mapapi.map.TextureMapView
-            android:id="@+id/baidu_mapview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clickable="true" />
+            android:layout_height="match_parent"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
