@@ -44,6 +44,15 @@ public class CommonUtils {
             return str.substring(0,19).replace("null","").replace("T"," ");
         }
     }
+    
+    public static String parsePointSplit(String value, int number) {
+        try{
+            int index = value.indexOf(".");
+            return value.substring(0,index+1+number);
+        }catch (Exception e){
+            return value;
+        }
+    }
 
     /**
      * 权限判断
