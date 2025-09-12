@@ -111,4 +111,6 @@ dependencies {
 
     api 'cn.jzvd:jiaozivideoplayer:7.2.4'
 
+    api 'com.amap.api:search:9.7.1'
+
 }
