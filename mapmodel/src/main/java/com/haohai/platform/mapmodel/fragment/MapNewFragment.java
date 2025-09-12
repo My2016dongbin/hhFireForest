@@ -43,33 +43,22 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.alibaba.android.arouter.launcher.ARouter;
+import com.amap.api.maps.AMap;
+import com.amap.api.maps.CameraUpdateFactory;
+import com.amap.api.maps.model.BitmapDescriptor;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.Poi;
+import com.amap.api.maps.model.PolygonOptions;
+import com.amap.api.maps.model.PolylineOptions;
 import com.amap.api.navi.AmapNaviPage;
 import com.amap.api.navi.AmapNaviParams;
 import com.amap.api.navi.AmapNaviType;
 import com.amap.api.navi.AmapPageType;
 import com.amap.api.navi.INaviInfoCallback;
 import com.amap.api.navi.model.AMapNaviLocation;
-import com.baidu.location.BDAbstractLocationListener;
-import com.baidu.location.BDLocation;
-import com.baidu.location.LocationClient;
-import com.baidu.location.LocationClientOption;
-import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.BitmapDescriptor;
-import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.MapStatus;
-import com.baidu.mapapi.map.MapStatusUpdateFactory;
-import com.baidu.mapapi.map.Marker;
-import com.baidu.mapapi.map.MarkerOptions;
-import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
-import com.baidu.mapapi.map.PolylineOptions;
-import com.baidu.mapapi.map.TextureMapView;
-import com.baidu.mapapi.model.LatLngBounds;
-import com.baidu.mapapi.search.district.DistrictResult;
-import com.baidu.mapapi.search.district.DistrictSearch;
-import com.baidu.mapapi.search.district.DistrictSearchOption;
-import com.baidu.mapapi.search.district.OnGetDistricSearchResultListener;
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -302,6 +291,11 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     private TextView gaojiEndTimeText;
     private TextView chongzhiButton;
     private TextView findButton;
+    private Dialog resourceinfoOtherDialog;
+    private View resourceInflaterOther;
+    private TextView resourcenameviewOther;
+    private TextView resoucedizhiviewOther;
+    private TextView resourcejingweiduviewOther;
     private StringBuffer date;
     private StringBuffer endDate;
     private int year;
@@ -357,9 +351,8 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     private LinearLayout oneBodyFenleiLayout;
     private TextView weixingShijianView;
     private LinearLayout daohangLayout;
-    private TextureMapView baiduMapView;
-    private BaiduMap mBaiduMap;
-    private LocationClient mLocationClient;
+    private com.amap.api.maps.MapView aMapView;
+    private com.amap.api.maps.AMap aMap;
 
     public int markerType = 0;
     public static final int ONE_BODY = 0;
@@ -367,8 +360,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     public static final int RESOURCE_MONITOR = 2;
     public static final int RESOURCE_OTHER = 888;
     private TextView resourceTypeView;
-    private List<OverlayOptions> optionsAllList;
-    private DistrictSearch mDistrictSearch;
+    private ArrayList<com.amap.api.maps.model.MarkerOptions> optionsAllList;
     private SwipeRefreshLayout oneBodyRefreshLayout;
     public boolean isOneBodyShuaxin = false;
     private Requestaddress requestaddress;
@@ -408,6 +400,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         setUserVisibleHint(true);
         super.onActivityCreated(savedInstanceState);
+        aMapView = ((com.amap.api.maps.MapView) getView().findViewById(R.id.aMapView));
+        aMapView.onCreate(savedInstanceState);
+        aMap = aMapView.getMap();
+        aMap.setMapType(AMap.MAP_TYPE_SATELLITE);
         fireMissionList = new ArrayList<>();
         progressDialog = new ProgressDialog(getContext());
         timer = new Timer();
@@ -654,19 +650,17 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         /**
          * 百度地图点marker的点击事件
          */
-                mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker) {
-                        Bundle extraInfo = marker.getExtraInfo();
-                        String id = extraInfo.getString("id");
-                        int type = extraInfo.getInt("type", 0);
+        aMap.setOnMarkerClickListener(new AMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Bundle extraInfo = (Bundle) marker.getObject();
+                String id = extraInfo.getString("id");
+                int type = extraInfo.getInt("type", 0);
                 Log.e(TAG, "onMarkerClick:id " + id);
                 Log.e(TAG, "onMarkerClick:getId " + marker.getId());
                 Log.e(TAG, "onMarkerClick:getTitle " + marker.getTitle());
                 Log.e(TAG, "onMarkerClick:latitude " + marker.getPosition().latitude);
-                Log.e(TAG, "onMarkerClick:latitudeE6 " + marker.getPosition().latitudeE6);
                 Log.e(TAG, "onMarkerClick:longitude " + marker.getPosition().longitude);
-                Log.e(TAG, "onMarkerClick:longitudeE6 " + marker.getPosition().longitudeE6);
                 if (type == ONE_BODY) {      //一体机火警点击
                     for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
                         if (oneBodyFireFenleiList.get(i).getId().equals(id)) {
@@ -680,11 +674,8 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     initOneBodyFireModelData();
                 } else if (type == RESOURCE_MONITOR) {
 
-                    com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                            marker.getPosition().latitude, marker.getPosition().longitude);
                     MapStatus.Builder builder = new MapStatus.Builder();
-                    builder.target(ll).zoom(15);
-                    mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+                    flyBaiduMapZoom( marker.getPosition().latitude, marker.getPosition().longitude,15);
 
                     getinfofromid(id);
                     resourceinfoDialog.show();
@@ -1227,12 +1218,12 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     }
 
     private void initOneBodyFlyBaiduMap() {
-        double[] position = LatLngChangeNew.calWGS84toBD09(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
-        com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                position[0], position[1]);
-        MapStatus.Builder builder = new MapStatus.Builder();
-        builder.target(ll).zoom(15);
-        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+        try{
+            double[] position = LatLngChangeNew.calWGS84toGCJ02(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
+            aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new com.amap.api.maps.model.LatLng(position[0], position[1]),15));
+        }catch (Exception e){
+            //
+        }
     }
 
     private void showOneBodyFenleiChangeDailog() {
@@ -1399,13 +1390,13 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     public void onResume() {
         super.onResume();
         //在activity执行onResume时必须调用mMapView. onResume ()
-        baiduMapView.onResume();
+        aMapView.onResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        baiduMapView.onPause();
+        aMapView.onPause();
     }
 
     @Override
@@ -1413,109 +1404,14 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         super.onDestroy();
         getActivity().unregisterReceiver(Receiver);
         getActivity().unregisterReceiver(fireWeixingReceiver);
-        mLocationClient.stop();
-        mLocationClient = null;
-        baiduMapView.onDestroy();
-    }
-
-
-    public class MyLocationListener extends BDAbstractLocationListener {
-        @Override
-        public void onReceiveLocation(BDLocation location) {
-            //mapView 销毁后不在处理新接收的位置
-            if (location == null || baiduMapView == null) {
-                return;
-            }
-            MyLocationData locData = new MyLocationData.Builder()
-                    .accuracy(location.getRadius())
-                    // 此处设置开发者获取到的方向信息，顺时针0-360
-                    .direction(location.getDirection())
-                    .latitude(location.getLatitude())
-                    .longitude(location.getLongitude())
-                    .build();
-            mBaiduMap.setMyLocationData(locData);
-        }
+        aMapView.onDestroy();
     }
 
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void initView() {
         orderWarnImageView = ((ImageView) getView().findViewById(R.id.order_warn_image));
-        baiduMapView = ((TextureMapView) getView().findViewById(R.id.baidu_mapview));   //baidu_mapview
-        mBaiduMap = baiduMapView.getMap();
-        //显示卫星图层
-        mBaiduMap.setMapType(BaiduMap.MAP_TYPE_SATELLITE);
-        mBaiduMap.setMyLocationEnabled(true);
-
-        //只显示道路 不显示其他标注
-        mBaiduMap.showMapPoi(true);
-        //设置最大最小缩放等级
-        mBaiduMap.setMaxAndMinZoomLevel(16, 5);
-        flyBaiduMapZoom(43.912806,81.277344,10);//伊宁市
-
-        //定位初始化
-        mLocationClient = new LocationClient(getContext());
-
-        //通过LocationClientOption设置LocationClient相关参数
-        LocationClientOption option = new LocationClientOption();
-        option.setOpenGps(true); // 打开gps
-        option.setCoorType("bd09"); // 设置坐标类型
-        option.setScanSpan(1000);
-
-        //设置locationClientOption
-        mLocationClient.setLocOption(option);
-
-        //注册LocationListener监听器
-        MyLocationListener myLocationListener = new MyLocationListener();
-        mLocationClient.registerLocationListener(myLocationListener);
-        //开启地图定位图层
-        mLocationClient.start();
-
-        //绘制区域边界
-        OnGetDistricSearchResultListener listener = new OnGetDistricSearchResultListener() {
-
-            @Override
-            public void onGetDistrictResult(DistrictResult districtResult) {
-                districtResult.getCenterPt();//获取行政区中心坐标点
-                districtResult.getCityName();//获取行政区域名称
-                List<List<com.baidu.mapapi.model.LatLng>> polyLines = districtResult.getPolylines();//获取行政区域边界坐标点
-                //边界就是坐标点的集合，在地图上画出来就是多边形图层。有的行政区可能有多个区域，所以会有多个点集合。
-                if (polyLines == null) {
-                    return;
-                }
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
-                if(cityTag){
-                    for (List<com.baidu.mapapi.model.LatLng> polyline : polyLines) {
-                        OverlayOptions ooPolyline11 = new PolylineOptions().width(10)
-                                .points(polyline).dottedLine(false).color(Color.BLUE);
-                        mBaiduMap.addOverlay(ooPolyline11);
-                        for (com.baidu.mapapi.model.LatLng latLng : polyline) {
-                            builder.include(latLng);
-                        }
-                    }
-                    singleTag = false;
-
-                    cityTag = false;
-                    //initBianjie();
-                }else{
-                    for (List<com.baidu.mapapi.model.LatLng> polyline : polyLines) {
-                        OverlayOptions ooPolyline11 = new PolylineOptions().width(5)
-                                .points(polyline).dottedLine(false).color(Color.BLUE);
-                        mBaiduMap.addOverlay(ooPolyline11);
-                        for (com.baidu.mapapi.model.LatLng latLng : polyline) {
-                            builder.include(latLng);
-                        }
-                    }
-                    singleTag2 = false;
-                }
-            }
-
-        };
-
-        mDistrictSearch = DistrictSearch.newInstance();
-        mDistrictSearch.setOnDistrictSearchListener(listener);//设置回调监听
-
+        flyBaiduMapZoom(43.907060,81.289558,10);//伊宁
 
         gaojiFindDialog = new ProgressDialog(getContext());
         date = new StringBuffer();
@@ -1775,6 +1671,22 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         WindowManager.LayoutParams resourceLpFire = resourceDialogWindow.getAttributes();
         resourceDialogWindow.setAttributes(resourceLpFire);
         resourceinfoDialog.setCanceledOnTouchOutside(true);
+        /**
+         *  其它类型资源点详细信息
+         */
+        resourceinfoOtherDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyle);
+        resourceInflaterOther = LayoutInflater.from(getContext()).inflate(R.layout.dialog_resource_info_other, null);
+        resourceInflaterOther.setMinimumWidth(10000);
+        resourcenameviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resourcename_view));
+        resoucedizhiviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resoucedizhi_view));
+        resourcejingweiduviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resourcejingweidu_view));
+
+        resourceinfoOtherDialog.setContentView(resourceInflaterOther);
+        Window resourceDialogWindowOther = resourceinfoOtherDialog.getWindow();
+        resourceDialogWindowOther.setGravity(Gravity.BOTTOM);
+        WindowManager.LayoutParams resourceLpFireOther = resourceDialogWindowOther.getAttributes();
+        resourceDialogWindowOther.setAttributes(resourceLpFireOther);
+        resourceinfoOtherDialog.setCanceledOnTouchOutside(true);
         /** 高级查询
          */
         gaojiDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyle);
@@ -1844,21 +1756,12 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             e.printStackTrace();
         }
         Log.i("GPSposition", jsonObject.toString());
-//        dWebView.callHandler("GPSflyto", new Object[]{new Gson().toJson(jsonObject.toString())}, new OnReturnValue<String>() {
-//            @Override
-//            public void onValue(String retValue) {
-//                Log.d("jsbridge", "call succeed,return value is " + retValue);
-//            }
-//        });
     }
 
-    private boolean cityTag = true;
-    private boolean singleTag = false;
-    private boolean singleTag2 = false;
     /**
      * 绘制区域边界
      */
-    private void initQuyuBianjieOld() {
+    private void initQuyuBianjie() {
         //网格数据json解析
         try {
             JSONObject jsonObject = new JSONObject(new GetJsonDataUtil().getJson(getActivity(),"xianjie.json"));
@@ -1867,14 +1770,19 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     for (int q = 0; q < coordinates.length(); q++) {
                         JSONArray array = (JSONArray) coordinates.get(q);
                         if(array!=null && array.length()>0){
-                            List<com.baidu.mapapi.model.LatLng> polyline = new ArrayList<>();
+                            List<com.amap.api.maps.model.LatLng> polyline = new ArrayList<>();
                             for (int m = 0; m < array.length(); m++) {
                                 JSONArray list = (JSONArray) array.get(m);
-                                polyline.add(new com.baidu.mapapi.model.LatLng(Double.parseDouble(list.get(1).toString()),Double.parseDouble(list.get(0).toString())));
+                                polyline.add(new com.amap.api.maps.model.LatLng(Double.parseDouble(list.get(1).toString()),Double.parseDouble(list.get(0).toString())));
                             }
-                            OverlayOptions ooPolyline1 = new PolylineOptions().width(10)
-                                    .points(polyline).dottedLine(false).color(Color.BLUE);
-                            mBaiduMap.addOverlay(ooPolyline1);
+                            // 声明 多边形参数对象
+                            PolygonOptions polygonOptions = new PolygonOptions();
+                            // 添加 多边形的每个顶点（顺序添加）
+                            polygonOptions.addAll(polyline);
+                            polygonOptions.strokeWidth(10) // 多边形的边框
+                                    .strokeColor(Color.parseColor("#AA0000ff"))// 边框颜色
+                                    .fillColor(Color.parseColor("#000000ff"));   // 多边形的填充色
+                            aMap.addPolygon(polygonOptions);
                         }
                     }
                 }
@@ -1884,41 +1792,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             Log.e(TAG, "initQuyuBianjie: error " + e.getMessage() );
             Log.e(TAG, "initQuyuBianjie: error " + e.toString() );
         }
-    }
-    /**
-     * 绘制区域边界
-     */
-    private void initQuyuBianjie() {
-        if(singleTag){
-            return;
-        }
-        singleTag = true;
-        DistrictSearchOption districtSearchOption = new DistrictSearchOption();
-        districtSearchOption.cityName("伊宁市");//检索城市名称
-        mDistrictSearch.searchDistrict(districtSearchOption);//请求行政区数据
-
-    }
-    /**
-     * 绘制区县边界
-     */
-    private void initBianjie() {
-        if(singleTag2){
-            return;
-        }
-        singleTag2 = true;
-        List<String> list = new ArrayList<>();
-        list.add("泰山区");
-        list.add("岱岳区");
-        list.add("宁阳县");
-        list.add("东平县");
-        list.add("新泰市");
-        list.add("肥城市");
-        for (int i = 0; i < list.size(); i++) {
-            DistrictSearchOption districtSearchOption = new DistrictSearchOption();
-            districtSearchOption.cityName(list.get(i));//检索城市名称
-            mDistrictSearch.searchDistrict(districtSearchOption);//请求行政区数据
-        }
-
     }
 
     private void showLeibieChangeDailog() {
@@ -2142,7 +2015,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         try {
             JSONObject dto = new JSONObject();
             jsonObject.put("dto", dto);
-            jsonObject.put("limit", 50);
+            jsonObject.put("limit", 200);
             jsonObject.put("page", currentPage);
             /*jsonObject.put("isReal", null);
             jsonObject.put("groupId", new DbConfig(getContext()).getUser().getGroupId());
@@ -2253,18 +2126,10 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
      */
     private void initOneBodyFireData() {
         //往地图上打一体机火点
-        // initYitijiFireMap();  超图的方法
         initYitijiFireBiaduMap();
         //往列表上展示数据
 
         Log.e(TAG, "initOneBodyFireData:size== " + oneBodyFireFenleiList.size());
-       /* if (oneBodyFireFenleiList.size()==0&&currentPage==1){
-            onebodyItems.clear();
-        }else {
-            for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
-                onebodyItems.add(oneBodyFireFenleiList.get(i));
-            }
-        }*/
         onebodyItems.clear();
         if (oneBodyFireFenleiList.size() == 0) {
             onebodyItems.add(new Empty("暂无数据"));
@@ -2283,36 +2148,49 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
      * 往百度地图上打点
      */
     private void initYitijiFireBiaduMap() {
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_red_fire);//默认森林防火
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<com.amap.api.maps.model.MarkerOptions>();
+        com.amap.api.maps.model.BitmapDescriptor btm = com.amap.api.maps.model.BitmapDescriptorFactory.fromResource(R.drawable.ic_red_fire);//默认森林防火
         for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
             if(oneBodyFireFenleiList.get(i).getType() == null){
                 continue;
             }
             switch (oneBodyFireFenleiList.get(i).getType()){
                 case 2:
-                    btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_red_fire);//森林防火
+                    btm = com.amap.api.maps.model.BitmapDescriptorFactory.fromResource(R.drawable.ic_red_fire);//森林防火
                     break;
                 case 4:
-                    btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_blue_fire);//海域监控
+                    btm = com.amap.api.maps.model.BitmapDescriptorFactory.fromResource(R.drawable.ic_blue_fire);//海域监控
                     break;
                 case 5:
-                    btm = BitmapDescriptorFactory.fromResource(R.drawable.ic_yellow_fire);//国土报警
+                    btm = com.amap.api.maps.model.BitmapDescriptorFactory.fromResource(R.drawable.ic_yellow_fire);//国土报警
                     break;
             }
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(oneBodyFireFenleiList.get(i).getAlarmLatitude(), oneBodyFireFenleiList.get(i).getAlarmLongitude());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", oneBodyFireFenleiList.get(i).getId());
-            bundle.putInt("type", ONE_BODY);
-            OverlayOptions option = new MarkerOptions()
+            com.amap.api.maps.model.LatLng point;
+            try{
+                double[] doubles = LatLngChangeNew.calWGS84toGCJ02(oneBodyFireFenleiList.get(i).getAlarmLatitude(), oneBodyFireFenleiList.get(i).getAlarmLongitude());
+                point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            }catch (Exception e){
+                //
+                point = new com.amap.api.maps.model.LatLng(0, 0);//2025
+            }
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
         }
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", oneBodyFireFenleiList.get(i).getId());
+                bundle.putInt("type", ONE_BODY);
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
     }
 
 
@@ -2326,43 +2204,12 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         resourceAdapter.notifyDataSetChanged();
     }
 
-    /**
-     * 地图上加载一体机火点
-     */
-    private void initYitijiFireMap() {
-        /*//清除旧的卫星定位
-        dWebView.callHandler("removeDataSource", new Object[]{"ic_onebody"}, new OnReturnValue<String>() {
-            @Override
-            public void onValue(String retValue) {
-                Log.e(TAG, "onValue:  qingchu" + retValue);
-            }
-        });*/
-        //打入新的卫星点位
-        if (oneBodyFireFenleiList.size() > 0) {
-            List<MapModel> mapModelList = new ArrayList<>();
-            for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
-                OneBodyFire.Dto oneBodyFire = oneBodyFireFenleiList.get(i);
-                MapModel mapModel = new MapModel(oneBodyFire.getId(), oneBodyFire.getName(), new MapPosition(oneBodyFire.getAlarmLongitude(), oneBodyFire.getAlarmLatitude(), 0.00), "ic_onebody");
-                mapModelList.add(mapModel);
-            }
-
-           /* Log.e(TAG, "initWeixingMap: " + new Gson().toJson(mapModelList));
-            dWebView.callHandler("showPoint", new Object[]{"ic_onebody", new Gson().toJson(mapModelList), ""}, new OnReturnValue<String>() {
-                @Override
-                public void onValue(String retValue) {
-                    Log.e(TAG, "onValue:  dadian" + retValue);
-                }
-            });*/
-        }
-
-    }
 
     /**
      * 初始化卫星数据
      */
     private void initWeixingData() {
         //往地图上打点
-        //initWeixingMap();
         removeMarkerBaiduMap();
 
         //往列表上展示
@@ -2428,8 +2275,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 }
             }
 
-            //飞到精确点上
-            // initWeixingFlyMap();
             //加载卫星详细数据
             initWeixinModelData();
         }
@@ -2440,13 +2285,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
      * 卫星数据百度地图打点
      */
     private void initWeixingBaiduMap() {
-        //清除旧的卫星定位
-        /*dWebView.callHandler("removeDataSource", new Object[]{"fire_weixing"}, new OnReturnValue<String>() {
-            @Override
-            public void onValue(String retValue) {
-                Log.e(TAG, "onValue:  qingchu" + retValue);
-            }
-        });*/
         //打入新的卫星点位
         if (weixingModelList.size() > 0) {
             List<MapModel> mapModelList = new ArrayList<>();
@@ -2456,59 +2294,30 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                 mapModelList.add(mapModel);
             }
 
-            List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-            BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.fire_weixing);
+            ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<com.amap.api.maps.model.MarkerOptions>();
+            com.amap.api.maps.model.BitmapDescriptor btm = com.amap.api.maps.model.BitmapDescriptorFactory.fromResource(R.drawable.fire_weixing);
             for (int i = 0; i < mapModelList.size(); i++) {
 
-                double[] doubles = LatLngChangeNew.calWGS84toBD09(mapModelList.get(i).getPosition().getLat(), mapModelList.get(i).getPosition().getLng());
-                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-                Bundle bundle = new Bundle();
-                bundle.putString("id", mapModelList.get(i).getId());
-                bundle.putInt("type", WEI_XING);
-                OverlayOptions option = new MarkerOptions()
+                double[] doubles = LatLngChangeNew.calWGS84toGCJ02(mapModelList.get(i).getPosition().getLat(), mapModelList.get(i).getPosition().getLng());
+                com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+                com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                         .position(point)
-                        .extraInfo(bundle)
                         .icon(btm);
                 options.add(i, option);
             }
             optionsAllList.addAll(options);
-            mBaiduMap.addOverlays(options);
-        }
-    }
-
-    private void initWeixingListData() {
-
-    }
-
-    /**
-     * 卫星数据地图打点
-     */
-    private void initWeixingMap() {
-        //清除旧的卫星定位
-      /*  dWebView.callHandler("removeDataSource", new Object[]{"fire_weixing"}, new OnReturnValue<String>() {
-            @Override
-            public void onValue(String retValue) {
-                Log.e(TAG, "onValue:  qingchu" + retValue);
-            }
-        });*/
-        //打入新的卫星点位
-        if (weixingModelList.size() > 0) {
-            List<MapModel> mapModelList = new ArrayList<>();
-            for (int i = 0; i < weixingModelList.size(); i++) {
-                WeixingModel weixingModel = weixingModelList.get(i);
-                MapModel mapModel = new MapModel(weixingModel.getId(), weixingModel.getFormattedAddress(), new MapPosition(Double.parseDouble(weixingModel.getLongitude()), Double.parseDouble(weixingModel.getLatitude()), 0.00), "fire_weixng");
-                mapModelList.add(mapModel);
-            }
-/*
-            Log.e(TAG, "initWeixingMap: " + new Gson().toJson(mapModelList));
-            dWebView.callHandler("showPoint", new Object[]{"fire_weixing", new Gson().toJson(mapModelList), ""}, new OnReturnValue<String>() {
-                @Override
-                public void onValue(String retValue) {
-                    Log.e(TAG, "onValue:  dadian" + retValue);
+            List<Marker> markers = aMap.addMarkers(options,false);
+            try{
+                for (int i = 0; i < markers.size(); i++) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("id", mapModelList.get(i).getId());
+                    bundle.putInt("type", WEI_XING);
+                    markers.get(i).setObject(bundle);
                 }
-            });*/
+            }catch (Exception e){
+                //
+            }
         }
-
     }
 
     /**
@@ -2555,29 +2364,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
         }
         return null;
-    }
-
-    /**
-     * 地图  飞到卫星火点精确点上
-     */
-    private void initWeixingFlyMap() {
-        final JSONObject jsonObject = new JSONObject();
-        JSONObject posObj = new JSONObject();
-        try {
-            posObj.put("lat", Double.parseDouble(currentWeixingModel.getLatitude()));
-            posObj.put("lng", Double.parseDouble(currentWeixingModel.getLongitude()));
-            jsonObject.put("position", posObj);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        Log.i("GPSposition", jsonObject.toString());
-        flyBaiduMap(Double.parseDouble(currentWeixingModel.getLatitude()), Double.parseDouble(currentWeixingModel.getLongitude()));
-        /*dWebView.callHandler("GPSflyto", new Object[]{new Gson().toJson(jsonObject.toString())}, new OnReturnValue<String>() {
-            @Override
-            public void onValue(String retValue) {
-                Log.d("jsbridge", "call succeed,return value is " + retValue);
-            }
-        });*/
     }
 
     /**
@@ -2812,12 +2598,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             String msg = intent.getStringExtra("message");
             //Toast.makeText(context, "广播已经接收", Toast.LENGTH_SHORT).show();
             Log.i("onReceive: ", msg);
-          /*  dWebView.callHandler("GPSpoint", new Object[]{new Gson().toJson(msg)}, new OnReturnValue<String>() {
-                @Override
-                public void onValue(String retValue) {
-                    Log.d("jsbridge", "call succeed,return value is " + retValue);
-                }
-            });*/
         }
     }
 
@@ -2833,7 +2613,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         fireInfoListDialog.hide();
 
         flyBaiduMap(Double.parseDouble(weixingModel.getLatitude()), Double.parseDouble(weixingModel.getLongitude()));
-        //  initWeixingFlyMap();
         //加载卫星详细数据
         initWeixinModelData();
 
@@ -2841,21 +2620,14 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
     private void flyBaiduMap(double lat, double lnt) {
         //飞到精确点上
-        double[] position = LatLngChangeNew.calWGS84toBD09(lat, lnt);
-        com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                position[0], position[1]);
-        MapStatus.Builder builder = new MapStatus.Builder();
-        builder.target(ll).zoom(15);
-        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+        double[] position = LatLngChangeNew.calWGS84toGCJ02(lat, lnt);
+
+        aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new com.amap.api.maps.model.LatLng(position[0], position[1]),15));
 
     }
     private void flyBaiduMapZoom(double lat, double lng, int zoom) {
         //飞到精确点上
-        com.baidu.mapapi.model.LatLng ll = new com.baidu.mapapi.model.LatLng(
-                lat, lng);
-        MapStatus.Builder builder = new MapStatus.Builder();
-        builder.target(ll).zoom(zoom);
-        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+        aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new com.amap.api.maps.model.LatLng(lat, lng),zoom));
 
     }
 
@@ -2894,12 +2666,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         Glide.with(getContext()).load(currentOneBodyFire.getPicPath2().replace("172.17.221.115","1.181.45.82"))
                 .error(R.drawable.ic_no_pic)
                 .placeholder(R.drawable.ic_jaizai).into(yitijiTwoView);
-    /*    Glide.with(getContext()).load("http://10.135.49.201:81/snap/a54dbc0a-eb21-0ab6-8de5-55acda985571/938a02f2-b7fa-472e-8ddb-eeeaeb9604ae_2.jpg")
-                .error(R.drawable.ic_no_pic)
-                .placeholder(R.drawable.ic_jaizai).into(yitijiOneView);
-        Glide.with(getContext()).load("http://10.135.49.201:81/snap/a54dbc0a-eb21-0ab6-8de5-55acda985571/938a02f2-b7fa-472e-8ddb-eeeaeb9604ae_2.jpg")
-                .error(R.drawable.ic_no_pic)
-                .placeholder(R.drawable.ic_jaizai).into(yitijiTwoView);*/
 
         if(currentOneBodyFire.getIsReal() == null){
             zhenshiLayout.setVisibility(View.VISIBLE);
@@ -2915,40 +2681,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         }
         Log.e(TAG, "initOneBodyFireModelData: " + currentOneBodyFire.toString() );
         oneBodyFireDialog.show();
-    }
-
-    /**
-     * 资源点详情
-     */
-    private void initresourceFireModelData() {
-        mingchengView.setText(currentOneBodyFire.getName());
-        dizhiView.setText(currentOneBodyFire.getAddress());
-        shijianView.setText(currentOneBodyFire.getAlarmDatetime().replace("T", " ").substring(0, currentOneBodyFire.getAlarmDatetime().indexOf(".")));
-        jingweiduView.setText(currentOneBodyFire.getAlarmLongitude() + "、" + currentOneBodyFire.getAlarmLatitude());
-        oneBodyFireDialog.show();
-    }
-
-    /**
-     * 一体机飞到地图上
-     */
-    private void initOneBodyFlyMap() {
-        final JSONObject jsonObject = new JSONObject();
-        JSONObject posObj = new JSONObject();
-        try {
-            posObj.put("lat", currentOneBodyFire.getAlarmLatitude());
-            posObj.put("lng", currentOneBodyFire.getAlarmLongitude());
-            jsonObject.put("position", posObj);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        Log.i("GPSposition", jsonObject.toString());
-        flyBaiduMap(currentOneBodyFire.getAlarmLatitude(), currentOneBodyFire.getAlarmLongitude());
-        /*dWebView.callHandler("GPSflyto", new Object[]{new Gson().toJson(jsonObject.toString())}, new OnReturnValue<String>() {
-            @Override
-            public void onValue(String retValue) {
-                Log.d("jsbridge", "call succeed,return value is " + retValue);
-            }
-        });*/
     }
 
     /**
@@ -2974,16 +2706,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                         resourceListList.get(i).setCheck(true);
                         getResourceDataFromService(resourceList.getApiUrl(), resourceList.getName());
                     }
-               /* } else {
-                    if (resourceList.isCheck()) {    //隐藏资源点
-                        isShowMonitor = false;
-                        resourceListList.get(i).setCheck(false);
-                    } else {         //显示资源点逻辑
-                        isShowMonitor = true;
-                        resourceListList.get(i).setCheck(true);
-
-                    }
-                }*/
 
             }
         }
@@ -3021,10 +2743,9 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
      */
     private void removeMarkerBaiduMap() {
         //清除地图上的所有覆盖物
-        mBaiduMap.clear();
+        aMap.clear();
         //画边界
-        cityTag = true;
-        initQuyuBianjie();
+        //initQuyuBianjie();
 
         if (isShowMonitor) {
           //  initResourceDataIntoBaiduMap();
@@ -3064,277 +2785,291 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
             initWeixingBaiduMap();
         }
 
-      /*  for (int i = 0; i < optionsAllList.size(); i++) {
-            MarkerOptions markerOptions = (MarkerOptions) optionsAllList.get(i);
-            // Marker marker = (Marker) mBaiduMap.addOverlay(overlayOptions);
-            Bundle extraInfo = markerOptions.getExtraInfo();
-            String id = extraInfo.getString("id");
-            int type = extraInfo.getInt("type", 0);
-            if (type == markerType){
-                markerOptions.visible(false);
-            }
-        }*/
-
     }
 
+
     private void initResourceTeamDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +teamDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < teamDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.teem);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(teamDTOList.get(i).getPosition().getLat(), teamDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", teamDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(teamDTOList.get(i).getPosition().getLat(), teamDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", teamDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", teamDTOList.get(i).getAddress());
+                bundle.putString("name", teamDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     private void initResourceZhihuiDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +zhihuiDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < zhihuiDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.zhihui);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(zhihuiDTOList.get(i).getPosition().getLat(), zhihuiDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", zhihuiDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(zhihuiDTOList.get(i).getPosition().getLat(), zhihuiDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", zhihuiDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", zhihuiDTOList.get(i).getAddress());
+                bundle.putString("name", zhihuiDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
     private void initResourceKkDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +kkDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < kkDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.kk);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(kkDTOList.get(i).getPosition().getLat(), kkDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", kkDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(kkDTOList.get(i).getPosition().getLat(), kkDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", kkDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", kkDTOList.get(i).getAddress());
+                bundle.putString("name", kkDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     private void initResourceLwtDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +lwtDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < lwtDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.lwt);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(lwtDTOList.get(i).getPosition().getLat(), lwtDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", lwtDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(lwtDTOList.get(i).getPosition().getLat(), lwtDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", lwtDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", lwtDTOList.get(i).getAddress());
+                bundle.putString("name", lwtDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
     private void initResourceWuziDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +wuziDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < wuziDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.wuziku);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(wuziDTOList.get(i).getPosition().getLat(), wuziDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", wuziDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(wuziDTOList.get(i).getPosition().getLat(), wuziDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", wuziDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", wuziDTOList.get(i).getAddress());
+                bundle.putString("name", wuziDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
     private void initResourceDangerDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +dangerDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < dangerDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.danger);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(dangerDTOList.get(i).getPosition().getLat(), dangerDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", dangerDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(dangerDTOList.get(i).getPosition().getLat(), dangerDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", dangerDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", dangerDTOList.get(i).getAddress());
+                bundle.putString("name", dangerDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
     private void initResourceCheckStationDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +checkStationDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < checkStationDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.check);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(checkStationDTOList.get(i).getPosition().getLat(), checkStationDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", checkStationDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(checkStationDTOList.get(i).getPosition().getLat(), checkStationDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", checkStationDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", checkStationDTOList.get(i).getAddress());
+                bundle.putString("name", checkStationDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     private void initResourceWaterSourceDataIntoBaiduMap() {
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < waterSourceDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.water);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(waterSourceDTOList.get(i).getPosition().getLat(), waterSourceDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", waterSourceDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(waterSourceDTOList.get(i).getPosition().getLat(), waterSourceDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", waterSourceDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", waterSourceDTOList.get(i).getAddress());
+                bundle.putString("name", waterSourceDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     private void initResourceCemeteryDataIntoBaiduMap() {
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < cemeteryDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.md);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(cemeteryDTOList.get(i).getPosition().getLat(), cemeteryDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", cemeteryDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(cemeteryDTOList.get(i).getPosition().getLat(), cemeteryDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", cemeteryDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", cemeteryDTOList.get(i).getAddress());
+                bundle.putString("name", cemeteryDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     private void initResourceMonitoerDataIntoBaiduMap() {
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < monitorDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.onbody);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", monitorDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_MONITOR);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
-            /*if (monitorDTOList.get(i).getMonitorType() == 1) {
-                Matrix matrix = new Matrix();
-                Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_monitor_senlin)).getBitmap();
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                BitmapDescriptor marker = BitmapDescriptorFactory.fromBitmap(bitmap);
-                double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-                Bundle bundle = new Bundle();
-                bundle.putString("id", monitorDTOList.get(i).getId());
-                bundle.putInt("type", RESOURCE_MONITOR);
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .extraInfo(bundle)
-                        .icon(marker);
-                options.add(i, option);
-            } else if (monitorDTOList.get(i).getMonitorType() == 2) {
-                Matrix matrix = new Matrix();
-                Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_monitor_shashi)).getBitmap();
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                BitmapDescriptor marker = BitmapDescriptorFactory.fromBitmap(bitmap);
-                double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-                Bundle bundle = new Bundle();
-                bundle.putString("id", monitorDTOList.get(i).getId());
-                bundle.putInt("type", RESOURCE_MONITOR);
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .extraInfo(bundle)
-                        .icon(marker);
-                options.add(i, option);
-            } else if (monitorDTOList.get(i).getMonitorType() == 3) {
-                Matrix matrix = new Matrix();
-                Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_monitor_haiyu)).getBitmap();
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                BitmapDescriptor marker = BitmapDescriptorFactory.fromBitmap(bitmap);
-                double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-                Bundle bundle = new Bundle();
-                bundle.putString("id", monitorDTOList.get(i).getId());
-                bundle.putInt("type", RESOURCE_MONITOR);
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .extraInfo(bundle)
-                        .icon(marker);
-                options.add(i, option);
-            }*/
-            Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter3");
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", monitorDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_MONITOR);
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     /**
@@ -3599,7 +3334,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: --1- resource/api/camera/list " + result );
+                Log.e(TAG, "onSuccess: --1-" + result );
                 try {
                     JSONObject jsonObject1 = new JSONObject(result);
                     if (jsonObject1.getString("code").equals("200")) {
@@ -3649,70 +3384,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
 
 
     }
-
-    /*private void getShipinReourceXiangqing(String resourceid) {
-        RequestParams infoparams = new RequestParams(requestaddress.getRequstUrl() + "resource/api/monitor");
-        infoparams.addHeader("Authorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
-        infoparams.addParameter("id", resourceid);
-        infoparams.addHeader("infoAuthorization", "bearer " + new DbConfig(getContext()).getUser().getToken());
-        Log.e(TAG, "inforesource: --" + infoparams);
-        x.http().get(infoparams, new Callback.CommonCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "infoonSuccess: --1-" + result);
-                try {
-                    JSONObject jsonObject1 = new JSONObject(result);
-                    if (jsonObject1.getString("code").equals("200")) {
-                        JSONArray data = jsonObject1.getJSONArray("data");
-                        for (int i = 0; i < data.length(); i++) {
-                            JSONObject dataListsObj = data.getJSONObject(i);
-                            resourcenameview.setText(dataListsObj.getString("name"));
-                            if (dataListsObj.getString("districtName").equals("null") || dataListsObj.getString("districtName").isEmpty()) {
-                                resoucedizhiview.setText(dataListsObj.getString("streetName"));
-                            } else {
-                                resoucedizhiview.setText(dataListsObj.getString("districtName") + dataListsObj.getString("streetName"));
-                            }
-                            int monitorType = dataListsObj.getInt("monitorType");
-                            if (monitorType == 1) {
-                                resourceTypeView.setText("森林防火");
-                            } else if (monitorType == 2) {
-                                resourceTypeView.setText("砂石盗采");
-                            } else if (monitorType == 3) {
-                                resourceTypeView.setText("海域监控");
-                            }
-
-
-                            String positionStr = dataListsObj.getString("position");
-                            Log.e("position1", positionStr);
-                            JSONObject positionObj = new JSONObject(positionStr);
-                            resourcejingweiduview.setText(positionObj.getString("lng") + "，" + positionObj.getString("lat"));
-                            resourceinfoDialog.show();
-                        }
-                    } else {
-                        Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                Log.e(TAG, "onError: " + ex.toString());
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-                progressDialog.dismiss();
-            }
-        });
-    }*/
 
     private void getShipinReourceXiangqing(String resourceid) {
         RequestParams infoparams = new RequestParams(requestaddress.getRequstUrl() + "resource/api/monitor");

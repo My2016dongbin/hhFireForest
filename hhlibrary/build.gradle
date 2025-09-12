@@ -109,4 +109,6 @@ dependencies {
     api 'com.rxjava.rxhttp:rxhttp:1.1.6'
     annotationProcessor 'com.rxjava.rxhttp:rxhttp-compiler:1.1.6'
 
+    api 'com.amap.api:search:9.7.1'
+
 }
