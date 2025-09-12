@@ -1,6 +1,7 @@
 package com.haohai.platform.firelibrary.ui.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -212,12 +213,15 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
         initView();
 
         bindView();
-        if (new DbConfig(getApplicationContext()).getAreaList() == null) {
-            getAreaFromService();
-        }else {
-            allAreaList = new DbConfig(getApplicationContext()).getAreaList();
-            initArea();
-        }
+        new Thread(() -> {
+            if (new DbConfig(getApplicationContext()).getAreaList() == null) {
+                getAreaFromService();
+            } else {
+                allAreaList = new DbConfig(getApplicationContext()).getAreaList();
+                runOnUiThread(this::initArea);
+            }
+            runOnUiThread(this::updateData);
+        }).start();
         updateData();
 
         getLocation();
@@ -1044,6 +1048,7 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
     }
 
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -1135,8 +1140,8 @@ public class HiddenDangerActivity extends HhBaseActivity implements DatePicker.O
                 initShiByShiId(currentProId,currentCiryId);
             }
 
-            addressView.setText(cityAddress);
-            addressView.setSelection(cityAddress.length());
+            addressView.setText(cityAddress+"");
+            addressView.setSelection((cityAddress+"").length());
             jingduView.setText(longitude);
             weiduView.setText(latitude);
 //            Toast.makeText(this, "经度=" + longitude + "纬度=" + latitude + "cityAddress=" + cityAddress, Toast.LENGTH_SHORT).show();

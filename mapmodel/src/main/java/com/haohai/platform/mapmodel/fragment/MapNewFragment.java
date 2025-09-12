@@ -681,6 +681,16 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
                     getinfofromid(id);
                     resourceinfoDialog.show();
 
+                } else if (type == RESOURCE_OTHER) {
+
+                    com.amap.api.maps.model.LatLng ll = new com.amap.api.maps.model.LatLng(
+                            marker.getPosition().latitude, marker.getPosition().longitude);
+                    flyBaiduMapZoom(ll.latitude,ll.longitude,15);
+                    resourcenameviewOther.setText(name);
+                    resourcejingweiduviewOther.setText(parse9(longitude+"")+","+parse9(latitude+""));
+                    resoucedizhiviewOther.setText(address);
+                    resourceinfoOtherDialog.show();
+
                 } else if (type == WEI_XING) {
                     for (int i = 0; i < weixingModelList.size(); i++) {
                         if (weixingModelList.get(i).getId().equals(id)) {
@@ -1678,6 +1688,22 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         WindowManager.LayoutParams resourceLpFire = resourceDialogWindow.getAttributes();
         resourceDialogWindow.setAttributes(resourceLpFire);
         resourceinfoDialog.setCanceledOnTouchOutside(true);
+        /**
+         *  其它类型资源点详细信息
+         */
+        resourceinfoOtherDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyle);
+        resourceInflaterOther = LayoutInflater.from(getContext()).inflate(R.layout.dialog_resource_info_other, null);
+        resourceInflaterOther.setMinimumWidth(10000);
+        resourcenameviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resourcename_view));
+        resoucedizhiviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resoucedizhi_view));
+        resourcejingweiduviewOther = ((TextView) resourceInflaterOther.findViewById(R.id.resourcejingweidu_view));
+
+        resourceinfoOtherDialog.setContentView(resourceInflaterOther);
+        Window resourceDialogWindowOther = resourceinfoOtherDialog.getWindow();
+        resourceDialogWindowOther.setGravity(Gravity.BOTTOM);
+        WindowManager.LayoutParams resourceLpFireOther = resourceDialogWindowOther.getAttributes();
+        resourceDialogWindowOther.setAttributes(resourceLpFireOther);
+        resourceinfoOtherDialog.setCanceledOnTouchOutside(true);
         /** 高级查询
          */
         gaojiDialog = new Dialog(getContext(), R.style.ActionSheetDialogStyle);
@@ -2778,263 +2804,287 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     }
 
     private void initResourceTeamDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +teamDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < teamDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.teem);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(teamDTOList.get(i).getPosition().getLat(), teamDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", teamDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(teamDTOList.get(i).getPosition().getLat(), teamDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", teamDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", teamDTOList.get(i).getAddress());
+                bundle.putString("name", teamDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     private void initResourceZhihuiDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +zhihuiDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < zhihuiDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.zhihui);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(zhihuiDTOList.get(i).getPosition().getLat(), zhihuiDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", zhihuiDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(zhihuiDTOList.get(i).getPosition().getLat(), zhihuiDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", zhihuiDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", zhihuiDTOList.get(i).getAddress());
+                bundle.putString("name", zhihuiDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
     private void initResourceKkDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +kkDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < kkDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.kk);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(kkDTOList.get(i).getPosition().getLat(), kkDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", kkDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(kkDTOList.get(i).getPosition().getLat(), kkDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", kkDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", kkDTOList.get(i).getAddress());
+                bundle.putString("name", kkDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     private void initResourceLwtDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +lwtDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < lwtDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.lwt);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(lwtDTOList.get(i).getPosition().getLat(), lwtDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", lwtDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(lwtDTOList.get(i).getPosition().getLat(), lwtDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", lwtDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", lwtDTOList.get(i).getAddress());
+                bundle.putString("name", lwtDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
     private void initResourceWuziDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +wuziDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < wuziDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.wuziku);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(wuziDTOList.get(i).getPosition().getLat(), wuziDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", wuziDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(wuziDTOList.get(i).getPosition().getLat(), wuziDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", wuziDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", wuziDTOList.get(i).getAddress());
+                bundle.putString("name", wuziDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
     private void initResourceDangerDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +dangerDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < dangerDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.danger);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(dangerDTOList.get(i).getPosition().getLat(), dangerDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", dangerDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(dangerDTOList.get(i).getPosition().getLat(), dangerDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", dangerDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", dangerDTOList.get(i).getAddress());
+                bundle.putString("name", dangerDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
     private void initResourceCheckStationDataIntoBaiduMap() {
-        Log.e(TAG, "initResourceDataIntoBaiduMap: " +checkStationDTOList.size() );
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < checkStationDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.check);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(checkStationDTOList.get(i).getPosition().getLat(), checkStationDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", checkStationDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(checkStationDTOList.get(i).getPosition().getLat(), checkStationDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", checkStationDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", checkStationDTOList.get(i).getAddress());
+                bundle.putString("name", checkStationDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     private void initResourceWaterSourceDataIntoBaiduMap() {
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < waterSourceDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.water);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(waterSourceDTOList.get(i).getPosition().getLat(), waterSourceDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", waterSourceDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(waterSourceDTOList.get(i).getPosition().getLat(), waterSourceDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", waterSourceDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", waterSourceDTOList.get(i).getAddress());
+                bundle.putString("name", waterSourceDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     private void initResourceCemeteryDataIntoBaiduMap() {
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < cemeteryDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.md);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(cemeteryDTOList.get(i).getPosition().getLat(), cemeteryDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", cemeteryDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_OTHER);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(cemeteryDTOList.get(i).getPosition().getLat(), cemeteryDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", cemeteryDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_OTHER);
+                bundle.putString("address", cemeteryDTOList.get(i).getAddress());
+                bundle.putString("name", cemeteryDTOList.get(i).getName());
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     private void initResourceMonitoerDataIntoBaiduMap() {
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        ArrayList<com.amap.api.maps.model.MarkerOptions> options = new ArrayList<>();
         for (int i = 0; i < monitorDTOList.size(); i++) {
             BitmapDescriptor btm = BitmapDescriptorFactory.fromResource(R.drawable.onbody);
-            double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-            com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-            Bundle bundle = new Bundle();
-            bundle.putString("id", monitorDTOList.get(i).getId());
-            bundle.putInt("type", RESOURCE_MONITOR);
-            OverlayOptions option = new MarkerOptions()
+            double[] doubles = LatLngChangeNew.calWGS84toGCJ02(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
+            com.amap.api.maps.model.LatLng point = new com.amap.api.maps.model.LatLng(doubles[0], doubles[1]);
+            com.amap.api.maps.model.MarkerOptions option = new com.amap.api.maps.model.MarkerOptions()
                     .position(point)
-                    .extraInfo(bundle)
                     .icon(btm);
             options.add(i, option);
-            /*if (monitorDTOList.get(i).getMonitorType() == 1) {
-                Matrix matrix = new Matrix();
-                Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_monitor_senlin)).getBitmap();
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                BitmapDescriptor marker = BitmapDescriptorFactory.fromBitmap(bitmap);
-                double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-                Bundle bundle = new Bundle();
-                bundle.putString("id", monitorDTOList.get(i).getId());
-                bundle.putInt("type", RESOURCE_MONITOR);
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .extraInfo(bundle)
-                        .icon(marker);
-                options.add(i, option);
-            } else if (monitorDTOList.get(i).getMonitorType() == 2) {
-                Matrix matrix = new Matrix();
-                Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_monitor_shashi)).getBitmap();
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                BitmapDescriptor marker = BitmapDescriptorFactory.fromBitmap(bitmap);
-                double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-                Bundle bundle = new Bundle();
-                bundle.putString("id", monitorDTOList.get(i).getId());
-                bundle.putInt("type", RESOURCE_MONITOR);
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .extraInfo(bundle)
-                        .icon(marker);
-                options.add(i, option);
-            } else if (monitorDTOList.get(i).getMonitorType() == 3) {
-                Matrix matrix = new Matrix();
-                Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_monitor_haiyu)).getBitmap();
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                BitmapDescriptor marker = BitmapDescriptorFactory.fromBitmap(bitmap);
-                double[] doubles = LatLngChangeNew.calWGS84toBD09(monitorDTOList.get(i).getPosition().getLat(), monitorDTOList.get(i).getPosition().getLng());
-                com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
-                Bundle bundle = new Bundle();
-                bundle.putString("id", monitorDTOList.get(i).getId());
-                bundle.putInt("type", RESOURCE_MONITOR);
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .extraInfo(bundle)
-                        .icon(marker);
-                options.add(i, option);
-            }*/
-            Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter3");
 
         }
-        Log.e(TAG, "initResourceDataIntoBaiduMap: initMoniter4");
         optionsAllList.addAll(options);
-        mBaiduMap.addOverlays(options);
+        List<Marker> markers = aMap.addMarkers(options,false);
+        try{
+            for (int i = 0; i < markers.size(); i++) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", monitorDTOList.get(i).getId());
+                bundle.putInt("type", RESOURCE_MONITOR);
+                markers.get(i).setObject(bundle);
+            }
+        }catch (Exception e){
+            //
+        }
+
     }
 
     /**
