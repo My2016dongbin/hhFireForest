@@ -10,6 +10,24 @@ public class WaterSourceDTO {
 
     //@ApiModelProperty(value = "资源类型")
     private String resourceType;
+    private String name;
+    private String address;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     /**
      * 类型，1水囊2水罐 3水池 4水坝
