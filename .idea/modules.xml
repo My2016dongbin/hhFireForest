@@ -13,6 +13,17 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/platformmodel/FireForestPlatform.platformmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/platformmodel/FireForestPlatform.platformmodel.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/videolibrary/FireForestPlatform.videolibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/videolibrary/FireForestPlatform.videolibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/wlmedia/FireForestPlatform.wlmedia.iml" filepath="$PROJECT_DIR$/.idea/modules/wlmedia/FireForestPlatform.wlmedia.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hhFireForest.iml" filepath="$PROJECT_DIR$/.idea/modules/hhFireForest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/appnaturalresource/hhFireForest.appnaturalresource.iml" filepath="$PROJECT_DIR$/.idea/modules/appnaturalresource/hhFireForest.appnaturalresource.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/chatimmodel/hhFireForest.chatimmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/chatimmodel/hhFireForest.chatimmodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.iml" filepath="$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.iml" filepath="$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/wlmedia/hhFireForest.wlmedia.iml" filepath="$PROJECT_DIR$/.idea/modules/wlmedia/hhFireForest.wlmedia.iml" />
     </modules>
   </component>
 </project>
