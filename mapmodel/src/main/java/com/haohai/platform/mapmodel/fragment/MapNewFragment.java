@@ -311,9 +311,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     public boolean isChooseStarTime;
     private ProgressDialog gaojiFindDialog;
     private Dialog resourceinfoDialog;
-    private Dialog resourceinfoOtherDialog;
     private View resourceInflater;
-    private View resourceInflaterOther;
     String resorcetype = "";
     String kejianguangUrl = "";
     String kejianguangMId = "";
@@ -353,9 +351,6 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     private TextView resourcejingweiduview;
     private Button kejianguangbutton;
     private Button rechengxiangbutton;
-    private TextView resourcenameviewOther;
-    private TextView resoucedizhiviewOther;
-    private TextView resourcejingweiduviewOther;
     private Dialog resourceListDialog;
     private View resourceListInflater;
     private RecyclerView resourceListView;
