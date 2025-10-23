@@ -43,7 +43,6 @@
         android:name="com.haohai.platform.fireforestplatform.permission.RECEIVE_MSG"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.haohai.platform.fireforestplatform.permission.RECEIVE_MSG" />
 
     <application
         android:name=".MyApplication"

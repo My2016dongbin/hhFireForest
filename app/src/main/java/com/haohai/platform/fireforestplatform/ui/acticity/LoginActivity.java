@@ -111,13 +111,14 @@ public class LoginActivity extends HhBaseActivity {
             return;
         }
         showDialogProgress(loginDialog,"登陆中...              ");
-        final RequestParams params = new RequestParams(RequestUtils.LOGIN_URL + "auth/oauth/token");
+        final RequestParams params = new RequestParams(RequestUtils.LOGIN_URL + "auth/api/auth/user/login/loginSeparate");
         // params.addBodyParameter("reqJson", jsonObject.toString());
         params.addParameter("username",userNameEdit.getText().toString());
         params.addParameter("password",passwordEdit.getText().toString());
         params.addParameter("grant_type","password");
         params.addParameter("client_id","client_password");
         params.addParameter("client_secret","123456");
+        params.addParameter("isWeb","1");
         params.setConnectTimeout(10000);
         Log.e(TAG, "loginGetToken: --"  + params);
         x.http().get(params, new Callback.CommonCallback<String>() {
@@ -127,10 +128,12 @@ public class LoginActivity extends HhBaseActivity {
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(result);
-                    access_token = jsonObject.getString("access_token");
+                    JSONArray data = jsonObject.getJSONArray("data");
+                    JSONObject obj = (JSONObject) data.get(0);
+                    access_token = obj.getString("access_token");
 
                     getUserInfo();
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

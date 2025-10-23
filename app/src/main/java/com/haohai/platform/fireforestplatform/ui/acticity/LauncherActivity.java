@@ -210,13 +210,14 @@ public class LauncherActivity extends AppCompatActivity {
     }
     private void loginToService() {
 
-        final RequestParams params = new RequestParams(RequestUtils.LOGIN_URL + "auth/oauth/token");
+        final RequestParams params = new RequestParams(RequestUtils.LOGIN_URL + "auth/api/auth/user/login/loginSeparate");
         // params.addBodyParameter("reqJson", jsonObject.toString());
         params.addParameter("username",user.getUserName());
         params.addParameter("password",user.getUserPasswd());
         params.addParameter("grant_type","password");
         params.addParameter("client_id","client_password");
         params.addParameter("client_secret","123456");
+        params.addParameter("isWeb","1");
         params.setConnectTimeout(10000);
         Log.e(TAG, "loginGetToken: --"  + params);
         x.http().get(params, new Callback.CommonCallback<String>() {
@@ -226,7 +227,9 @@ public class LauncherActivity extends AppCompatActivity {
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(result);
-                    access_token = jsonObject.getString("access_token");
+                    JSONArray data = jsonObject.getJSONArray("data");
+                    JSONObject obj = (JSONObject) data.get(0);
+                    access_token = obj.getString("access_token");
                     user.setToken(access_token);
                     DbConfig dbConfig = new DbConfig(getApplicationContext());
                     DbManager db = dbConfig.getDbManager();
