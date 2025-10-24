@@ -1446,7 +1446,7 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
         mBaiduMap.showMapPoi(true);
         //设置最大最小缩放等级
         mBaiduMap.setMaxAndMinZoomLevel(16, 5);
-        flyBaiduMapZoom(40.007734,124.182751,10);//丹东
+        flyBaiduMapZoom(51.315147,124.146889,8);//大兴安岭
 
         //定位初始化
         mLocationClient = new LocationClient(getContext());
@@ -1853,7 +1853,39 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     /**
      * 绘制区域边界
      */
-    private void initQuyuBianjieOld() {
+    private void initQuyuBianjie() {
+        //网格数据json解析
+        try {
+            JSONObject jsonObject = new JSONObject(new GetJsonDataUtil().getJson(getActivity(),"xianjie.json"));
+                JSONArray features = jsonObject.getJSONArray("features");
+                if(features!=null && features.length()>0){
+                    for (int q = 0; q < features.length(); q++) {
+                        JSONObject obj = (JSONObject) features.get(q);
+                        JSONObject geometry = (JSONObject) obj.getJSONObject("geometry");
+                        JSONArray coordinates = (JSONArray) geometry.getJSONArray("coordinates");
+                        if(coordinates!=null && coordinates.length()>0){
+                            List<com.baidu.mapapi.model.LatLng> polyline = new ArrayList<>();
+                            for (int m = 0; m < coordinates.length(); m++) {
+                                JSONArray list = (JSONArray) coordinates.get(m);
+                                polyline.add(new com.baidu.mapapi.model.LatLng(Double.parseDouble(list.get(1).toString()),Double.parseDouble(list.get(0).toString())));
+                            }
+                            OverlayOptions ooPolyline1 = new PolylineOptions().width(10)
+                                    .points(polyline).dottedLine(false).color(Color.BLUE);
+                            mBaiduMap.addOverlay(ooPolyline1);
+                        }
+                    }
+                }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.e(TAG, "initQuyuBianjie: error " + e.getMessage() );
+            Log.e(TAG, "initQuyuBianjie: error " + e.toString() );
+        }
+    }
+    /**
+     * 绘制区域边界
+     */
+    private void initQuyuBianjie2() {
         //网格数据json解析
         try {
             JSONObject jsonObject = new JSONObject(new GetJsonDataUtil().getJson(getActivity(),"xianjie.json"));
@@ -1883,13 +1915,13 @@ public class MapNewFragment extends HhBaseFragment implements ResourceListViewBi
     /**
      * 绘制区域边界
      */
-    private void initQuyuBianjie() {
+    private void initQuyuBianjieOld() {
         if(singleTag){
             return;
         }
         singleTag = true;
         DistrictSearchOption districtSearchOption = new DistrictSearchOption();
-        districtSearchOption.cityName("丹东市");//检索城市名称
+        districtSearchOption.cityName("大兴安岭");//检索城市名称
         mDistrictSearch.searchDistrict(districtSearchOption);//请求行政区数据
 
     }
