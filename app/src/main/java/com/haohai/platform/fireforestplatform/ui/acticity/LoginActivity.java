@@ -218,6 +218,7 @@ public class LoginActivity extends HhBaseActivity {
                         loginDialog.dismiss();
                         Set<String> tagSet = new LinkedHashSet<String>();
                         tagSet.add(gridNo);
+                        tagSet.add("alh_" + groupId);
                         Log.e(TAG, "gridNo: "+gridNo);
                         tagSet.add(id);
                         XGPushManager.setTags(getApplicationContext(),"setTag",tagSet);
