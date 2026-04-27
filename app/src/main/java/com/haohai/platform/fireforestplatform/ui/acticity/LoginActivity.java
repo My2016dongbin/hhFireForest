@@ -215,8 +215,8 @@ public class LoginActivity extends HhBaseActivity {
 
                         Set<String> tagSet = new LinkedHashSet<String>();
                         /*tagSet.add(gridNo);
-                        tagSet.add(id);
-                        tagSet.add(groupId);*/
+                        tagSet.add(id);*/
+                        tagSet.add("ziyuanting_" + groupId);
                         XGPushManager.setTags(getApplicationContext(),"setTag",tagSet);
                         new Thread() {
                             @Override
