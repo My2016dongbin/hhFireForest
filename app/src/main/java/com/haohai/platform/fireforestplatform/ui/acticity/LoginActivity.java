@@ -263,6 +263,7 @@ public class LoginActivity extends HhBaseActivity {
                         loginDialog.dismiss();
                         Set<String> tagSet = new LinkedHashSet<String>();
                         tagSet.add(gridNo);
+                        tagSet.add("fushan3_" + gridNo);
                         tagSet.add("fushan3_" + groupId);
                         tagSet.add(id);
                         Log.e(TAG, "tagSet: "+gridNo + "，" + id);
