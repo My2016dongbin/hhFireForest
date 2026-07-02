@@ -4,15 +4,39 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/hhFireForest.iml" filepath="$PROJECT_DIR$/.idea/modules/hhFireForest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/hhFireForest.app.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/appnaturalresource/hhFireForest.appnaturalresource.iml" filepath="$PROJECT_DIR$/.idea/modules/appnaturalresource/hhFireForest.appnaturalresource.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/chatimmodel/hhFireForest.chatimmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/chatimmodel/hhFireForest.chatimmodel.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.iml" filepath="$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.main.iml" filepath="$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/dsbridge/hhFireForest.dsbridge.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.iml" filepath="$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.main.iml" filepath="$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/firemodel/hhFireForest.firemodel.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.main.iml" filepath="$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/hhlibrary/hhFireForest.hhlibrary.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.main.iml" filepath="$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/mapmodel/hhFireForest.mapmodel.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.iml" filepath="$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.main.iml" filepath="$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/platformmodel/hhFireForest.platformmodel.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.main.iml" filepath="$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/videolibrary/hhFireForest.videolibrary.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/wlmedia/hhFireForest.wlmedia.iml" filepath="$PROJECT_DIR$/.idea/modules/wlmedia/hhFireForest.wlmedia.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/wlmedia/hhFireForest.wlmedia.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/wlmedia/hhFireForest.wlmedia.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/wlmedia/hhFireForest.wlmedia.main.iml" filepath="$PROJECT_DIR$/.idea/modules/wlmedia/hhFireForest.wlmedia.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/wlmedia/hhFireForest.wlmedia.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/wlmedia/hhFireForest.wlmedia.unitTest.iml" />
     </modules>
   </component>
 </project>
