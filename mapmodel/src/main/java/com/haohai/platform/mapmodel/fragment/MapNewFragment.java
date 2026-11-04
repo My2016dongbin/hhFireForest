@@ -272,6 +272,7 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
     private AlertDialog.Builder builder;
     private WeixingModel currentWeixingModel;
     private OneBodyFire currentOneBodyFire;
+    private String highlightedOneBodyFireId;
     private ResourceList currentResourceList;
     private Dialog weixingFireDialog;
     private View weixingFireInflater;
@@ -1750,7 +1751,10 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
      */
     private void postIsReleaseFireToService() {
 
-        showDialogProgress(progressDialog, "提交中...");
+        if (currentOneBodyFire == null || currentOneBodyFire.getType() == null) {
+            Toast.makeText(getContext(), "火情类型无效，无法提交", Toast.LENGTH_SHORT).show();
+            return;
+        }
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("fireId", currentOneBodyFire.getId());
@@ -1766,6 +1770,11 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
         } else if (currentOneBodyFire.getType() == 5) {
             params = new RequestParams(RequestUtils.REQUEST_URL + "fire/api/BuildingFirealarm/realOrError");
         }
+        if (params == null) {
+            Toast.makeText(getContext(), "暂不支持该火情类型", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        showDialogProgress(progressDialog, "提交中...");
 
         // params.setBodyContent(jsonObject.toString());
         params.addParameter("id", currentOneBodyFire.getId());
@@ -1809,10 +1818,14 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
 
                         Message message = mHandler.obtainMessage();
                         Bundle b = new Bundle();
-                        b.putString("id", oneBodyFireFenleiList.get(0).getId());
-                        b.putInt("what", DIALOG_ONEBODY_FIRE_SHOW);
-                        message.setData(b);
-                        mHandler.sendMessage(message);
+                        if (!oneBodyFireFenleiList.isEmpty()) {
+                            b.putString("id", oneBodyFireFenleiList.get(0).getId());
+                            b.putInt("what", DIALOG_ONEBODY_FIRE_SHOW);
+                            message.setData(b);
+                            mHandler.sendMessage(message);
+                        } else {
+                            oneBodyFireDialog.dismiss();
+                        }
 
                     } else {
                         Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
@@ -2776,25 +2789,24 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
     private void initYitijiFireBiaduMap() {
         List<OverlayOptions> options = new ArrayList<OverlayOptions>();
         Matrix matrix = new Matrix();
-        Bitmap bitmap = null;
-        BitmapDescriptor marker = null;
         for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
-            switch (oneBodyFireFenleiList.get(i).getType()){
-                case 2:
-                     bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_red_fire)).getBitmap();  //森林防火
-                    break;
-                case 4:
-                     bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_blue_fire)).getBitmap();  //海域监控
-                    break;
-                case 5:
-                     bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_yellow_fire)).getBitmap();  //国土报警
-                    break;
-                case 888:
-                     bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.ic_red_fire_remark)).getBitmap();  //森林防火点击
-                    break;
+            OneBodyFire fire = oneBodyFireFenleiList.get(i);
+            int markerResId = R.drawable.ic_red_fire;
+            if (highlightedOneBodyFireId != null && Objects.equals(fire.getId(), highlightedOneBodyFireId)) {
+                markerResId = R.drawable.ic_red_fire_remark;
+            } else if (fire.getType() != null) {
+                switch (fire.getType()) {
+                    case 4:
+                        markerResId = R.drawable.ic_blue_fire;
+                        break;
+                    case 5:
+                        markerResId = R.drawable.ic_yellow_fire;
+                        break;
+                }
             }
+            Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(markerResId)).getBitmap();
             bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-            marker = BitmapDescriptorFactory.fromBitmap(bitmap);
+            BitmapDescriptor marker = BitmapDescriptorFactory.fromBitmap(bitmap);
             double[] doubles = LatLngChangeNew.calWGS84toBD09(oneBodyFireFenleiList.get(i).getAlarmLatitude(), oneBodyFireFenleiList.get(i).getAlarmLongitude());
             com.baidu.mapapi.model.LatLng point = new com.baidu.mapapi.model.LatLng(doubles[0], doubles[1]);
             Bundle bundle = new Bundle();
@@ -3494,23 +3506,11 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
 
     private boolean isShowTag = false;
     private void remarkMarker(String id){
-        for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
-            OneBodyFire oneBodyFire = oneBodyFireFenleiList.get(i);
-            if(Objects.equals(oneBodyFire.getId(), id)){
-                oneBodyFire.setType(888);
-            }else{
-                oneBodyFire.setType(2);
-            }
-        }
+        highlightedOneBodyFireId = id;
         removeMarkerBaiduMap();
     }
     private void restoreMarker(){
-        for (int i = 0; i < oneBodyFireFenleiList.size(); i++) {
-            OneBodyFire oneBodyFire = oneBodyFireFenleiList.get(i);
-            if(oneBodyFire.getType() == 888){
-                oneBodyFire.setType(2);
-            }
-        }
+        highlightedOneBodyFireId = null;
         removeMarkerBaiduMap();
     }
 
