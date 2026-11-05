@@ -124,6 +124,11 @@ public class TengxunReceiver extends XGPushBaseReceiver{
             String ob_time = content.getString("time");
             String type = content.getString("type");
             Log.e(TAG, "onNotificationShowedResult: " +type);
+            if ("12".equals(type)) {
+                Intent refreshIntent = new Intent("com.haohai.platform.fireforestplatform.FIRE_ALARM_LIST_REFRESH");
+                refreshIntent.setPackage(context.getPackageName());
+                context.sendBroadcast(refreshIntent);
+            }
             Intent intenta = new Intent(context,BackgroundMp3Service.class);
             intenta.putExtra("type",type);
             context.startService(intenta);

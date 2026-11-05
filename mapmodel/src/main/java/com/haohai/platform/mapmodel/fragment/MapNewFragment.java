@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -231,6 +232,7 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
 
     public int currentFireFindTime = 3;  //时间
     private ProgressDialog progressDialog;
+    private ProgressDialog oneBodyProgressDialog;
     private User user;
     private List<WeixingModel> weixingModelList;
     private List<OneBodyFire> oneBodyFireList;
@@ -326,8 +328,13 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
     String rechengxiangUrl = "";
     String rechengxiangMId = "";
     private int currentPage = 1;
+    private static final int ONE_BODY_PAGE_SIZE = 20;
+    private static final long PUSH_REFRESH_INTERVAL_MS = 5000L;
+    private static long lastPushRefreshElapsedRealtime;
     private int totalSize;
     private int lastPage;
+    private boolean oneBodyLoading;
+    private int oneBodyRequestId;
     private TextView shaixuanbutton;
     private Handler mHandler = new Handler() {
         @Override
@@ -402,7 +409,7 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
     private TextView wubaoButton;
     private TextView zhenshiTextView;
     public int isReleas = 2;  //0疑似火情  1是真实火情  2是未处理
-    public int isReleasList = 3;  //0疑似火情  1是真实火情  2是未处理 3是全部
+    public int isReleasList = 2;  //0疑似火情  1是真实火情  2是未处理 3是全部
     public int shipinState = 2;  //2：森林防火4：海域监控5：砂石盗采 0全部
     private TextView fenleiTextView;
     private LinearLayout fenleiLayout;
@@ -474,6 +481,7 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
         }
 
         progressDialog = new ProgressDialog(getContext());
+        oneBodyProgressDialog = new ProgressDialog(getContext());
 
         user = new DbConfig(getContext()).getUser();
         weixingModelList = new ArrayList<>();
@@ -527,6 +535,7 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
         //实例化IntentFilter对象
         IntentFilter fireFilter = new IntentFilter();
         fireFilter.addAction("fire_weixing_tengxun");
+        fireFilter.addAction("com.haohai.platform.fireforestplatform.FIRE_ALARM_LIST_REFRESH");
         fireWeixingReceiver = new FireWeixingReceiver();
         //注册广播接收
         getContext().registerReceiver(fireWeixingReceiver, fireFilter);
@@ -735,7 +744,17 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
     class FireWeixingReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-
+            if ("com.haohai.platform.fireforestplatform.FIRE_ALARM_LIST_REFRESH".equals(intent.getAction())) {
+                long now = SystemClock.elapsedRealtime();
+                if (lastPushRefreshElapsedRealtime != 0
+                        && now - lastPushRefreshElapsedRealtime < PUSH_REFRESH_INTERVAL_MS) {
+                    return;
+                }
+                lastPushRefreshElapsedRealtime = now;
+                Log.d(TAG, "收到火警推送，刷新报警列表");
+                getonebodyDataFromSetvice(1, false);
+                return;
+            }
             String type = intent.getStringExtra("type");
             Log.e(TAG, "onReceive: type = bingo >>" + type );
             if (type.equals("12")){
@@ -1681,66 +1700,21 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
     }
 
     private void showOneBodyFenleiChangeDailog() {
-        //默认选中第一个  //0疑似火情  1是真实火情  2是未处理 3是全部
-        final String[] items = {"全部", "未处理", "已处理"};
-        isReleasList = 3;
+        final String[] items = {"全部", "未处理", "真实火情", "疑似火情"};
+        final int[] selected = {3 - isReleasList};
         builder = new AlertDialog.Builder(getContext()).setIcon(R.mipmap.ic_launcher).setTitle("处置情况")
-                .setSingleChoiceItems(items, choose1, new DialogInterface.OnClickListener() {
+                .setSingleChoiceItems(items, selected[0], new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        Log.e(TAG, "onClick: 类别choose---" + i);
-                        choose1 = i;
+                        selected[0] = i;
                     }
                 }).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        Log.e(TAG, "onClick: choose1=" + choose1);
-                        oneBodyFireFenleiList.clear();
-                        /*if (choose1 == 3) {
-                            isReleasList = 0;
-                            fenleiTextView.setText("疑似火点");
-                            for (int j = 0; j < oneBodyFireList.size(); j++) {
-                                if (oneBodyFireList.get(j).getIsReal()!=null) {
-                                    if (oneBodyFireList.get(j).getIsReal()== 0) {
-                                        oneBodyFireFenleiList.add(oneBodyFireList.get(j));
-                                    }
-
-                                }
-                            }
-                          //  currentPage = 1;
-                            initOneBodyFireData();
-                        } else */
-                        if (choose1 == 2) {
-                            isReleasList = 1;
-                            fenleiTextView.setText("已处理");
-                            for (int j = 0; j < oneBodyFireList.size(); j++) {
-                                if (oneBodyFireList.get(j).getIsReal() != null) {
-                                    if (oneBodyFireList.get(j).getIsReal() == 1) {
-                                        oneBodyFireFenleiList.add(oneBodyFireList.get(j));
-                                    }
-
-                                }
-                            }
-                            //   currentPage = 1;
-                            removeMarkerBaiduMap();
-                        } else if (choose1 == 1) {
-                            isReleasList = 2;
-                            fenleiTextView.setText("未处理");
-                            for (int j = 0; j < oneBodyFireList.size(); j++) {
-                                if (oneBodyFireList.get(j).getIsReal() == null) {
-                                    oneBodyFireFenleiList.add(oneBodyFireList.get(j));
-                                }
-                            }
-                            //   currentPage = 1;
-                            removeMarkerBaiduMap();
-                        } else {
-                            isReleasList = 3;
-                            fenleiTextView.setText("全部");
-                            oneBodyFireFenleiList.addAll(oneBodyFireList);
-
-                            removeMarkerBaiduMap();
-                        }
-                        //initWeixingData();
+                        isReleasList = 3 - selected[0];
+                        fenleiTextView.setText(items[selected[0]]);
+                        currentPage = 1;
+                        getonebodyDataFromSetvice();
                     }
                 });
         builder.create().show();
@@ -1805,14 +1779,10 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
                                 break;
                             }
                         }
-                        if (isReleas == 0) {//0疑似火情  1是真实火情  2是未处理
-                            //处理之后从移除该火情
-
-                            for (int i = 0; i < oneBodyFireList.size(); i++) {
-                                if (oneBodyFireList.get(i).getId().equals(currentOneBodyFire.getId())) {
-                                    oneBodyFireList.remove(i);
-                                    break;
-                                }
+                        for (int i = 0; i < oneBodyFireList.size(); i++) {
+                            if (oneBodyFireList.get(i).getId().equals(currentOneBodyFire.getId())) {
+                                oneBodyFireList.remove(i);
+                                break;
                             }
                         }
 
@@ -1825,6 +1795,7 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
                             mHandler.sendMessage(message);
                         } else {
                             oneBodyFireDialog.dismiss();
+                            removeMarkerBaiduMap();
                         }
 
                     } else {
@@ -1874,6 +1845,10 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
 
     @Override
     public void onDestroy() {
+        oneBodyRequestId++;
+        if (oneBodyProgressDialog != null && oneBodyProgressDialog.isShowing()) {
+            oneBodyProgressDialog.dismiss();
+        }
         super.onDestroy();
         getActivity().unregisterReceiver(Receiver);
         getActivity().unregisterReceiver(fireWeixingReceiver);
@@ -2208,7 +2183,6 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
             @Override
             public void onRefresh() {
                 isOneBodyShuaxin = true;
-                choose1 = 1;
                 getonebodyDataFromSetvice();
 
             }
@@ -2217,16 +2191,9 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
         onebodyListView.setOnScrollListener(new OnLoadMoreListener() {
             @Override
             public void onLoadMore() {
-                Log.e(TAG, "onLoadMore: lastPage-" + lastPage);
-                Log.e(TAG, "onLoadMore: currentPage- " + currentPage);
-           /*     if (lastPage > currentPage){
-                    currentPage += 1;
-                    Log.i(TAG, "onLoadMore: "+currentPage);
-                    progressDialog.dismiss();
-                     isShowSearchDialog = true;
-                getonebodyDataFromSetvice();
-                }*/
-
+                if (!oneBodyLoading && currentPage < lastPage) {
+                    getonebodyDataFromSetvice(currentPage + 1, true);
+                }
             }
         });
         /**
@@ -2635,100 +2602,75 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
      * 从服务器获取一体机数据
      */
     private void getonebodyDataFromSetvice() {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date dateNow = new Date();
-        long timeNow = dateNow.getTime();
-        long timeBefore = timeNow - (30*24*60*60*1000);
-        String now = format.format(dateNow);
-        String before = format.format(timeBefore);
+        getonebodyDataFromSetvice(1, true);
+    }
 
-        if (isShowSearchDialog) {
-            showDialogProgress(progressDialog, "查询中...");
+    private void getonebodyDataFromSetvice(final int page, final boolean showLoading) {
+        final int requestId = ++oneBodyRequestId;
+        oneBodyLoading = true;
+        if (showLoading) {
+            showDialogProgress(oneBodyProgressDialog, "查询中...");
+        } else if (oneBodyProgressDialog.isShowing()) {
+            oneBodyProgressDialog.dismiss();
         }
         final JSONObject jsonObject = new JSONObject();
         try {
-           /* JSONObject dto = new JSONObject();
+            JSONObject dto = new JSONObject();
+            dto.put("cityName", JSONObject.NULL);
+            dto.put("cityCode", JSONObject.NULL);
+            dto.put("countyName", JSONObject.NULL);
+            dto.put("countyCode", JSONObject.NULL);
+            dto.put("startTime", "");
+            dto.put("endTime", "");
+            dto.put("name", "");
+            dto.put("isHandle", isReleasList == 2 ? "0" : isReleasList == 3 ? "" : "1");
+            dto.put("isReal", isReleasList == 1 ? "1" : isReleasList == 0 ? "0" : "");
             jsonObject.put("dto", dto);
-            jsonObject.put("limit", 200);
-            jsonObject.put("page", currentPage);*/
-            jsonObject.put("isReal", null);
-            jsonObject.put("groupId", new DbConfig(getContext()).getUser().getGroupId());
-            jsonObject.put("isHandle", 0);
-//            jsonObject.put("startTime", before);
-//            jsonObject.put("endTime", now);
-            if (shipinState == 0) {
-                jsonObject.put("type", null);
-            } else {
-                jsonObject.put("type", shipinState);
-            }
-
+            jsonObject.put("limit", ONE_BODY_PAGE_SIZE);
+            jsonObject.put("page", page);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //   RequestParams params = new RequestParams( RequestUtils.REQUEST_URL +"/fire/api/monitorFirealarm/page");
-       // RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "/fire/api/Statistic/getAlarmList");
-        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "/fire/api/Statistic/getAlarmList");
-
-
+        RequestParams params = new RequestParams(RequestUtils.REQUEST_URL + "fire/api/monitorFirealarm/page");
         params.setBodyContent(jsonObject.toString());
         params.addHeader("Authorization", "bearer " + user.getToken());
-        Log.e(TAG, "getonebodyDataFromSetgetonebodyDataFromSetvicevice: " + params);
         Log.e(TAG, "getonebodyDataFromSetvice: " + jsonObject.toString());
-        Log.e(TAG, "getonebodyDataFromSetvice: " + user.getToken());
         params.setConnectTimeout(100000);
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                Log.e(TAG, "getonebodyDataonSuccess: " + result);
+                if (requestId != oneBodyRequestId) {
+                    return;
+                }
                 try {
                     JSONObject jsonObject1 = new JSONObject(result);
-                    if (jsonObject1.getString("code").equals("200")) {
+                    if (jsonObject1.optInt("code") == 200) {
                         JSONArray data = jsonObject1.getJSONArray("data");
-                      /*  //totalSize=data.getInt("totalSize");
-                        JSONObject getJsonObj = data.getJSONObject(0);//获取json数组中的第一项
-                        JSONArray dataList = getJsonObj.getJSONArray("dataList");
-                        Log.i(TAG, "dataList: "+dataList);
-                        totalSize=getJsonObj.getInt("totalSize");
-                        Log.i(TAG, "getonebodyDataonSuccess: "+totalSize);
-                        lastPage= (totalSize + 50 -1) / 50;     //计算最大分页数
-                        Log.i(TAG, "getonebodyDataonSuccess: "+lastPage);*/
+                        JSONObject pageData = data.length() > 0 ? data.getJSONObject(0) : null;
+                        JSONArray dataList = pageData != null ? pageData.optJSONArray("dataList") : null;
+                        if (dataList == null) {
+                            dataList = new JSONArray();
+                        }
+                        totalSize = pageData != null ? pageData.optInt("totalSize") : 0;
+                        lastPage = (totalSize + ONE_BODY_PAGE_SIZE - 1) / ONE_BODY_PAGE_SIZE;
                         Gson gson = new Gson();
-                        oneBodyFireList.clear();
-                        List<OneBodyFire> oneBodyFireAllList = gson.fromJson(String.valueOf(data), new TypeToken<List<OneBodyFire>>() {
+                        List<OneBodyFire> records = gson.fromJson(dataList.toString(), new TypeToken<List<OneBodyFire>>() {
                         }.getType());
-                        //将所有疑似火情剔除
-                        for (int i = 0; i < oneBodyFireAllList.size(); i++) {
-                            if (oneBodyFireAllList.get(i).getIsReal() != null) {
-                                if (oneBodyFireAllList.get(i).getIsReal() == 1) {
-                                    oneBodyFireList.add(oneBodyFireAllList.get(i));
-                                }
-                            } else {
-                                oneBodyFireList.add(oneBodyFireAllList.get(i));
-                            }
+                        if (page == 1) {
+                            oneBodyFireList.clear();
                         }
-                        isReleasList = 2;
-                        choose1 = 1;
+                        oneBodyFireList.addAll(records);
+                        currentPage = page;
                         oneBodyFireFenleiList.clear();
-
-                        fenleiTextView.setText("未处理");
-                        for (int j = 0; j < oneBodyFireList.size(); j++) {
-                            if (oneBodyFireList.get(j).getIsReal() == null) {
-                                oneBodyFireFenleiList.add(oneBodyFireList.get(j));
-                            }
-                        }
-                        if (isOneBodyShuaxin) {
-                            isOneBodyShuaxin = false;
-                            oneBodyRefreshLayout.setRefreshing(false);
-                        }
+                        oneBodyFireFenleiList.addAll(oneBodyFireList);
                         removeMarkerBaiduMap();
-
                     } else {
-                        //Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    Toast.makeText(getContext(), "数据解析失败", Toast.LENGTH_SHORT).show();
                 }
-
             }
 
             @Override
@@ -2743,10 +2685,17 @@ public class MapNewFragment extends HhBaseFragment implements JsApi.OnJsClickLis
 
             @Override
             public void onFinished() {
-                if (isShowSearchDialog) {
-                    progressDialog.dismiss();
+                if (requestId != oneBodyRequestId) {
+                    return;
                 }
-
+                oneBodyLoading = false;
+                if (isOneBodyShuaxin) {
+                    isOneBodyShuaxin = false;
+                    oneBodyRefreshLayout.setRefreshing(false);
+                }
+                if (oneBodyProgressDialog.isShowing()) {
+                    oneBodyProgressDialog.dismiss();
+                }
             }
         });
 
